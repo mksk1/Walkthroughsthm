@@ -1,0 +1,149 @@
+# Walkthrough Dear QA
+
+En esta máquina nos dan un binario, antes de comenzar con la explotación.
+
+El primer paso es adivinar el tipo de binario que tenemos entre manos.
+
+file DearQA-1627223337406.DearQA 
+DearQA-1627223337406.DearQA: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=8dae71dcf7b3fe612fe9f7a4d0fa068ff3fc93bd, not stripped
+
+Con este comando ya tenemos la respuesta a la primera flag.
+
+What is the binary architecture?
+x64
+
+Ejecuto strings para ver si hay algo interesante a simple vista:
+
+strings DearQA-1627223337406.DearQA 
+/lib64/ld-linux-x86-64.so.2
+libc.so.6
+fflush
+__isoc99_scanf
+puts
+printf
+stdout
+execve
+__libc_start_main
+__gmon_start__
+GLIBC_2.7
+GLIBC_2.2.5
+fffff.
+[]A\A]A^A_
+Congratulations!
+You have entered in the secret function!
+/bin/bash
+Welcome dearQA
+I am sysadmin, i am new in developing
+What's your name: 
+Hello: %s
+;*3$"
+GCC: (Debian 4.9.2-10+deb8u2) 4.9.2
+GCC: (Debian 4.8.4-1) 4.8.4
+.symtab
+.strtab
+.shstrtab
+.interp
+.note.ABI-tag
+.note.gnu.build-id
+.gnu.hash
+.dynsym
+.dynstr
+.gnu.version
+.gnu.version_r
+.rela.dyn
+.rela.plt
+.init
+.text
+.fini
+.rodata
+.eh_frame_hdr
+.eh_frame
+.init_array
+.fini_array
+.jcr
+.dynamic
+.got
+.got.plt
+.data
+.bss
+.comment
+crtstuff.c
+__JCR_LIST__
+deregister_tm_clones
+register_tm_clones
+__do_global_dtors_aux
+completed.6670
+__do_global_dtors_aux_fini_array_entry
+frame_dummy
+__frame_dummy_init_array_entry
+dearqa.c
+__FRAME_END__
+__JCR_END__
+__init_array_end
+_DYNAMIC
+__init_array_start
+_GLOBAL_OFFSET_TABLE_
+__libc_csu_fini
+_ITM_deregisterTMCloneTable
+stdout@@GLIBC_2.2.5
+data_start
+puts@@GLIBC_2.2.5
+vuln
+_edata
+_fini
+printf@@GLIBC_2.2.5
+__libc_start_main@@GLIBC_2.2.5
+execve@@GLIBC_2.2.5
+__data_start
+__gmon_start__
+__dso_handle
+_IO_stdin_used
+__libc_csu_init
+fflush@@GLIBC_2.2.5
+_end
+_start
+__bss_start
+main
+_Jv_RegisterClasses
+__isoc99_scanf@@GLIBC_2.7
+__TMC_END__
+_ITM_registerTMCloneTable
+_init
+
+Puedo ver que hay una funcion secreta, que genera una shell. Me llevo el binario a ghidra para verlo mas claro.
+
+Encuentro main y vuln.
+undefined8 main(void)
+
+{
+  undefined1 local_28 [32];
+  
+  puts("Welcome dearQA");
+  puts("I am sysadmin, i am new in developing");
+  printf("What\'s your name: ");
+  fflush(stdout);
+  __isoc99_scanf(&DAT_00400851,local_28);
+  printf("Hello: %s\n",local_28);
+  return 0;
+}
+
+
+void vuln(void)
+
+{
+  puts("Congratulations!");
+  puts("You have entered in the secret function!");
+  fflush(stdout);
+  execve("/bin/bash",(char **)0x0,(char **)0x0);
+  return;
+}
+
+scanf lee hasta encontrar un espacio en blanco, es posible que haya una vulnerabilidad de buffer overflow.
+A la funcion vuln no se la llama desde main.
+En ese caso, tendría que llegar a la funcion vuln medinate el buffer overflow. Saco el offset de la función.
+
+nm DearQA-1627223337406.DearQA | grep vuln
+0000000000400686 T vuln
+
+
+Lanzo la máquina para probar.
