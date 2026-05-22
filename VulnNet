@@ -4,7 +4,7 @@ Comienzo por añadir la siguiente linea a mi archivo /etc/hosts
 
 10.130.149.47 vulnnet.thm
 
-Ahora comienzo la enumeración, con un de todos los puertos, y otro para hacer una enumeración básica y ver versiones.
+Ahora comienzo la enumeración, con un escaneo de todos los puertos, y otro para hacer una enumeración básica y ver versiones.
 
 nmap -p- 10.130.149.47
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-05-21 16:31 CEST
