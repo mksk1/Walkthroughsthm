@@ -135,3 +135,31 @@ RDP (3389) → Escritorio remoto
 NFS (2049) → Posibles comparticiones montables
 
 Hay bastantes servicios que enumerar.
+
+Voy a mirar NFS.
+Hay una share NFS llamada users. La monto.
+sudo mount -t nfs 10.128.144.87:/users /mnt/nfs_users
+
+Dentro puedo ver 2 archivos. Un excel y sbradley. Consigo la flag de steven. El nombre de usuario es sbradley, posiblemente se repita con otros.
+
+Segunda flag THM{ab5***************a8104}
+
+Al intentar ver el excel me da problemas de errores, asique me lo bajo a mi máquina y le doy permisos para visualizarlo. 
+
+sudo chmod 777 employee_status.xlsx 
+Dentro hay una lista de usuarios y su puesto. 
+
+daven port			CTF PLAYER
+imogen royce			CTF PLAYER
+tamara vidal			CTF PLAYER
+arthur edwards			CTF PLAYER
+carl ingram			CTF PLAYER (INACTIVE)
+nolan cassidy			CTF PLAYER
+reza zaydan			CTF PLAYER
+ljudmila vetrova			CTF PLAYER, DEVELOPER,ACTIVE DIRECTORY ADMIN
+rico delgado			WEB SPECIALIST
+tyson williams			REVERSE ENGINEERING
+steven bradley			STEGO SPECIALIST
+chamber lin			CTF PLAYER(INACTIVE)
+
+Con esta información hago una wordlist y la uso para ver hacer un ataque AS-REP, para ver si consigo algun hash de contraseña de kerberos.
