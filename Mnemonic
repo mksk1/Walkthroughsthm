@@ -123,3 +123,29 @@ How many open ports? 3
 what is the ssh port number? 1337
 what is the name of the secret file? backups.zip
 
+Al intentar descomprimir backups.zip, pide contraseña. Uso zip2john y crackeo el hash.
+
+john-the-ripper.zip2john /home/mksk/Descargas/backups.zip > hash.txt
+mksk@mksk-Nitro-AN515-57:~$ john-the-ripper --wordlist=/home/mksk/wordlists/rockyou.txt hash.txt 
+Using default input encoding: UTF-8
+Loaded 1 password hash (PKZIP [32/64])
+Will run 16 OpenMP threads
+Note: Passwords longer than 21 [worst case UTF-8] to 63 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+00385007         (backups.zip/backups/note.txt)     
+1g 0:00:00:00 DONE (2026-05-25 10:43) 1.818g/s 25976Kp/s 25976Kc/s 25976KC/s 01/17/68nsa..-swtheart-1731-
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+Descomprimo el archivo 
+unzip backups.zip 
+Archive:  backups.zip
+   creating: backups/
+[backups.zip] backups/note.txt password: 
+  inflating: backups/note.txt   
+
+cat note.txt 
+@vill
+
+James new ftp username: ftpuser
+we have to work hard
