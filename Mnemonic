@@ -265,6 +265,68 @@ Session completed.
 Ya tengo otro set de credenciales, esta vez para ssh.
 james:bluelove
 
+Me logueo por ssh.
+ssh -i id_rsa james@10.129.133.192 -p 1337
+The authenticity of host '[10.129.133.192]:1337 ([10.129.133.192]:1337)' can't be established.
+ED25519 key fingerprint is SHA256:d0qdox4vOIS0HPDVlfu4FnWGZII6QM4tKJVBvWhlSp0.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '[10.129.133.192]:1337' (ED25519) to the list of known hosts.
+Enter passphrase for key 'id_rsa': 
+james@10.129.133.192's password: 
+Welcome to Ubuntu 18.04.4 LTS (GNU/Linux 4.15.0-111-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Mon May 25 09:58:13 UTC 2026
+
+  System load:  0.0                Processes:           98
+  Usage of /:   34.0% of 12.01GB   Users logged in:     0
+  Memory usage: 35%                IP address for ens5: 10.129.133.192
+  Swap usage:   0%
+
+  => There is 1 zombie process.
+
+
+51 packages can be updated.
+0 updates are security updates.
+
+
+Last login: Thu Jul 23 20:40:09 2020 from 192.168.1.5
+james@mnemonic:~$ ls
+6450.txt  noteforjames.txt
+
+cat 6450.txt
+5140656
+354528
+842004
+1617534
+465318
+1617534
+509634
+1152216
+753372
+265896
+265896
+15355494
+24617538
+3567438
+15355494
+
+cat noteforjames.txt
+noteforjames.txt
+
+@vill
+
+james i found a new encryption İmage based name is Mnemonic  
+
+I created the condor password. don't forget the beers on saturday
+
+Esto es un poco confuso, tengo un archivo con varios números y una nota que hace referencia a un nuevo tipo de encriptación basado en imagenes, tras el que está la contraseña de condor.
+
+
 Al buscar en las carpetas, en data-4 encuentro una clave ssh y una nota. 
 //Preguntas
 ftp user name? ftpuser
