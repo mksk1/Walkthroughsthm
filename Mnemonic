@@ -293,7 +293,7 @@ Welcome to Ubuntu 18.04.4 LTS (GNU/Linux 4.15.0-111-generic x86_64)
 51 packages can be updated.
 0 updates are security updates.
 
-
+Al buscar en las carpetas, en data-4 encuentro una clave ssh y una nota. 
 Last login: Thu Jul 23 20:40:09 2020 from 192.168.1.5
 james@mnemonic:~$ ls
 6450.txt  noteforjames.txt
@@ -326,8 +326,72 @@ I created the condor password. don't forget the beers on saturday
 
 Esto es un poco confuso, tengo un archivo con varios números y una nota que hace referencia a un nuevo tipo de encriptación basado en imagenes, tras el que está la contraseña de condor.
 
+Conforme a la nota, intuyo que necesito una imagen para descifrar con el archivo de los números. La sigo buscando.
+En principio no encuentro nada. Pero ya que tengo acceso con un usuario, voy a intentar escalar privilegios.
 
-Al buscar en las carpetas, en data-4 encuentro una clave ssh y una nota. 
+find / -perm -4000 2>/dev/null
+-rbash: /dev/null: restricted: cannot redirect output No me deja buscar binarios SUID. Pero si quito el 2>/dev/null me da unos resultados bastante interesantes.
+
+ find / -perm -4000 
+find: ‘/lost+found’: Permission denied
+find: ‘/tmp/systemd-private-32d4f7b6b2bd471491de324e854f8a9c-apache2.service-TYutrS’: Permission denied
+find: ‘/tmp/systemd-private-32d4f7b6b2bd471491de324e854f8a9c-systemd-resolved.service-JeyTQp’: Permission denied
+/usr/lib/openssh/ssh-keysign
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/snapd/snap-confine
+/usr/lib/x86_64-linux-gnu/lxc/lxc-user-nic
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/bin/pkexec
+/usr/bin/newuidmap
+/usr/bin/newgrp
+/usr/bin/passwd
+/usr/bin/traceroute6.iputils
+/usr/bin/sudo
+/usr/bin/chfn
+/usr/bin/newgidmap
+/usr/bin/gpasswd
+/usr/bin/chsh
+/usr/bin/at
+**********
+find: ‘/var/cache/apt/archives/partial’: Permission denied
+find: ‘/var/tmp/systemd-private-32d4f7b6b2bd471491de324e854f8a9c-apache2.service-4Skz79’: Permission denied
+find: ‘/var/tmp/systemd-private-32d4f7b6b2bd471491de324e854f8a9c-systemd-resolved.service-6JzoLA’: Permission denied
+find: ‘/var/spool/rsyslog’: Permission denied
+find: ‘/var/spool/cron/atspool’: Permission denied
+find: ‘/var/spool/cron/crontabs’: Permission denied
+find: ‘/var/spool/cron/atjobs’: Permission denied
+find: ‘/var/lib/snapd/void’: Permission denied
+find: ‘/var/lib/snapd/cookie’: Permission denied
+find: ‘/var/lib/update-notifier/package-data-downloads/partial’: Permission denied
+find: ‘/var/lib/apt/lists/partial’: Permission denied
+find: ‘/home/jeff’: Permission denied
+find: ‘/home/mike’: Permission denied
+find: ‘/home/ftpuser’: Permission denied
+find: ‘/home/condor/'VEhNe2E1ZjgyYTAwZTJmZWVlMzQ2NTI0OWI4NTViZTcxYzAxfQ=='’: Permission denied
+find: ‘/home/condor/.gnupg’: Permission denied
+find: ‘/home/condor/.bash_logout’: Permission denied
+find: ‘/home/condor/.bashrc’: Permission denied
+find: ‘/home/condor/.profile’: Permission denied
+find: ‘/home/condor/.cache’: Permission denied
+find: ‘/home/condor/.bash_history’: Permission denied
+find: ‘/home/condor/aHR0cHM6Ly9pLnl0aW1nLmNvbS92aS9LLTk2Sm1DMkFrRS9tYXhyZXNkZWZhdWx0LmpwZw==’: Permission denied
+find: ‘/home/john’: Permission denied
+find: ‘/home/alex’: Permission denied
+find: ‘/home/vill’: Permission denied
+/snap/core/9436/bin/mount
+/snap/core/9436/bin/ping
+
+Estas 2 lineas llaman mi atencion.
+find: ‘/home/condor/aHR0cHM6Ly9pLnl0aW1nLmNvbS92aS9LLTk2Sm1DMkFrRS9tYXhyZXNkZWZhdWx0LmpwZw==’: Permission denied
+find: ‘/home/condor/'VEhNe2E1ZjgyYTAwZTJmZWVlMzQ2NTI0OWI4NTViZTcxYzAxfQ=='’: Permission denied
+
+Lo paso por cibercheff para ver que es ese b64
+
+La primera cadena me da una url. https://i.ytimg.com/vi/K-96JmC2AkE/maxresdefault.jpg Esta posiblemente sea la imagen que necesito para desencriptar con el archivo numérico.
+La segunda cadena es una flag THM{a5f******************c01}
+
+La imagen contiene el texto password cracked with Kevin Mitnick. Investigo un poco a ver que encuentro.
 //Preguntas
 ftp user name? ftpuser
 ftp password? love4ever
