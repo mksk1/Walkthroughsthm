@@ -391,7 +391,13 @@ Lo paso por cibercheff para ver que es ese b64
 La primera cadena me da una url. https://i.ytimg.com/vi/K-96JmC2AkE/maxresdefault.jpg Esta posiblemente sea la imagen que necesito para desencriptar con el archivo numérico.
 La segunda cadena es una flag THM{a5f******************c01}
 
-La imagen contiene el texto password cracked with Kevin Mitnick. Investigo un poco a ver que encuentro.
+La imagen contiene el texto password cracked with Kevin Mitnick. Investigo un poco a ver que encuentro. 
+Respecto a Kevin no he encontrado nada, es un señor que hace vídeos sobre ciberseguridad. Y esa imagen era una miniatura de un video suyo de YT.
+
+He acabado buscando métodos de encriptación relacionados con imágenes y el archivo numérico. Tras no encontrar nada relevante. 
+He acabado buscando Mnemonic y he llegado a la mnemotécnica.
+
+He acabado llegando al siguiente github: https://github.com/KemonoNeco/Mnemonic-cipher
 //Preguntas
 ftp user name? ftpuser
 ftp password? love4ever
