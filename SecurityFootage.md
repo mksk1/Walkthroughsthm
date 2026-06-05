@@ -78,8 +78,9 @@ frames_extraidos/jpg$ ls
 00001437.jpg  00002922.jpg  00004400.jpg  00005900.jpg  00007386.jpg  00008854.jpg  00010354.jpg
 00001458.jpg  00002944.jpg  00004422.jpg  00005922.jpg  00007408.jpg  00008876.jpg  00010376.jpg
 
-Tengo bastantes imágenes.
-
-Voy a la carpeta y con un vistazo rápido puedo conseguir la flag.
+Tengo bastantes imágenes como esta.
 
 ![Ejemplo de frame extraído: 00001261.jpg](Images/00001261.jpg)
+
+Voy a la carpeta y con un vistazo rápido a varias imágenenes puedo conseguir la flag.
+
