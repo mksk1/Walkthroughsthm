@@ -134,6 +134,7 @@ Ti********* //cuarta flag
 
 Basándome en el post de threads, jim se estaba preparando para una maratón, y se sube al tram para ir a por un café a su supermercado francés favorito.
 Esto nos indica que es una estación de tram cercana a un supermercado francés. Me imagino que un carrefour o algo similar.
+
 ![Imagen threads maraton](Images/2026-06-08_13-48.png)
 
 La cuarta flag nos pide que digamos en que estación de tram se bajó el 7 de mayo.
