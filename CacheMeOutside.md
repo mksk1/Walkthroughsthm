@@ -95,8 +95,7 @@ curl -H "Accept: application/vnd.github+json" \
       "site_admin": false
     },
     "parents": [
-
-    ]
+]
   }
 ]
 
