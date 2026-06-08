@@ -8,7 +8,7 @@ En la imagen que nos dan hay un link de koomot, siguiendo el link encontramos su
 ![Imagen koomot](Images/2026-06-08_13-00.png)
 
 What is the retired hacker’s full name?
-Jim Lee.
+Jim ***.
 
 En koomot encuentro un link a github.
 https://github.com/jiml33t
@@ -26,7 +26,7 @@ curl -H "Accept: application/vnd.github+json" \
     "commit": {
       "author": {
         "name": "jimleepro1-cell",
-        "email": "jimleepro1@gmail.com",
+        "email": "jim************",
         "date": "2026-04-16T07:27:19Z"
       },
       "committer": {
@@ -102,10 +102,11 @@ curl -H "Accept: application/vnd.github+json" \
 En el campo email esta la segunda flag.
 
 What email address did he accidentally expose?
-"email": "jimleepro1@gmail.com"
+"email": "jim**********l.com"
 
 La siguiente flag es un numero de telefono. Tan solo tengo un correo y una cuenta de koomot.
-He buscado cuentas de correo o usuarios como jimleepro1, jim l33t, he usado holehe para ver servicios en los que haya usado esa cuenta, sin éxito.
+He buscado cuentas de correo o usuarios como jimleepro1, jiml33t, he usado holehe para ver servicios en los que haya usado esa cuenta, sin éxito.
+He encontrado una cuenta de instagram y otra de threads, pero no su número.
 
 He enviado un correo, y tiene una respuesta programada.
 
@@ -114,4 +115,39 @@ He enviado un correo, y tiene una respuesta programada.
 En la imagen se puede ver su número de teléfono y una posible compañia, L33t Security.
 
 What is his phone number?
-+40 743 321 239
++40 *** *** *** // Tengo la tercera flag.
+// +40 de prefijo indica que el número es rumano.
+
+La siguiente flag nos pide su ciudad. Sabiendo la que L33t Security es su empresa y su número, sabemos que es rumano.
+Vuelvo a la cuenta de threads que habia encontrado antes, en la que estaba esta imagen.
+
+![Imagen threads](Images/688288196_18098728432922190_2736364378465993458_n.jpg)
+
+Se ve un letrero que pone irigatii.ro.
+
+Buscando un poco en google, es una empresa de jardinería que esta en la siguiente dirección.
+Calea Buziașului 13, 300701 Ti********, Rumanía
+Timișoara es la ciudad.
+
+In which city is he located?
+Ti********* //cuarta flag
+
+Basándome en el post de threads, jim se estaba preparando para una maratón, y se sube al tram para ir a por un café a su supermercado francés favorito.
+Esto nos indica que es una estación de tram cercana a un supermercado francés. Me imagino que un carrefour o algo similar.
+![Imagen threads maraton](Images/2026-06-08_13-48.png)
+
+La cuarta flag nos pide que digamos en que estación de tram se bajó el 7 de mayo.
+
+Preguntado a gemini, me da las líneas de tram que están cerca de ese lugar.
+
+El showroom y sede principal de Irigatii.ro en Romania se encuentra ubicado en Calea Buziașului nr. 13, Timișoara.Estaciones de Tranvía más cercanas: Las paradas de la red de tranvías de Timișoara más próximas al almacén son Stadion (aprox. 150 metros) y Banatim (aprox. 500 metros), ambas atendidas por las líneas 4 y 8.
+
+Líneas 4 y 8.
+He encontrado un par de paradas de la línea 8 y una de la 4 cerca de un carrefour, pero no son la respuesta.
+He buscado más cadenas de supermercados franceses en rumanía, y al parecer también tienen presencia Auchan y Cora (esta ha sido adquirida por Carrefour).
+
+Al buscar paradas de estas dos líneas cerca de un supermercado Auchan, he encontrado una solo respuesta viable.
+Piața ****** *********** ***** (Liviu Rebreanu - AEM)
+
+Submit the name of the tram station where he got off on the 7th of May, 2026.
+Piața ************** *************(Liviu Rebreanu - AEM) // Esta es la última flag
