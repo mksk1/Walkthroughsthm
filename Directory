@@ -1,1 +1,37 @@
 #Directory Walkthrough
+
+Este CTF es de análisis de paquetes. Comienzo con una captura de wireshark de 81,6 MB.
+
+What ports did the threat actor initially find open? Format: from lowest to highest, separated by a comma.
+
+Esta es sencilla.
+
+tcp.flags.syn==1 and tcp.flags.ack==1 
+Con el siguiente filtro vemos los mensajes SYN-ACK, que indican que un puerto estaba abierto en respuesta al escaneo SYN del atacante.
+
+Uso el siguiente comando de tshark para sacar ese filtro y hacer un sort.
+
+tshark -r traffic-1725627206938.pcap -Y "tcp.flags.syn==1 and tcp.flags.ack==1" -T fields -e tcp.dstport | sort -n -u
+
+tshark -r traffic-1725627206938.pcap -Y "tcp.flags.syn==1 and tcp.flags.ack==1" -T fields -e tcp.dstport | sort -n | uniq | paste -sd ','
+687,719,32770,32772,32776,32782,32796,32800,32802,33364,33372,33608,33756,33762,33768,33784,33798,33806,33810,33816,33826,33842,33846,33856,33866,33868,33870,33886,33894,33898,33904,33910,33926,33934,33950,33952,33960,33966,33970,33984,34000,34010,34026,34030,34038,34052,34060,34064,34074,34080,34090,35502,35512,36604,36610,36620,38186,38824,39016,39870,39930,39946,39952,39962,39972,39986,39998,41620,41636,41706,43096,43104,43108,43124,43136,43142,43148,43160,43164,43178,43192,43198,43208,43210,43222,43224,43238,43252,43264,43274,43288,43294,43300,43310,43326,43334,43336,43344,43346,43984,44744,44758,44764,44768,44772,44780,44788,44790,44800,44993,45876,45886,45890,46390,46394,46396,46408,46422,46430,47372,47380,47394,47404,47420,47428,47432,47442,47448,47464,47472,47482,47492,47502,47506,47520,47528,47536,47542,47552,47566,47580,47596,47610,47620,47622,47856,47879,49578,49586,49594,50008,50010,50020,50742,50754,50766,50974,50986,51326,51342,51346,51360,51374,51382,51388,51390,51398,51400,51416,51430,51442,51456,51472,51476,51492,51496,51498,51508,51512,51516,51528,51544,51556,51560,51568,51572,51584,51764,52366,52372,52458,54916,54918,57602,57710,57718,57992,58031,58032,58033,58034,58035,58036,58038,58051,58052,58053,58054,59738,60316,60330,60332,60334
+
+La salida de este comando es bastante larga, dado que no he filtrado con la IP de la máquina víctima.
+
+tshark -r traffic-1725627206938.pcap -Y "tcp.flags.syn==1" -T fields -e ip.dst | sort | uniq -c | sort -n
+      1 20.163.45.186
+      1 20.3.187.198
+      1 23.207.209.32
+      4 20.81.62.55
+      4 52.168.117.169
+    226 10.0.2.74
+   2036 10.0.2.75
+
+Vale, la IP de la máquina víctima es 10.0.2.75.
+
+Actualizo el filtro.
+
+tshark -r traffic-1725627206938.pcap -Y "tcp.flags.syn==1 and tcp.flags.ack==1 and ip.src == 10.0.2.75" -T fields -e tcp.srcport | sort -n | uniq | paste -sd ','
+53,80,*************************************** //Este comando saca la respuesta a la primera pregunta.
+
+The threat actor found four valid usernames, but only one username allowed the attacker to achieve a foothold on the server. What was the username? Format: Domain.TLD\username.
