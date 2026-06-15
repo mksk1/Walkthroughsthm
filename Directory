@@ -34,4 +34,22 @@ Actualizo el filtro.
 tshark -r traffic-1725627206938.pcap -Y "tcp.flags.syn==1 and tcp.flags.ack==1 and ip.src == 10.0.2.75" -T fields -e tcp.srcport | sort -n | uniq | paste -sd ','
 53,80,*************************************** //Este comando saca la respuesta a la primera pregunta.
 
+
+
+
 The threat actor found four valid usernames, but only one username allowed the attacker to achieve a foothold on the server. What was the username? Format: Domain.TLD\username.
+
+He usado dos comandos.
+
+tshark -r traffic-1725627206938.pcap -Y "ntlmssp.messagetype == 0x00000003 and ntlmssp.auth.username" -T fields -e ntlmssp.auth.username | sort | uniq -c
+      2 **********
+      1 NULL
+
+tshark -r traffic-1725627206938.pcap -Y "ntlmssp.messagetype == 0x00000003" -T fields -e ntlmssp.auth.username -e ntlmssp.auth.domain -e ntlmssp.ntlmv2_response | head -20
+
+NULL	NULL	
+******* *************	e18eca5d5ed8a7a08682a3cd4e993b3e01010000000000008212cb751250da01fc1010028b6c723900000000020012004400490052004500430054004f0052005900010010004100440053004500520056004500520004001a006400690072006500630074006f00720079002e00740068006d0003002c00410044005300650072007600650072002e006400690072006500630074006f00720079002e00740068006d0005001a006400690072006500630074006f00720079002e00740068006d00070008008212cb751250da0109001e00570053004d0041004e002f00310030002e0030002e0032002e003700350006000400020000000000000000000000
+*******	NULL	f6dd396748ca42ed9b5c4dedf23aeec0010100000000000000d30f891250da01e3cd78db2e80fd3900000000020012004400490052004500430054004f0052005900010010004100440053004500520056004500520004001a006400690072006500630074006f00720079002e00740068006d0003002c00410044005300650072007600650072002e006400690072006500630074006f00720079002e00740068006d0005001a006400690072006500630074006f00720079002e00740068006d0007000800de2f87891250da010000000000000000
+
+El primer comando permite listar los nombres de usuario que intentaron autenticarse mediante NTLM, pero no proporciona el dominio. 
+El segundo comando añade el dominio y el hash de respuesta NTLMv2; si este hash no está vacío, confirma que la autenticación fue exitosa, identificando así el usuario que logró el login.
