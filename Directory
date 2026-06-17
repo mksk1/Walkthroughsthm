@@ -147,3 +147,113 @@ Hardware.Mon.#1..: Temp: 52c Util:  4% Core:1485MHz Mem:6001MHz Bus:8
 
 Started: Tue Jun 16 12:28:51 2026
 Stopped: Tue Jun 16 12:29:03 2026
+
+
+What were the second and third commands that the threat actor executed on the system? Format: command1,command2
+
+Al ver la captura de paquetes, me doy cuenta de que hay bastante tráfico encriptado. Tengo una contraseña, ahora me hace falta saber que tipo de tráfico es.
+
+POST /wsman HTTP/1.1
+Authorization: Negotiate TlRMTVNTUAABAAAAN4II4AAAAAAgAAAAAAAAACAAAABrYWxp
+Content-Type: application/soap+xml;charset=UTF-8
+User-Agent: Ruby WinRM Client (2.8.3, ruby 3.1.2 (2022-04-12))
+Accept: */*
+Date: Fri, 26 Jan 2024 04:45:50 GMT
+Content-Length: 0
+Host: 10.0.2.75:5985
+
+HTTP/1.1 401 
+WWW-Authenticate: Negotiate TlRMTVNTUAACAAAAEgASADgAAAA1goni7Im6OLhI5lUAAAAAAAAAAKYApgBKAAAACgB8TwAAAA9EAEkAUgBFAEMAVABPAFIAWQACABIARABJAFIARQBDAFQATwBSAFkAAQAQAEEARABTAEUAUgBWAEUAUgAEABoAZABpAHIAZQBjAHQAbwByAHkALgB0AGgAbQADACwAQQBEAFMAZQByAHYAZQByAC4AZABpAHIAZQBjAHQAbwByAHkALgB0AGgAbQAFABoAZABpAHIAZQBjAHQAbwByAHkALgB0AGgAbQAHAAgA3i+HiRJQ2gEAAAAA
+Server: Microsoft-HTTPAPI/2.0
+Date: Fri, 26 Jan 2024 04:45:50 GMT
+Content-Length: 0
+
+POST /wsman HTTP/1.1
+Authorization: Negotiate TlRMTVNTUAADAAAAGAAYAEAAAADWANYAWAAAAAAAAAAuAQAAEgASAC4BAAAAAAAAQAEAABAAEABAAQAANYII4Ki5FdpNy02FfdBDgeMJxGHjzXjbLoD9OfbdOWdIykLtm1xN7fI67sABAQAAAAAAAADTD4kSUNoB48142y6A/TkAAAAAAgASAEQASQBSAEUAQwBUAE8AUgBZAAEAEABBAEQAUwBFAFIAVgBFAFIABAAaAGQAaQByAGUAYwB0AG8AcgB5AC4AdABoAG0AAwAsAEEARABTAGUAcgB2AGUAcgAuAGQAaQByAGUAYwB0AG8AcgB5AC4AdABoAG0ABQAaAGQAaQByAGUAYwB0AG8AcgB5AC4AdABoAG0ABwAIAN4vh4kSUNoBAAAAAAAAAABsAGEAcgByAHkALgBkAG8AZQAIwLF2oIn7uCFJUQ82Y6lt
+Content-Type: application/soap+xml;charset=UTF-8
+User-Agent: Ruby WinRM Client (2.8.3, ruby 3.1.2 (2022-04-12))
+Accept: */*
+Date: Fri, 26 Jan 2024 04:45:50 GMT
+Content-Length: 0
+Host: 10.0.2.75:5985
+
+En este flujo TCP puedo ver que el User-Agent es WinRm.
+
+Buscando un poco como desencriptar tráfico winrm de .pcap llego al siguiente github https://github.com/h4sh5/decrypt-winrm.
+
+Instalo las dependencias requeridas y uso la opción de contraseña.
+
+python3 /home/mksk/herramientas/decrypt-winrm/winrm_decrypt.py -p 'Password1!' ./traffic-1725627206938.pcap > traficonoencr.txt
+unwrap_initiate
+unwrap_accept
+unwrap_initiate
+unwrap_accept
+unwrap_initiate
+unwrap_accept
+
+Y veo la respuesta. Es bastante larga, asique voy a resumir lo que me parece importante.
+
+cat traficonoencr.txt 
+
+No: 4892 | Time: 2024-01-26T05:45:17.690738 | Source: 10.0.2.74 | Destination: 10.0.2.75
+<?xml version="1.0" ?>
+<s:Envelope xmlns:rsp="http://schemas.microsoft.com/wbem/wsman/1/windows/shell" xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:wsmv="http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd">
+	<s:Header>
+		<wsa:Action s:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/09/transfer/Create</wsa:Action>
+		<wsmv:DataLocale s:mustUnderstand="false" xml:lang="en-US"/>
+		<wsman:Locale s:mustUnderstand="false" xml:lang="en-US"/>
+		<wsman:MaxEnvelopeSize s:mustUnderstand="true">153600</wsman:MaxEnvelopeSize>
+		<wsa:MessageID>uuid:B266514C-4C0D-4A92-B316-BD224B8684DA</wsa:MessageID>
+		<wsman:OperationTimeout>PT20S</wsman:OperationTimeout>
+		<wsa:ReplyTo>
+			<wsa:Address s:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:Address>
+		</wsa:ReplyTo>
+		<wsman:ResourceURI s:mustUnderstand="true">http://schemas.microsoft.com/powershell/Microsoft.PowerShell</wsman:ResourceURI>
+		<wsmv:SessionId s:mustUnderstand="false">uuid:07482920-461E-4922-A76F-28A88C38D7F5</wsmv:SessionId>
+		<wsa:To>http://10.0.2.75:5985/wsman</wsa:To>
+		<wsman:OptionSet s:mustUnderstand="true">
+			<wsman:Option MustComply="true" Name="protocolversion">2.3</wsman:Option>
+		</wsman:OptionSet>
+	</s:Header>
+	<s:Body>
+		<rsp:Shell ShellId="C5B8A54D-4356-4D2E-9006-70A15A7B18CB">
+			<rsp:InputStreams>stdin pr</rsp:InputStreams>
+			<rsp:OutputStreams>stdout</rsp:OutputStreams>
+			<creationXml xmlns="http://schemas.microsoft.com/powershell">AAAAAAAAAAEAAAAAAAAAAAMAAADHAgAAAAIAAQBNpbjFVkMuTZAGcKFaexjLAAAAAAAAAAAAAAAAAAAAADxPYmogUmVmSWQ9IjAiPjxNUz48VmVyc2lvbiBOPSJwcm90b2NvbHZlcnNpb24iPjIuMzwvVmVyc2lvbj48VmVyc2lvbiBOPSJQU1ZlcnNpb24iPjIuMDwvVmVyc2lvbj48VmVyc2lvbiBOPSJTZXJpYWxpemF0aW9uVmVyc2lvbiI+MS4xLjAuMTwvVmVyc2lvbj48L01TPjwvT2JqPgAAAAAAAAACAAAAAAAAAAADAAAC/QIAAAAEAAEATaW4xVZDLk2QBnChWnsYywAAAAAAAAAAAAAAAAAAAAA8T2JqIFJlZklkPSIwIj48TVM+PEkzMiBOPSJNaW5SdW5zcGFjZXMiPjE8L0kzMj48STMyIE49Ik1heFJ1bnNwYWNlcyI+MTwvSTMyPjxPYmogUmVmSWQ9IjEiIE49IlBTVGhyZWFkT3B0aW9ucyI+PFROIFJlZklkPSIwIj48VD5TeXN0ZW0uTWFuYWdlbWVudC5BdXRvbWF0aW9uLlJ1bnNwYWNlcy5QU1RocmVhZE9wdGlvbnM8L1Q+PFQ+U3lzdGVtLkVudW08L1Q+PFQ+U3lzdGVtLlZhbHVlVHlwZTwvVD48VD5TeXN0ZW0uT2JqZWN0PC9UPjwvVE4+PFRvU3RyaW5nPkRlZmF1bHQ8L1RvU3RyaW5nPjxJMzI+MDwvSTMyPjwvT2JqPjxPYmogUmVmSWQ9IjIiIE49IkFwYXJ0bWVudFN0YXRlIj48VE4gUmVmSWQ9IjEiPjxUPlN5c3RlbS5NYW5hZ2VtZW50LkF1dG9tYXRpb24uUnVuc3BhY2VzLkFwYXJ0bWVudFN0YXRlPC9UPjxUPlN5c3RlbS5FbnVtPC9UPjxUPlN5c3RlbS5WYWx1ZVR5cGU8L1Q+PFQ+U3lzdGVtLk9iamVjdDwvVD48L1ROPjxUb1N0cmluZz5VTktOT1dOPC9Ub1N0cmluZz48STMyPjI8L0kzMj48L09iaj48T2JqIFJlZklkPSIzIiBOPSJIb3N0SW5mbyI+PE1TPjxCIE49Il9pc0hvc3ROdWxsIj50cnVlPC9CPjxCIE49Il9pc0hvc3RVSU51bGwiPnRydWU8L0I+PEIgTj0iX2lzSG9zdFJhd1VJTnVsbCI+dHJ1ZTwvQj48QiBOPSJfdXNlUnVuc3BhY2VIb3N0Ij50cnVlPC9CPjwvTVM+PC9PYmo+PE5pbCBOPSJBcHBsaWNhdGlvbkFyZ3VtZW50cyIgLz48L01TPjwvT2JqPg==</creationXml>
+		</rsp:Shell>
+	</s:Body>
+</s:Envelope>
+
+Veo bastante tráfico como este. Con cadenas grandes de b64. 
+
+Con este comando paso todas las cadenas de base64 a un nuevo archivo.
+
+grep -Poz '<rsp:Arguments>\K.*?(?=</rsp:Arguments>)' traficonoencr.txt | \ tr -d '\0' > args_base64.txt
+
+Y con este decodifico.
+
+ base64 -d args_base64.txt 2>/dev/null > args_decodificados.txt
+
+He creado un pequeño script en python3 para que me saque los comandos.
+
+python3 script.py 
+La salida la ha dado un poco mal, pero puedo ver la respuesta a la pregunta.
+
+==================================================
+COMANDOS ENCONTRADOS
+==================================================
+
+1. hostname
+2. (get-location).path
+3. whoami /all
+4. (get-location).path
+5. ********************SYSTEM
+6. (get-location).path
+7. ********************SAM
+8. (get-location).path
+9. ******************* ****SECURITY
+10. (get-location).path
+
+✅ Comandos guardados en: comandos.txt
+📊 Total: 10 comandos
+
