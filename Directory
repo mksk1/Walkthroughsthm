@@ -250,10 +250,5 @@ COMANDOS ENCONTRADOS
 5. ********************SYSTEM
 6. (get-location).path
 7. ********************SAM
-8. (get-location).path
-9. ******************* ****SECURITY
-10. (get-location).path
 
-✅ Comandos guardados en: comandos.txt
-📊 Total: 10 comandos
-
+Al final del script esta la flag.
