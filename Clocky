@@ -1,2 +1,244 @@
 #Clocky walkthrough.
 #Los cambios de ip en la máquina se deben a que a he realizado en varios días, o al reinicio de la misma.
+
+Comienzo con un escaneo de puertos, con -p- para ver todos los servicios de la máquina.
+
+sudo nmap -p- 10.130.169.134
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-06-28 18:59 CEST
+Nmap scan report for 10.130.169.134
+Host is up (0.029s latency).
+Not shown: 65532 closed tcp ports (reset)
+PORT     STATE SERVICE
+22/tcp   open  ssh
+80/tcp   open  http
+8000/tcp open  http-alt
+
+Nmap done: 1 IP address (1 host up) scanned in 13.09 seconds
+
+Tan solo veo 3 puertos abiertos, uno de ssh y dos http.
+
+Realizo otro escaneo con -sVC para ver las versiones y realizar una enumeración básica.
+
+sudo nmap -sVC -p 22,80,8000  10.130.169.134
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-06-28 19:02 CEST
+Nmap scan report for 10.130.169.134
+Host is up (0.043s latency).
+
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.13 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 69:a8:4f:d1:3c:bb:c8:a5:ad:c6:5f:b1:a9:53:1e:5f (RSA)
+|   256 f1:fc:3b:28:d5:d2:ed:48:08:92:dc:e8:34:60:f4:e6 (ECDSA)
+|_  256 34:d5:04:de:9d:95:8f:07:eb:58:5c:de:12:94:cf:17 (ED25519)
+80/tcp   open  http    Apache httpd 2.4.41
+|_http-title: 403 Forbidden
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+8000/tcp open  http    nginx 1.18.0 (Ubuntu)
+| http-robots.txt: 3 disallowed entries 
+|_/*.sql$ /*.zip$ /*.bak$
+|_http-title: 403 Forbidden
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+Service Info: Host: ip-10-130-169-134.eu-west-3.compute.internal; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 12.97 seconds
+
+
+El escaneo ha encontrado un archivo robots.txt.
+Al ver el archivo he encontrado la primera flag.
+
+User-agent: *
+Disallow: /*.sql$
+Disallow: /*.zip$
+Disallow: /*.bak$
+
+Flag 1: THM{14****************************7a}
+
+El robots.txt prohibe varias rutas.
+
+Continúo con la enumeración.
+
+dirsearch -u http://10.130.169.134:8000
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.130.169.134_8000/_26-06-28_19-05-09.txt
+
+Target: http://10.130.169.134:8000/
+
+[19:05:09] Starting: 
+[19:05:24] 200 -    2KB - /index.zip
+[19:05:31] 200 -  115B  - /robots.txt
+
+Task Completed
+
+He encontrado el archivo index.zip
+
+Lo descargo, extraigo sus contenidos y los veo.
+
+~/Descargas/index$ ls
+app.py  flag2.txt
+
+Tengo la segunda flag y un archivo de python.
+
+cat flag2.txt 
+THM{1d***********************af}
+
+
+ cat app.py 
+
+# Not done with correct imports
+# Some missing, some needs to be added
+# Some are not in use...? Check flask imports please. Many are not needed
+from flask import Flask, flash, redirect, render_template, request, session, abort, Response
+from time import gmtime, strftime
+from dotenv import load_dotenv
+import os, pymysql.cursors, datetime, base64, requests
+
+
+# Execute "database.sql" before using this
+load_dotenv()
+db = os.environ.get('db')
+
+
+# Connect to MySQL database
+connection = pymysql.connect(host="localhost",
+								user="clocky_user",
+								password=db,
+								db="clocky",
+								cursorclass=pymysql.cursors.DictCursor)
+
+app = Flask(__name__)
+
+
+# A new app will be deployed in prod soon
+# Implement rate limiting on all endpoints
+# Let's just use a WAF...?
+# Not done (16/05-2023, jane)
+@app.route("/")
+def home():
+	current_time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+	return render_template("index.html", current_time=current_time)
+
+
+
+# Done (16/05-2023, jane)
+@app.route("/administrator", methods=["GET", "POST"])
+def administrator():
+	if session.get("logged_in"):
+		return render_template("admin.html")
+
+	else:
+		if request.method == "GET":
+			return render_template("login.html")
+		
+		if request.method == "POST":
+			user_provided_username = request.form["username"]
+			user_provided_password = request.form["password"]
+
+			
+			try:
+				with connection.cursor() as cursor:
+
+					sql = "SELECT ID FROM users WHERE username = %s"
+					cursor.execute(sql, (user_provided_username))
+					
+					user_id = cursor.fetchone()
+					user_id = user_id["ID"]
+
+					sql = "SELECT password FROM passwords WHERE ID=%s AND password=%s"
+					cursor.execute(sql, (user_id, user_provided_password))
+
+					if cursor.fetchone():
+						session["logged_in"] = True
+						return redirect("/dashboard", code=302)
+
+			except:
+				pass
+		
+			message = "Invalid username or password"
+			return render_template("login.html", message=message)
+
+# Work in progress (10/05-2023, jane)
+# Is the db really necessary?
+@app.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+	if session.get("logged_in"):
+		return render_template("admin.html")
+
+	else:
+		if request.method == "GET":
+			return render_template("forgot_password.html")
+		
+		if request.method == "POST":
+			username = request.form["username"]
+			username = username.lower()
+
+			try:
+				with connection.cursor() as cursor:
+
+					sql = "SELECT username FROM users WHERE username = %s"
+					cursor.execute(sql, (username))
+
+					if cursor.fetchone():
+						value = datetime.datetime.now()
+						lnk = str(value)[:-4] + " . " + username.upper()
+						lnk = hashlib.sha1(lnk.encode("utf-8")).hexdigest()
+						sql = "UPDATE reset_token SET token=%s WHERE username = %s"
+						cursor.execute(sql, (lnk, username))
+						connection.commit()
+
+			except:
+				pass
+
+			message = "A reset link has been sent to your e-mail"
+			return render_template("forgot_password.html", message=message)
+
+
+# Done
+@app.route("/password_reset", methods=["GET"])
+def password_reset():
+        if request.method == "GET":
+                # Need to agree on the actual parameter here (12/05-2023, jane)
+                if request.args.get("TEMPORARY"):
+                        # Not done (11/05-2023, clarice)
+                        # user_provided_token = request.args.get("TEMPORARY")
+
+                        try:
+                                with connection.cursor() as cursor:
+
+                                        sql = "SELECT token FROM reset_token WHERE token = %s"
+                                        cursor.execute(sql, (user_provided_token))
+                                        if cursor.fetchone():
+                                                return render_template("password_reset.html", token=user_provided_token)
+
+                                        else:
+                                                return "<h2>Invalid token</h2>"
+
+                        except:
+                                pass
+
+                else:
+                        return "<h2>Invalid parameter</h2>"
+        return "<h2>Invalid parameter</h2>"
+
+
+
+# Debug enabled during dev
+# TURN OFF ONCE IN PROD!
+# This can be very dangerous
+# ref https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/werkzeug#pin-protected-path-traversal
+
+# Use gunicorn?
+if __name__ == "__main__":
+	app.secret_key = os.urandom(256)
+	app.run(host="0.0.0.0", port="8080", debug=True)
+
+Saco varias cosas de este archivo.
+En el puerto 8080 hay una aplicación.
+Hay varias páginas en esa aplicación. /administrator /dashboard /forgot_password /password_reset
