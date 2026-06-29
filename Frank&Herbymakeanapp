@@ -1,1 +1,397 @@
 #Frank & Herby make an app walkthrough
+//Los cambios de ip en este walkthrough se deben a que he hecho la máquina en varios días.
+
+Me espero 5 minutos para comenzar la enumeración, como se indica en la máquina.
+
+Primera pregunta.
+What port has a webpage frank was able to stand up?  
+
+Comienzo con un escaneo de nmap con -p-, para ver todos los puertos.
+
+sudo nmap -p- 10.129.176.199
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-06-29 12:43 CEST
+Nmap scan report for 10.129.176.199
+Host is up (0.032s latency).
+Not shown: 65525 closed tcp ports (reset)
+PORT      STATE SERVICE
+22/tcp    open  ssh
+3000/tcp  open  ppp
+10250/tcp open  unknown
+10255/tcp open  unknown
+10257/tcp open  unknown
+10259/tcp open  unknown
+16443/tcp open  unknown
+25000/tcp open  icl-twobase1
+31337/tcp open  Elite
+32000/tcp open  unknown
+
+Continuo la enumeracion con otro escaneo -sVC, a pesar de que con la respuesta del primero creo que ya se la respuesta.
+
+ sudo nmap -sCV -p 22,3000,10250,10255,10257,10259,16443,25000,31337,32000 10.129.176.199
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-06-29 12:51 CEST
+Nmap scan report for 10.129.176.199
+Host is up (0.033s latency).
+
+PORT      STATE SERVICE     VERSION
+22/tcp    open  ssh         OpenSSH 8.2p1 Ubuntu 4ubuntu0.2 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 64:79:10:0d:72:67:23:80:4a:1a:35:8e:0b:ec:a1:89 (RSA)
+|   256 3b:0e:e7:e9:a5:1a:e4:c5:c7:88:0d:fe:ee:ac:95:65 (ECDSA)
+|_  256 d8:a7:16:75:a7:1b:26:5c:a9:2e:3f:ac:c0:ed:da:5c (ED25519)
+3000/tcp  open  ppp?
+| fingerprint-strings: 
+|   GetRequest, HTTPOptions: 
+|     HTTP/1.1 200 OK
+|     X-XSS-Protection: 1
+|     X-Content-Type-Options: nosniff
+|     X-Frame-Options: sameorigin
+|     Content-Security-Policy: default-src 'self' ; connect-src *; font-src 'self' data:; frame-src *; img-src * data:; media-src * data:; script-src 'self' 'unsafe-eval' ; style-src 'self' 'unsafe-inline' 
+|     X-Instance-ID: 3FLimwanFdcsDx7LH
+|     Content-Type: text/html; charset=utf-8
+|     Vary: Accept-Encoding
+|     Date: Mon, 29 Jun 2026 10:51:37 GMT
+|     Connection: close
+|     <!DOCTYPE html>
+|     <html>
+|     <head>
+|     <link rel="stylesheet" type="text/css" class="__meteor-css__" href="/a3e89fa2bdd3f98d52e474085bb1d61f99c0684d.css?meteor_css_resource=true">
+|     <meta charset="utf-8" />
+|     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+|     <meta http-equiv="expires" content="-1" />
+|     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+|     <meta name="fragment" content="!" />
+|_    <meta name="distribution" content
+10250/tcp open  ssl/http    Golang net/http server (Go-IPFS json-rpc or InfluxDB API)
+|_ssl-date: TLS randomness does not represent time
+|_http-title: Site doesn't have a title (text/plain; charset=utf-8).
+| tls-alpn: 
+|   h2
+|_  http/1.1
+| ssl-cert: Subject: commonName=dev-01@1633275132
+| Subject Alternative Name: DNS:dev-01
+| Not valid before: 2021-10-03T14:32:12
+|_Not valid after:  2022-10-03T14:32:12
+10255/tcp open  http        Golang net/http server (Go-IPFS json-rpc or InfluxDB API)
+|_http-title: Site doesn't have a title (text/plain; charset=utf-8).
+10257/tcp open  ssl/unknown
+| ssl-cert: Subject: commonName=localhost@1782729371
+| Subject Alternative Name: DNS:localhost, DNS:localhost, IP Address:127.0.0.1
+| Not valid before: 2026-06-29T09:36:08
+|_Not valid after:  2027-06-29T09:36:08
+| tls-alpn: 
+|   h2
+|_  http/1.1
+|_ssl-date: TLS randomness does not represent time
+| fingerprint-strings: 
+|   GenericLines, Help, Kerberos, RTSPRequest, SSLSessionReq, TLSSessionReq, TerminalServerCookie: 
+|     HTTP/1.1 400 Bad Request
+|     Content-Type: text/plain; charset=utf-8
+|     Connection: close
+|     Request
+|   GetRequest: 
+|     HTTP/1.0 403 Forbidden
+|     Cache-Control: no-cache, private
+|     Content-Type: application/json
+|     X-Content-Type-Options: nosniff
+|     Date: Mon, 29 Jun 2026 10:51:44 GMT
+|     Content-Length: 185
+|     {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"forbidden: User "system:anonymous" cannot get path "/"","reason":"Forbidden","details":{},"code":403}
+|   HTTPOptions: 
+|     HTTP/1.0 403 Forbidden
+|     Cache-Control: no-cache, private
+|     Content-Type: application/json
+|     X-Content-Type-Options: nosniff
+|     Date: Mon, 29 Jun 2026 10:51:44 GMT
+|     Content-Length: 189
+|_    {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"forbidden: User "system:anonymous" cannot options path "/"","reason":"Forbidden","details":{},"code":403}
+10259/tcp open  ssl/unknown
+| tls-alpn: 
+|   h2
+|_  http/1.1
+| ssl-cert: Subject: commonName=localhost@1782729370
+| Subject Alternative Name: DNS:localhost, DNS:localhost, IP Address:127.0.0.1
+| Not valid before: 2026-06-29T09:36:08
+|_Not valid after:  2027-06-29T09:36:08
+|_ssl-date: TLS randomness does not represent time
+| fingerprint-strings: 
+|   GenericLines, Help, Kerberos, RTSPRequest, SSLSessionReq, TLSSessionReq, TerminalServerCookie: 
+|     HTTP/1.1 400 Bad Request
+|     Content-Type: text/plain; charset=utf-8
+|     Connection: close
+|     Request
+|   GetRequest: 
+|     HTTP/1.0 403 Forbidden
+|     Cache-Control: no-cache, private
+|     Content-Type: application/json
+|     X-Content-Type-Options: nosniff
+|     Date: Mon, 29 Jun 2026 10:51:44 GMT
+|     Content-Length: 185
+|     {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"forbidden: User "system:anonymous" cannot get path "/"","reason":"Forbidden","details":{},"code":403}
+|   HTTPOptions: 
+|     HTTP/1.0 403 Forbidden
+|     Cache-Control: no-cache, private
+|     Content-Type: application/json
+|     X-Content-Type-Options: nosniff
+|     Date: Mon, 29 Jun 2026 10:51:44 GMT
+|     Content-Length: 189
+|_    {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"forbidden: User "system:anonymous" cannot options path "/"","reason":"Forbidden","details":{},"code":403}
+16443/tcp open  ssl/unknown
+| ssl-cert: Subject: commonName=127.0.0.1/organizationName=Canonical/stateOrProvinceName=Canonical/countryName=GB
+| Subject Alternative Name: DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster, DNS:kubernetes.default.svc.cluster.local, IP Address:127.0.0.1, IP Address:10.152.183.1, IP Address:10.129.176.199, IP Address:172.17.0.1
+| Not valid before: 2026-06-29T10:35:52
+|_Not valid after:  2027-06-29T10:35:52
+| tls-alpn: 
+|   h2
+|_  http/1.1
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.0 401 Unauthorized
+|     Cache-Control: no-cache, private
+|     Content-Type: application/json
+|     Date: Mon, 29 Jun 2026 10:52:10 GMT
+|     Content-Length: 129
+|     {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"Unauthorized","reason":"Unauthorized","code":401}
+|   GenericLines, Help, Kerberos, RTSPRequest, SSLSessionReq, TLSSessionReq, TerminalServerCookie: 
+|     HTTP/1.1 400 Bad Request
+|     Content-Type: text/plain; charset=utf-8
+|     Connection: close
+|     Request
+|   GetRequest, HTTPOptions: 
+|     HTTP/1.0 401 Unauthorized
+|     Cache-Control: no-cache, private
+|     Content-Type: application/json
+|     Date: Mon, 29 Jun 2026 10:51:44 GMT
+|     Content-Length: 129
+|_    {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"Unauthorized","reason":"Unauthorized","code":401}
+|_ssl-date: TLS randomness does not represent time
+25000/tcp open  ssl/http    Gunicorn 19.7.1
+| ssl-cert: Subject: commonName=127.0.0.1/organizationName=Canonical/stateOrProvinceName=Canonical/countryName=GB
+| Subject Alternative Name: DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster, DNS:kubernetes.default.svc.cluster.local, IP Address:127.0.0.1, IP Address:10.152.183.1, IP Address:10.129.176.199, IP Address:172.17.0.1
+| Not valid before: 2026-06-29T10:35:52
+|_Not valid after:  2027-06-29T10:35:52
+|_http-server-header: gunicorn/19.7.1
+|_http-title: 404 Not Found
+|_ssl-date: TLS randomness does not represent time
+31337/tcp open  http        nginx 1.21.3
+|_http-server-header: nginx/1.21.3
+|_http-title: Heroic Features - Start Bootstrap Template
+32000/tcp open  http        Docker Registry (API: 2.0)
+|_http-title: Site doesn't have a title.
+4 services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port3000-TCP:V=7.94SVN%I=7%D=6/29%Time=6A424E39%P=x86_64-pc-linux-gnu%r
+SF:(GetRequest,1D28,"HTTP/1\.1\x20200\x20OK\r\nX-XSS-Protection:\x201\r\nX
+SF:-Content-Type-Options:\x20nosniff\r\nX-Frame-Options:\x20sameorigin\r\n
+SF:Content-Security-Policy:\x20default-src\x20'self'\x20;\x20connect-src\x
+SF:20\*;\x20font-src\x20'self'\x20\x20data:;\x20frame-src\x20\*;\x20img-sr
+SF:c\x20\*\x20data:;\x20media-src\x20\*\x20data:;\x20script-src\x20'self'\
+SF:x20'unsafe-eval'\x20;\x20style-src\x20'self'\x20'unsafe-inline'\x20\r\n
+SF:X-Instance-ID:\x203FLimwanFdcsDx7LH\r\nContent-Type:\x20text/html;\x20c
+SF:harset=utf-8\r\nVary:\x20Accept-Encoding\r\nDate:\x20Mon,\x2029\x20Jun\
+SF:x202026\x2010:51:37\x20GMT\r\nConnection:\x20close\r\n\r\n<!DOCTYPE\x20
+SF:html>\n<html>\n<head>\n\x20\x20<link\x20rel=\"stylesheet\"\x20type=\"te
+SF:xt/css\"\x20class=\"__meteor-css__\"\x20href=\"/a3e89fa2bdd3f98d52e4740
+SF:85bb1d61f99c0684d\.css\?meteor_css_resource=true\">\n<meta\x20charset=\
+SF:"utf-8\"\x20/>\n\t<meta\x20http-equiv=\"content-type\"\x20content=\"tex
+SF:t/html;\x20charset=utf-8\"\x20/>\n\t<meta\x20http-equiv=\"expires\"\x20
+SF:content=\"-1\"\x20/>\n\t<meta\x20http-equiv=\"X-UA-Compatible\"\x20cont
+SF:ent=\"IE=edge\"\x20/>\n\t<meta\x20name=\"fragment\"\x20content=\"!\"\x2
+SF:0/>\n\t<meta\x20name=\"distribution\"\x20content")%r(HTTPOptions,1D28,"
+SF:HTTP/1\.1\x20200\x20OK\r\nX-XSS-Protection:\x201\r\nX-Content-Type-Opti
+SF:ons:\x20nosniff\r\nX-Frame-Options:\x20sameorigin\r\nContent-Security-P
+SF:olicy:\x20default-src\x20'self'\x20;\x20connect-src\x20\*;\x20font-src\
+SF:x20'self'\x20\x20data:;\x20frame-src\x20\*;\x20img-src\x20\*\x20data:;\
+SF:x20media-src\x20\*\x20data:;\x20script-src\x20'self'\x20'unsafe-eval'\x
+SF:20;\x20style-src\x20'self'\x20'unsafe-inline'\x20\r\nX-Instance-ID:\x20
+SF:3FLimwanFdcsDx7LH\r\nContent-Type:\x20text/html;\x20charset=utf-8\r\nVa
+SF:ry:\x20Accept-Encoding\r\nDate:\x20Mon,\x2029\x20Jun\x202026\x2010:51:3
+SF:7\x20GMT\r\nConnection:\x20close\r\n\r\n<!DOCTYPE\x20html>\n<html>\n<he
+SF:ad>\n\x20\x20<link\x20rel=\"stylesheet\"\x20type=\"text/css\"\x20class=
+SF:\"__meteor-css__\"\x20href=\"/a3e89fa2bdd3f98d52e474085bb1d61f99c0684d\
+SF:.css\?meteor_css_resource=true\">\n<meta\x20charset=\"utf-8\"\x20/>\n\t
+SF:<meta\x20http-equiv=\"content-type\"\x20content=\"text/html;\x20charset
+SF:=utf-8\"\x20/>\n\t<meta\x20http-equiv=\"expires\"\x20content=\"-1\"\x20
+SF:/>\n\t<meta\x20http-equiv=\"X-UA-Compatible\"\x20content=\"IE=edge\"\x2
+SF:0/>\n\t<meta\x20name=\"fragment\"\x20content=\"!\"\x20/>\n\t<meta\x20na
+SF:me=\"distribution\"\x20content");
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port10257-TCP:V=7.94SVN%T=SSL%I=7%D=6/29%Time=6A424E40%P=x86_64-pc-linu
+SF:x-gnu%r(GenericLines,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-
+SF:Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n40
+SF:0\x20Bad\x20Request")%r(GetRequest,170,"HTTP/1\.0\x20403\x20Forbidden\r
+SF:\nCache-Control:\x20no-cache,\x20private\r\nContent-Type:\x20applicatio
+SF:n/json\r\nX-Content-Type-Options:\x20nosniff\r\nDate:\x20Mon,\x2029\x20
+SF:Jun\x202026\x2010:51:44\x20GMT\r\nContent-Length:\x20185\r\n\r\n{\"kind
+SF:\":\"Status\",\"apiVersion\":\"v1\",\"metadata\":{},\"status\":\"Failur
+SF:e\",\"message\":\"forbidden:\x20User\x20\\\"system:anonymous\\\"\x20can
+SF:not\x20get\x20path\x20\\\"/\\\"\",\"reason\":\"Forbidden\",\"details\":
+SF:{},\"code\":403}\n")%r(HTTPOptions,174,"HTTP/1\.0\x20403\x20Forbidden\r
+SF:\nCache-Control:\x20no-cache,\x20private\r\nContent-Type:\x20applicatio
+SF:n/json\r\nX-Content-Type-Options:\x20nosniff\r\nDate:\x20Mon,\x2029\x20
+SF:Jun\x202026\x2010:51:44\x20GMT\r\nContent-Length:\x20189\r\n\r\n{\"kind
+SF:\":\"Status\",\"apiVersion\":\"v1\",\"metadata\":{},\"status\":\"Failur
+SF:e\",\"message\":\"forbidden:\x20User\x20\\\"system:anonymous\\\"\x20can
+SF:not\x20options\x20path\x20\\\"/\\\"\",\"reason\":\"Forbidden\",\"detail
+SF:s\":{},\"code\":403}\n")%r(RTSPRequest,67,"HTTP/1\.1\x20400\x20Bad\x20R
+SF:equest\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\
+SF:x20close\r\n\r\n400\x20Bad\x20Request")%r(Help,67,"HTTP/1\.1\x20400\x20
+SF:Bad\x20Request\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConn
+SF:ection:\x20close\r\n\r\n400\x20Bad\x20Request")%r(SSLSessionReq,67,"HTT
+SF:P/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/plain;\x20char
+SF:set=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Request")%r(Term
+SF:inalServerCookie,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type
+SF::\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x2
+SF:0Bad\x20Request")%r(TLSSessionReq,67,"HTTP/1\.1\x20400\x20Bad\x20Reques
+SF:t\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20cl
+SF:ose\r\n\r\n400\x20Bad\x20Request")%r(Kerberos,67,"HTTP/1\.1\x20400\x20B
+SF:ad\x20Request\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConne
+SF:ction:\x20close\r\n\r\n400\x20Bad\x20Request");
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port10259-TCP:V=7.94SVN%T=SSL%I=7%D=6/29%Time=6A424E40%P=x86_64-pc-linu
+SF:x-gnu%r(GenericLines,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-
+SF:Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n40
+SF:0\x20Bad\x20Request")%r(GetRequest,170,"HTTP/1\.0\x20403\x20Forbidden\r
+SF:\nCache-Control:\x20no-cache,\x20private\r\nContent-Type:\x20applicatio
+SF:n/json\r\nX-Content-Type-Options:\x20nosniff\r\nDate:\x20Mon,\x2029\x20
+SF:Jun\x202026\x2010:51:44\x20GMT\r\nContent-Length:\x20185\r\n\r\n{\"kind
+SF:\":\"Status\",\"apiVersion\":\"v1\",\"metadata\":{},\"status\":\"Failur
+SF:e\",\"message\":\"forbidden:\x20User\x20\\\"system:anonymous\\\"\x20can
+SF:not\x20get\x20path\x20\\\"/\\\"\",\"reason\":\"Forbidden\",\"details\":
+SF:{},\"code\":403}\n")%r(HTTPOptions,174,"HTTP/1\.0\x20403\x20Forbidden\r
+SF:\nCache-Control:\x20no-cache,\x20private\r\nContent-Type:\x20applicatio
+SF:n/json\r\nX-Content-Type-Options:\x20nosniff\r\nDate:\x20Mon,\x2029\x20
+SF:Jun\x202026\x2010:51:44\x20GMT\r\nContent-Length:\x20189\r\n\r\n{\"kind
+SF:\":\"Status\",\"apiVersion\":\"v1\",\"metadata\":{},\"status\":\"Failur
+SF:e\",\"message\":\"forbidden:\x20User\x20\\\"system:anonymous\\\"\x20can
+SF:not\x20options\x20path\x20\\\"/\\\"\",\"reason\":\"Forbidden\",\"detail
+SF:s\":{},\"code\":403}\n")%r(RTSPRequest,67,"HTTP/1\.1\x20400\x20Bad\x20R
+SF:equest\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\
+SF:x20close\r\n\r\n400\x20Bad\x20Request")%r(Help,67,"HTTP/1\.1\x20400\x20
+SF:Bad\x20Request\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConn
+SF:ection:\x20close\r\n\r\n400\x20Bad\x20Request")%r(SSLSessionReq,67,"HTT
+SF:P/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/plain;\x20char
+SF:set=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Request")%r(Term
+SF:inalServerCookie,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type
+SF::\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x2
+SF:0Bad\x20Request")%r(TLSSessionReq,67,"HTTP/1\.1\x20400\x20Bad\x20Reques
+SF:t\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20cl
+SF:ose\r\n\r\n400\x20Bad\x20Request")%r(Kerberos,67,"HTTP/1\.1\x20400\x20B
+SF:ad\x20Request\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConne
+SF:ction:\x20close\r\n\r\n400\x20Bad\x20Request");
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port16443-TCP:V=7.94SVN%T=SSL%I=7%D=6/29%Time=6A424E40%P=x86_64-pc-linu
+SF:x-gnu%r(GenericLines,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-
+SF:Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n40
+SF:0\x20Bad\x20Request")%r(GetRequest,11A,"HTTP/1\.0\x20401\x20Unauthorize
+SF:d\r\nCache-Control:\x20no-cache,\x20private\r\nContent-Type:\x20applica
+SF:tion/json\r\nDate:\x20Mon,\x2029\x20Jun\x202026\x2010:51:44\x20GMT\r\nC
+SF:ontent-Length:\x20129\r\n\r\n{\"kind\":\"Status\",\"apiVersion\":\"v1\"
+SF:,\"metadata\":{},\"status\":\"Failure\",\"message\":\"Unauthorized\",\"
+SF:reason\":\"Unauthorized\",\"code\":401}\n")%r(HTTPOptions,11A,"HTTP/1\.
+SF:0\x20401\x20Unauthorized\r\nCache-Control:\x20no-cache,\x20private\r\nC
+SF:ontent-Type:\x20application/json\r\nDate:\x20Mon,\x2029\x20Jun\x202026\
+SF:x2010:51:44\x20GMT\r\nContent-Length:\x20129\r\n\r\n{\"kind\":\"Status\
+SF:",\"apiVersion\":\"v1\",\"metadata\":{},\"status\":\"Failure\",\"messag
+SF:e\":\"Unauthorized\",\"reason\":\"Unauthorized\",\"code\":401}\n")%r(RT
+SF:SPRequest,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20te
+SF:xt/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x2
+SF:0Request")%r(Help,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Typ
+SF:e:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x
+SF:20Bad\x20Request")%r(SSLSessionReq,67,"HTTP/1\.1\x20400\x20Bad\x20Reque
+SF:st\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20c
+SF:lose\r\n\r\n400\x20Bad\x20Request")%r(TerminalServerCookie,67,"HTTP/1\.
+SF:1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/plain;\x20charset=u
+SF:tf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Request")%r(TLSSessio
+SF:nReq,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/pl
+SF:ain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Requ
+SF:est")%r(Kerberos,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type
+SF::\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x2
+SF:0Bad\x20Request")%r(FourOhFourRequest,11A,"HTTP/1\.0\x20401\x20Unauthor
+SF:ized\r\nCache-Control:\x20no-cache,\x20private\r\nContent-Type:\x20appl
+SF:ication/json\r\nDate:\x20Mon,\x2029\x20Jun\x202026\x2010:52:10\x20GMT\r
+SF:\nContent-Length:\x20129\r\n\r\n{\"kind\":\"Status\",\"apiVersion\":\"v
+SF:1\",\"metadata\":{},\"status\":\"Failure\",\"message\":\"Unauthorized\"
+SF:,\"reason\":\"Unauthorized\",\"code\":401}\n");
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+En efecto, el puerto sospechoso era el correcto, 31337.
+Y también puedo ver contenedores con varios servicios levantados.
+
+Voy a ver la web.
+
+En la página web no hay nada, tan solo un placeholders con el típico lorem ipsum, y unos cuantos enlaces rotos.
+Continúo la enumeración.
+
+sudo dirsearch -u http://10.129.176.199:31337
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.129.176.199_31337/_26-06-29_12-58-49.txt
+
+Target: http://10.129.176.199:31337/
+
+[12:58:49] Starting: 
+[12:58:51] 200 -   50B  - /.git-credentials
+[12:58:58] 403 -  555B  - /assets/
+[12:58:58] 301 -  169B  - /assets  ->  http://10.129.176.199/assets/
+[12:59:00] 301 -  169B  - /css  ->  http://10.129.176.199/css/
+[12:59:17] 403 -  555B  - /vendor/
+
+Task Completed
+
+Aqui tengo la respuesta a la segunda pregunta.
+
+What did frank leave exposed on the site? 
+.git-credentials
+
+
+cat Descargas/Sin\ título.git-credentials 
+http://frank:f%40an3-1s-E337%21%21@192.168.100.50
+
+Lo paso por el url decode de cibercheff.
+
+http://frank:f@an3-1s-E337!!@192.168.100.50
+
+Con estas credenciales pruebo el login por ssh.
+
+ssh frank@10.129.176.199
+frank@10.129.176.199's password: 
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-89-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Mon Jun 29 11:18:42 UTC 2026
+
+  System load:  0.32               Processes:                156
+  Usage of /:   60.3% of 14.70GB   Users logged in:          0
+  Memory usage: 82%                IPv4 address for docker0: 172.17.0.1
+  Swap usage:   0%                 IPv4 address for eth0:    10.129.176.199
+
+ * Super-optimized for small spaces - read how we shrank the memory
+   footprint of MicroK8s to make it the smallest full K8s around.
+
+   https://ubuntu.com/blog/microk8s-memory-optimisation
+
+112 updates can be installed immediately.
+1 of these updates is a security update.
+To see these additional updates run: apt list --upgradable
+
+
+Last login: Fri Oct 29 10:47:08 2021 from 192.168.120.38
+frank@dev-01:~$ ls
+repos  snap  user.txt
+
+En el home de frank esta la flag de user.
+
+frank@dev-01:~$ cat user.txt 
+THM{***********}
+
+
+
