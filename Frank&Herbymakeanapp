@@ -614,7 +614,7 @@ root
 Y consigo la flag de root.
 
 root@hostmount:/opt/root/root# cat root.txt 
-THM{M1cr0K8s_13_FUN}
+THM{**************}
 
 
 
