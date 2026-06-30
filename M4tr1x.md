@@ -55,6 +55,7 @@ Voy a seguir enumerando, ahora la web.
 
 
 dirsearch -u http://10.130.176.252/
+
 /usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
   from pkg_resources import DistributionNotFound, VersionConflict
 
