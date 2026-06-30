@@ -152,4 +152,8 @@ He mirado la pista de la pregunta porque estaba un poco perdido.
 Where did that white rabbit lead you to?
 Are you sure it is trying to lead you down just one stop? Perhaps the journey is longer?
 
-He seguido enumerando, los directorios, y mientras se completaban los 
+He seguido enumerando, los directorios, y mientras se completaban los comandos he seguido mirando la página web.
+He encontrado el siguiente usuario, el primero con foto de perfil.
+
+![user conejo blanco: ](Images/2026-06-30_13-19.png)
+
