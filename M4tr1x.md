@@ -4,7 +4,7 @@
 Comienzo con un escaneo de puertos.
 
 sudo nmap -p- 10.130.176.252
-[sudo] contraseña para mksk:     
+  
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-06-30 12:53 CEST
 Nmap scan report for 10.130.176.252
 Host is up (0.031s latency).
@@ -19,6 +19,7 @@ Nmap done: 1 IP address (1 host up) scanned in 17.06 seconds
 Y otro escaneo -sVC
 
 sudo nmap -sVC -p 22,80,3306 10.130.176.252
+
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-06-30 12:55 CEST
 Nmap scan report for 10.130.176.252
 Host is up (0.032s latency).
