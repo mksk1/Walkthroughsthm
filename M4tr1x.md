@@ -186,3 +186,78 @@ Accedo a esa página y es una tabla con las vulnerabilidades reportadas.
 
 /reportPanel.php es la primera respuesta.
 
+Veo la pista de la siguiente pregunta. 
+
+Determine which vulnerability is the most appropriate at this time. Date: x/x/21
+
+Del 2021 solo hay 3. 
+
+Esta es la primera.
+
+your mybb login system is not using any 'captcha mechanism' or 'failed login timeout method' which makes it very vulnerable to password spray attacks.
+Considering several surveys have found that 3 in 5 online users use weak passwords such as:
+password123, Password123, crabfish, linux123, secret, piggybank, windowsxp, starwars, qwerty123, qwerty, supermario, Luisfactor05, james123, ect, i would say you should ASAP implement some protection to avoid future data breaches. 
+
+Para probar esto, lo voy a hacer con el intruder de burp suite.
+
+Capturo el login, y añado dos posiciones de payload en usename y password.
+
+![position payloads: ](Images/2026-07-01_12-48.png)
+
+Selecciono cluster bomb attack.
+En la primera posición voy a poner todos los nombres de usuarios que veo en la pestaña members.
+En la segunda pongo las contraseñas que hay en el mensaje.
+
+Mientras se ejecuta el ataque, dado que tarda bastante, comienzo a ver los resultados.
+
+Una respuesta negativa tiene 10727-10728 en el campo length. 
+Y cuando comienzo a bajar encuentro alguna que otra respuesta con 6254-6253. Estas son positivas.
+
+Voy apuntando las credenciales en un .txt
+
+ cat credenciales.txt 
+Mr_nickapic:password123
+SarahHunt:Password123
+BracketBell:crabfish
+SnakeSolid:linux123
+Tonynull:secret
+BrucePrince:secret
+Carl_Dee:secret
+Linda_Kale:windowsxp
+jscale:starwars
+bubbaBIGFOOT:qwerty123
+PalacerKing:qwerty //posible admin
+TonyMontana:supermario
+ArnoldBagger:Luisfactor05 //posible admin
+Daniel:james123
+
+
+bigpaul //no tengo credenciales posible admin
+
+
+Voy comprobando los usuarios hasta que llego a PalacerKing y veo una notificación de ArnoldBagger.
+
+You have one unread private message from ArnoldBagger titled Re: new plugin test
+
+En las carpetas y el correo de PalacerKing no he encontrado nada relevante, ahora voy con el otro administrador, ArnoldBagger.
+
+ArnoldBagger tiene bastantes correos enviados.
+
+En el segundo correo de Arnold encuentro un enlace.
+
+ArnoldBagger
+Hey, James, I tried accessing version 2 from /devBuilds and it seems to be offline for me right now any ideas?
+
+Accedo a /devBuilds y veo tres versiones del plugin modmanager. 
+En teoria, segun los correos, me interesa la segunda.
+Y también encuentro una clave .gpg.
+
+
+[ICO]	Name	Last modified	Size	Description
+[PARENTDIR]	Parent Directory	 	- 	 
+[ ]	modManagerv1.plugin	2021-01-28 17:34 	11 	 
+[ ]	modManagerv2.plugin	2021-02-04 19:11 	5.6K	 
+[ ]	modManagerv3.plugin	2021-01-28 17:34 	16 	 
+[TXT]	p.txt.gpg	2021-02-04 19:11 	104 	 
+
+
