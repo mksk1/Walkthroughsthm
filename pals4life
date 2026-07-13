@@ -1,1 +1,391 @@
+#Pals4life walkthrough.
+#Los cambios de ip en la máquina se deben a que a he realizado en varios días, o al reinicio de la misma.
 
+Comienzo con un escaneo de todos los puertos de la máquina.
+
+sudo nmap -p- 10.128.179.214   
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-07-13 14:35 CEST
+Nmap scan report for 10.128.179.214
+Host is up (0.030s latency).
+Not shown: 65529 closed tcp ports (reset)
+PORT      STATE SERVICE
+22/tcp    open  ssh
+6443/tcp  open  sun-sr-https
+10250/tcp open  unknown
+30180/tcp open  unknown
+31111/tcp open  unknown
+31112/tcp open  unknown
+
+Nmap done: 1 IP address (1 host up) scanned in 12.37 seconds
+
+Y continúo con otro escaneo -sVC para comprobar servicios y versiones.
+
+ sudo nmap -sVC -p 22,6443,10250,30180,31111,31112 10.128.179.214
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-07-13 14:37 CEST
+Stats: 0:01:28 elapsed; 0 hosts completed (1 up), 1 undergoing Service Scan
+Service scan Timing: About 83.33% done; ETC: 14:38 (0:00:18 remaining)
+Nmap scan report for 10.128.179.214
+Host is up (0.030s latency).
+
+PORT      STATE SERVICE           VERSION
+22/tcp    open  ssh               OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 c9:f7:dd:3d:79:bb:f8:44:0f:bd:87:bd:8b:af:e1:5a (RSA)
+|   256 4c:48:9d:c6:b4:e2:17:99:76:48:20:fe:96:d2:c8:eb (ECDSA)
+|_  256 d8:e2:f7:ac:4d:cd:68:66:d7:a9:64:1c:42:4a:8e:30 (ED25519)
+6443/tcp  open  ssl/sun-sr-https?
+| ssl-cert: Subject: commonName=k3s/organizationName=k3s
+| Subject Alternative Name: DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc.cluster.local, DNS:localhost, IP Address:10.128.179.214, IP Address:10.43.0.1, IP Address:127.0.0.1, IP Address:172.30.18.136, IP Address:192.168.1.244
+| Not valid before: 2021-05-31T21:56:08
+|_Not valid after:  2027-07-13T12:34:43
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.0 401 Unauthorized
+|     Cache-Control: no-cache, private
+|     Content-Type: application/json
+|     Date: Mon, 13 Jul 2026 12:37:44 GMT
+|     Content-Length: 129
+|     {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"Unauthorized","reason":"Unauthorized","code":401}
+|   GenericLines, Help, Kerberos, RTSPRequest, SSLSessionReq, TLSSessionReq, TerminalServerCookie: 
+|     HTTP/1.1 400 Bad Request
+|     Content-Type: text/plain; charset=utf-8
+|     Connection: close
+|     Request
+|   GetRequest, HTTPOptions: 
+|     HTTP/1.0 401 Unauthorized
+|     Cache-Control: no-cache, private
+|     Content-Type: application/json
+|     Date: Mon, 13 Jul 2026 12:37:18 GMT
+|     Content-Length: 129
+|_    {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"Unauthorized","reason":"Unauthorized","code":401}
+10250/tcp open  ssl/http          Golang net/http server (Go-IPFS json-rpc or InfluxDB API)
+| ssl-cert: Subject: commonName=palsforlife
+| Subject Alternative Name: DNS:palsforlife, DNS:localhost, IP Address:127.0.0.1, IP Address:10.128.179.214
+| Not valid before: 2021-05-31T21:56:08
+|_Not valid after:  2027-07-13T12:34:42
+|_http-title: Site doesn't have a title (text/plain; charset=utf-8).
+30180/tcp open  http              nginx 1.21.0
+|_http-title: 403 Forbidden
+|_http-server-header: nginx/1.21.0
+31111/tcp open  unknown
+| fingerprint-strings: 
+|   GenericLines: 
+|     HTTP/1.1 400 Bad Request
+|     Content-Type: text/plain; charset=utf-8
+|     Connection: close
+|     Request
+|   GetRequest: 
+|     HTTP/1.0 200 OK
+|     Content-Type: text/html; charset=UTF-8
+|     Set-Cookie: lang=en-US; Path=/; Max-Age=2147483647
+|     Set-Cookie: i_like_gitea=ed6dcd8ef49b506f; Path=/; HttpOnly
+|     Set-Cookie: _csrf=7Ll27QwqTZZfGbvd31SU8SiebUk6MTc4Mzk0NjIzMTk5MDY3MzMyNw%3D%3D; Path=/; Expires=Tue, 14 Jul 2026 12:37:11 GMT; HttpOnly
+|     X-Frame-Options: SAMEORIGIN
+|     Date: Mon, 13 Jul 2026 12:37:11 GMT
+|     <!DOCTYPE html>
+|     <html>
+|     <head data-suburl="">
+|     <meta charset="utf-8">
+|     <meta name="viewport" content="width=device-width, initial-scale=1">
+|     <meta http-equiv="x-ua-compatible" content="ie=edge">
+|     <title>Gitea: Git with a cup of tea</title>
+|     <meta name="theme-color" content="#6cc644">
+|     <meta name="author" content="Gitea - Git with a cup of tea" />
+|     <meta name="description" content="Gitea (Git with a cup of tea) is a painless self-hosted Git service written in Go" />
+|     <meta name="keywords" content="go,git,self-hosted,gitea
+|   HTTPOptions: 
+|     HTTP/1.0 404 Not Found
+|     Content-Type: text/html; charset=UTF-8
+|     Set-Cookie: lang=en-US; Path=/; Max-Age=2147483647
+|     Set-Cookie: i_like_gitea=1295f6abe04d2ecf; Path=/; HttpOnly
+|     Set-Cookie: _csrf=db2CGZWPKhf8vySdm168GV71r7c6MTc4Mzk0NjIzMjA4MTQ3NjcxOQ%3D%3D; Path=/; Expires=Tue, 14 Jul 2026 12:37:12 GMT; HttpOnly
+|     X-Frame-Options: SAMEORIGIN
+|     Date: Mon, 13 Jul 2026 12:37:12 GMT
+|     <!DOCTYPE html>
+|     <html>
+|     <head data-suburl="">
+|     <meta charset="utf-8">
+|     <meta name="viewport" content="width=device-width, initial-scale=1">
+|     <meta http-equiv="x-ua-compatible" content="ie=edge">
+|     <title>Page Not Found - Gitea: Git with a cup of tea</title>
+|     <meta name="theme-color" content="#6cc644">
+|     <meta name="author" content="Gitea - Git with a cup of tea" />
+|     <meta name="description" content="Gitea (Git with a cup of tea) is a painless self-hosted Git service written in Go" />
+|_    <meta name="keywords" content="
+31112/tcp open  ssh               OpenSSH 7.5 (protocol 2.0)
+| ssh-hostkey: 
+|   2048 2b:c6:63:84:93:b8:04:ce:1c:f5:ce:c7:0e:ca:eb:28 (RSA)
+|   256 93:6b:41:5f:89:14:97:0c:6b:53:ab:ba:af:71:f1:40 (ECDSA)
+|_  256 e8:c4:94:7b:72:d7:4c:1c:bd:51:4a:84:81:4b:68:c9 (ED25519)
+2 services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port6443-TCP:V=7.94SVN%T=SSL%I=7%D=7/13%Time=6A54DBFE%P=x86_64-pc-linux
+SF:-gnu%r(GenericLines,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-T
+SF:ype:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400
+SF:\x20Bad\x20Request")%r(GetRequest,11A,"HTTP/1\.0\x20401\x20Unauthorized
+SF:\r\nCache-Control:\x20no-cache,\x20private\r\nContent-Type:\x20applicat
+SF:ion/json\r\nDate:\x20Mon,\x2013\x20Jul\x202026\x2012:37:18\x20GMT\r\nCo
+SF:ntent-Length:\x20129\r\n\r\n{\"kind\":\"Status\",\"apiVersion\":\"v1\",
+SF:\"metadata\":{},\"status\":\"Failure\",\"message\":\"Unauthorized\",\"r
+SF:eason\":\"Unauthorized\",\"code\":401}\n")%r(HTTPOptions,11A,"HTTP/1\.0
+SF:\x20401\x20Unauthorized\r\nCache-Control:\x20no-cache,\x20private\r\nCo
+SF:ntent-Type:\x20application/json\r\nDate:\x20Mon,\x2013\x20Jul\x202026\x
+SF:2012:37:18\x20GMT\r\nContent-Length:\x20129\r\n\r\n{\"kind\":\"Status\"
+SF:,\"apiVersion\":\"v1\",\"metadata\":{},\"status\":\"Failure\",\"message
+SF:\":\"Unauthorized\",\"reason\":\"Unauthorized\",\"code\":401}\n")%r(RTS
+SF:PRequest,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20tex
+SF:t/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20
+SF:Request")%r(Help,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type
+SF::\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x2
+SF:0Bad\x20Request")%r(SSLSessionReq,67,"HTTP/1\.1\x20400\x20Bad\x20Reques
+SF:t\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20cl
+SF:ose\r\n\r\n400\x20Bad\x20Request")%r(TerminalServerCookie,67,"HTTP/1\.1
+SF:\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/plain;\x20charset=ut
+SF:f-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Request")%r(TLSSession
+SF:Req,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/pla
+SF:in;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Reque
+SF:st")%r(Kerberos,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:
+SF:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20
+SF:Bad\x20Request")%r(FourOhFourRequest,11A,"HTTP/1\.0\x20401\x20Unauthori
+SF:zed\r\nCache-Control:\x20no-cache,\x20private\r\nContent-Type:\x20appli
+SF:cation/json\r\nDate:\x20Mon,\x2013\x20Jul\x202026\x2012:37:44\x20GMT\r\
+SF:nContent-Length:\x20129\r\n\r\n{\"kind\":\"Status\",\"apiVersion\":\"v1
+SF:\",\"metadata\":{},\"status\":\"Failure\",\"message\":\"Unauthorized\",
+SF:\"reason\":\"Unauthorized\",\"code\":401}\n");
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port31111-TCP:V=7.94SVN%I=7%D=7/13%Time=6A54DBF8%P=x86_64-pc-linux-gnu%
+SF:r(GenericLines,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\
+SF:x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20B
+SF:ad\x20Request")%r(GetRequest,14DC,"HTTP/1\.0\x20200\x20OK\r\nContent-Ty
+SF:pe:\x20text/html;\x20charset=UTF-8\r\nSet-Cookie:\x20lang=en-US;\x20Pat
+SF:h=/;\x20Max-Age=2147483647\r\nSet-Cookie:\x20i_like_gitea=ed6dcd8ef49b5
+SF:06f;\x20Path=/;\x20HttpOnly\r\nSet-Cookie:\x20_csrf=7Ll27QwqTZZfGbvd31S
+SF:U8SiebUk6MTc4Mzk0NjIzMTk5MDY3MzMyNw%3D%3D;\x20Path=/;\x20Expires=Tue,\x
+SF:2014\x20Jul\x202026\x2012:37:11\x20GMT;\x20HttpOnly\r\nX-Frame-Options:
+SF:\x20SAMEORIGIN\r\nDate:\x20Mon,\x2013\x20Jul\x202026\x2012:37:11\x20GMT
+SF:\r\n\r\n<!DOCTYPE\x20html>\n<html>\n<head\x20data-suburl=\"\">\n\t<meta
+SF:\x20charset=\"utf-8\">\n\t<meta\x20name=\"viewport\"\x20content=\"width
+SF:=device-width,\x20initial-scale=1\">\n\t<meta\x20http-equiv=\"x-ua-comp
+SF:atible\"\x20content=\"ie=edge\">\n\t<title>Gitea:\x20Git\x20with\x20a\x
+SF:20cup\x20of\x20tea</title>\n\t<meta\x20name=\"theme-color\"\x20content=
+SF:\"#6cc644\">\n\t<meta\x20name=\"author\"\x20content=\"Gitea\x20-\x20Git
+SF:\x20with\x20a\x20cup\x20of\x20tea\"\x20/>\n\t<meta\x20name=\"descriptio
+SF:n\"\x20content=\"Gitea\x20\(Git\x20with\x20a\x20cup\x20of\x20tea\)\x20i
+SF:s\x20a\x20painless\x20self-hosted\x20Git\x20service\x20written\x20in\x2
+SF:0Go\"\x20/>\n\t<meta\x20name=\"keywords\"\x20content=\"go,git,self-host
+SF:ed,gitea")%r(HTTPOptions,19B8,"HTTP/1\.0\x20404\x20Not\x20Found\r\nCont
+SF:ent-Type:\x20text/html;\x20charset=UTF-8\r\nSet-Cookie:\x20lang=en-US;\
+SF:x20Path=/;\x20Max-Age=2147483647\r\nSet-Cookie:\x20i_like_gitea=1295f6a
+SF:be04d2ecf;\x20Path=/;\x20HttpOnly\r\nSet-Cookie:\x20_csrf=db2CGZWPKhf8v
+SF:ySdm168GV71r7c6MTc4Mzk0NjIzMjA4MTQ3NjcxOQ%3D%3D;\x20Path=/;\x20Expires=
+SF:Tue,\x2014\x20Jul\x202026\x2012:37:12\x20GMT;\x20HttpOnly\r\nX-Frame-Op
+SF:tions:\x20SAMEORIGIN\r\nDate:\x20Mon,\x2013\x20Jul\x202026\x2012:37:12\
+SF:x20GMT\r\n\r\n<!DOCTYPE\x20html>\n<html>\n<head\x20data-suburl=\"\">\n\
+SF:t<meta\x20charset=\"utf-8\">\n\t<meta\x20name=\"viewport\"\x20content=\
+SF:"width=device-width,\x20initial-scale=1\">\n\t<meta\x20http-equiv=\"x-u
+SF:a-compatible\"\x20content=\"ie=edge\">\n\t<title>Page\x20Not\x20Found\x
+SF:20-\x20Gitea:\x20Git\x20with\x20a\x20cup\x20of\x20tea</title>\n\t<meta\
+SF:x20name=\"theme-color\"\x20content=\"#6cc644\">\n\t<meta\x20name=\"auth
+SF:or\"\x20content=\"Gitea\x20-\x20Git\x20with\x20a\x20cup\x20of\x20tea\"\
+SF:x20/>\n\t<meta\x20name=\"description\"\x20content=\"Gitea\x20\(Git\x20w
+SF:ith\x20a\x20cup\x20of\x20tea\)\x20is\x20a\x20painless\x20self-hosted\x2
+SF:0Git\x20service\x20written\x20in\x20Go\"\x20/>\n\t<meta\x20name=\"keywo
+SF:rds\"\x20content=\"");
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 97.79 seconds
+
+Veo puertos para kubernetes y kubelets.
+El servidor web esta en el puerto 30180, pero da 403, en el 31111 tengo git local, y en el 31112 tengo ssh, como en el 22.
+
+Me voy al servidor web y enumero.
+
+sudo dirsearch -u http://10.128.179.214:30180/
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.128.179.214_30180/__26-07-13_14-43-11.txt
+
+Target: http://10.128.179.214:30180/
+
+[14:43:11] Starting: 
+[14:43:37] 200 -   13KB - /team/
+
+Encuentro una web que dice "ya se puede hacer push, tengo que ir al wow, ya haré negocios más tarde" y tiene un video de yt anclado.
+En el código de la página también encuentro lo siguiente.
+
+ <div id="uninteresting_file.pdf" style="visibility: hidden; display: none;">JVBERi0xLjcKJb/3ov4KMSAwIG9iago8PCAvRGVzdHMgMyAwIFIgL0V4dGVuc2lvbnMgPDwgL0FE
+QkUgPDwgL0Jhc2VWZXJzaW9uIC8xLjcgL0V4dGVuc2lvbkxldmVsIDggPj4gPj4gL1BhZ2VzIDQg
+MCBSIC9UeXBlIC9DYXRhbG9nID4+CmVuZG9iagoyIDAgb2JqCjw8IC9DcmVhdGlvbkRhdGUgPDEw
+Y2ZlYThkZWMyYTBjOGMzOGQ1ZTYwMzBlYzQxOTQ5NGZiMGU2OWQ5MzViZDNkNjc5ODNiZTAxNWY4
+MzdiYjJjNThjYmQzYzQ5OGRkOWZmYzE0OTMwNzZiNTY4YjE1Nz4gL0NyZWF0b3IgPGI3ZDRmNjA3
+NTljZDRlOWM3MjU0Nzc5ZjgxZWQ3ZGU5ODdkNjVmOWVhODAzNDVjYjllNTkyNWUxOTllZTk5Njkw
+MGUzYjkzYjAzNjQ2MzM3MTNjMzRlYmZlYjgzMGQ3ZWEzYWE0ZDhmOTUyYTJiOWU2OTI0ZmMzZmNi
+MzNjM2EyMjU3NmQ5MGI3NjBkNzE5NzExY2U5OGQ2ZDhlYzI3NmM5ZGUwYjI0YTYwZDdjMTIxMjZm
+YWZhZDM3MmEwOTlkMDE2NjYzNzY5NjY3ZTQ0MTQ4ODQ3NzQ1MzVkMTMxZmE1MmViYTYzOGY0ZTFl
+MTNjNTBlNWFmMjJkNzYzZTJkMDM+IC9Nb2REYXRlIDxhMjlmZDI3NjY2MGJiYzVkNWIzNGQ4ZjBi
+MTY5MTBkNzk3NzVhM2YxYWU5ODQyZjAzNTRkMTg0OGUzOTgyMThmYzQwNWJkMDJmNDJiYjI0ZjQw
+OWUzYWIzYTY5YjMxMzY+IC9Qcm9kdWNlciA8YzE3NjNhMDhkODBlZGExNjlkYzU0ZjRmYzQ5M2Qw
+Y2MwMDhhOGI1ODUxODYxYTI0OTk2MTNiOGViOTc4NDY1NT4gPj4KZW5kb2JqCjMgMCBvYmoKPDwg
+LyBbIDUgMCBSIC9YWVogMCA3OTIgMCBdID4+CmVuZG9iago0IDAgb2JqCjw8IC9Db3VudCAxIC9L
+aWRzIFsgNSAwIFIgXSAvVHlwZSAvUGFnZXMgPj4KZW5kb2JqCjUgMCBvYmoKPDwgL0NvbnRlbnRz
+IDYgMCBSIC9NZWRpYUJveCBbIDAgMCA2MTIgNzkyIF0gL1BhcmVudCA0IDAgUiAvUmVzb3VyY2Vz
+IDw8IC9FeHRHU3RhdGUgPDwgL0czIDcgMCBSID4+IC9Gb250IDw8IC9GNCA4IDAgUiA+PiAvUHJv
+Y1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXSA+PiAvU3RydWN0UGFy
+ZW50cyAwIC9UeXBlIC9QYWdlID4+CmVuZG9iago2IDAgb2JqCjw8IC9GaWx0ZXIgL0ZsYXRlRGVj
+b2RlIC9MZW5ndGggMzUyID4+CnN0cmVhbQrynz/c+wDMRP2iI2LVzUv0pSjf72jTU8je/EHoykqo
+bpRAbKheTM5Uj7sfr6RZkIhXWrduEgTgOHXBZYOH2LdKMj6O+udayAeznReuT+FxZi8jExPGpWQP
+Oq2jrp201IJGYQuPl6XoixwrR36GB8buUp0Wk7w/vR3PVq9gPwcCBfFLmz7kO9Pa2ANf+YLG20cQ
+aBCEsMV2DH78sL4GiD0aVTytrDFCpYE3wRAFrNXVz1XI/2cVA74hdjAW92f9RPD5cL9AoLrY9RM5
+4imB/ogFNhw4qN7RQsKPiY2aUvIQoMm1OXqueFh7e86//OM2HIVsF3escxDQYq+myn+bIAN+Hpek
+ROE8k98j0SD8s5a0I9fTZY0g5GtaA02il2tRlvF3SQaZrBTOhki1emKEfhpi8pDgYThCir8M0D04
+mEhnhKdohK+/1a9uMSm4csAXCNBt3GEUaGr6kRZv8hRuRJ4wZW5kc3RyZWFtCmVuZG9iago3IDAg
+b2JqCjw8IC9CTSAvTm9ybWFsIC9jYSAxID4+CmVuZG9iago4IDAgb2JqCjw8IC9CYXNlRm9udCAv
+TGliZXJhdGlvblNhbnMgL0Rlc2NlbmRhbnRGb250cyBbIDkgMCBSIF0gL0VuY29kaW5nIC9JZGVu
+dGl0eS1IIC9TdWJ0eXBlIC9UeXBlMCAvVG9Vbmljb2RlIDEwIDAgUiAvVHlwZSAvRm9udCA+Pgpl
+bmRvYmoKOSAwIG9iago8PCAvQmFzZUZvbnQgL0xpYmVyYXRpb25TYW5zIC9DSURTeXN0ZW1JbmZv
+IDw8IC9PcmRlcmluZyA8YmJmZGU0ZDg2YzAwZDEzZjVhMGZmZDBjZTIwODg3OWVlYzJkMTI3NzZh
+MzZjOTNhMDBlZDYwZjA1M2E1ZGYyOD4gL1JlZ2lzdHJ5IDw4YWY1MmNiZmUyYzcyN2YxZWRiYjBk
+MDAzM2E1YTZjMTllY2FhYmY5NzA1YTVhMGExMTQ1MTNlNjU3YjdiMDgzPiAvU3VwcGxlbWVudCAw
+ID4+IC9DSURUb0dJRE1hcCAvSWRlbnRpdHkgL0RXIDAgL0ZvbnREZXNjcmlwdG9yIDExIDAgUiAv
+U3VidHlwZSAvQ0lERm9udFR5cGUyIC9UeXBlIC9Gb250IC9XIFsgMCBbIDc1MCAwIDAgMjc3Ljgz
+MjAzIF0gNiAyNCA1NTYuMTUyMzQgNDQgWyAyNzcuODMyMDMgXSA1MSBbIDY2Ni45OTIxOSBdIDY2
+IDc0IDU1Ni4xNTIzNCA3NiA3OSAyMjIuMTY3OTcgODAgWyA4MzMuMDA3ODEgXSA4MSA4OCA1NTYu
+MTUyMzQgOTggWyAyNzcuODMyMDMgXSBdID4+CmVuZG9iagoxMCAwIG9iago8PCAvRmlsdGVyIC9G
+bGF0ZURlY29kZSAvTGVuZ3RoIDMzNiA+PgpzdHJlYW0K7RNOxqjNBqNGN3/3AP8psbDMkSeis6UA
+/HBxGLO2z4CNGgbMk4fKcs4vihOE+n2DlYfkB9ok/ZI2hi8NcinFXo5MiylmDj1HOpGeDeFhfi2k
+9RjFxrITtB4nUyu2D6V4544VyqUt/+2i3m4Z9a1TSIdoJpWOswFgAFjNDlQUeKh+NP1VN4J/3OVr
+RTqAbCp3HfcFnV9X+RK7wg5XEzLoxmo8p/Upw8ePjFlRndzMackPTX7dbS1KKQSV8J9N4qTJVqH6
+VDRtWOWGNUJVrUtDl1YhiVMY553nbFLEd/dhrxG/MLhAf+OMz0o+J4x0oSIezkfz6ARG/Vgxgk7f
+Hl7aAkm116AMIBbL/ijrtkV8L73ajs4pL0bRbFUp3+r89lMoq/N+3ZSJRhSiAJWkd16KRUxBLJpq
+ABCKSgUICKMYjb5ZazUuhhyZ10fpY2rckJYeZW5kc3RyZWFtCmVuZG9iagoxMSAwIG9iago8PCAv
+QXNjZW50IDkwNS4yNzM0NCAvQ2FwSGVpZ2h0IDY4Ny45ODgyOCAvRGVzY2VudCAtMjExLjkxNDA2
+IC9GbGFncyA0IC9Gb250QkJveCBbIC01NDMuOTQ1MzEgLTMwMy4yMjI2NiAxMzAxLjc1NzgxIDk3
+OS45ODA0NyBdIC9Gb250RmlsZTIgMTIgMCBSIC9Gb250TmFtZSAvTGliZXJhdGlvblNhbnMgL0l0
+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
+YXJkIC9MZW5ndGggMjU2IC9PIDwwMTE5NmZhOTMzYWRjZjc2MTAxNjEzNzBjNWQwOTZiNDBkYTgz
+M2UwNzg2YWEwOWY4MWI4ZjRhZWUxZDViYmY0MWYzNGI1ZjZhZTU1Yjg1ZDgxMWMwN2QzMjE5NjE3
+NDQ+IC9PRSA8MzhlMmJkYzQyYjMzYmM2MGY4ZTkwZDgxNjkwMDc3NzA2OWZlZmZmY2ExN2FjYmY5
+ZjFhYzM5NzVkYjQ2OWYyND4gL1AgLTQgL1Blcm1zIDwxODI4MjJiOWFiNjBlYzQ0M2IwOGM1MTA4
+MTc0ZjBjNj4gL1IgNiAvU3RtRiAvU3RkQ0YgL1N0ckYgL1N0ZENGIC9VIDxkNjRkMGIyMzhmYmM0
+MTIxMTQ4ZjJiOTE2MDE0NmIzMGMzMjc4MjcxNDQ5NzA4M2EyYmJhZDgxYzc0ZmRiYWY1MjJkMmZk
+YTU2NjYxZWY5ZjIwZDI3MTM4NTc0ODQ2NTg+IC9VRSA8ODI5NjhlOWU4NTgxOTY1ZDk2MTJhZWZh
+M2EzNzlmNmY2OTBkZDYxY2EzNzdlNmY3MmY5ZTI3ZWQzNTliY2VhYj4gL1YgNSA+PgplbmRvYmoK
+eHJlZgowIDE0CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAw
+MTQzIDAwMDAwIG4gCjAwMDAwMDA3MzAgMDAwMDAgbiAKMDAwMDAwMDc3NiAwMDAwMCBuIAowMDAw
+MDAwODM1IDAwMDAwIG4gCjAwMDAwMDEwNTUgMDAwMDAgbiAKMDAwMDAwMTQ3OCAwMDAwMCBuIAow
+MDAwMDAxNTE3IDAwMDAwIG4gCjAwMDAwMDE2NTkgMDAwMDAgbiAKMDAwMDAwMjE0NCAwMDAwMCBu
+IAowMDAwMDAyNTUyIDAwMDAwIG4gCjAwMDAwMDI3OTcgMDAwMDAgbiAKMDAwMDAwODExNiAwMDAw
+MCBuIAp0cmFpbGVyIDw8IC9JbmZvIDIgMCBSIC9Sb290IDEgMCBSIC9TaXplIDE0IC9JRCBbPDg4
+YWQwMGE5NjgxZWU3YWVkZWYxYTc4ZjQwMmQ2NTYxPjw4OGFkMDBhOTY4MWVlN2FlZGVmMWE3OGY0
+MDJkNjU2MT5dIC9FbmNyeXB0IDEzIDAgUiA+PgpzdGFydHhyZWYKODY2NAolJUVPRgo=
+</div>
+
+Consigo el documento con el siguiente comando.
+
+echo 'JVBERi0xLjc.....DY2NAolJUVPRgo=' | base64 -d > documento.pdf
+
+Al intentar abrir el documento, me pide contraseña.
+
+Procedo a convertirlo en un hash para john con pdf2john.
