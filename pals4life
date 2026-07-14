@@ -406,3 +406,24 @@ Session completed.
 En el pdf, ya desencriptado con la contraseña (o accediendo con esta, el resultado es el mismo), encuentro lo siguiente.
 I_am_geniu5_P4ladin#‌
 Intuyo que es una credencial, supongo que una contraseña.
+
+Por aquí no he encontrado nada más. Paso al puerto de Gitea.
+
+En la pestaña explorar encuentro un usuario, leeroy.
+Junto con la contraseña encontrada antes, consigo el login.
+
+leeroy@jenki.ns Correo de leeroy.
+
+Miro la pista de la primera flag.
+Must be hidden somewhere in the web tool.
+
+Vale, voy a explorar la web.
+
+Cosas que he encontrado. 
+Se puede subir imágenes para cambiar la foto de perfil, puedo probar a subir una revhsell.
+En settings del repositorio, en la pestaña webhooks, hay un campo llamado "secret". //Aquí esta la primera flag.
+
+Viendo el código de la página consigo la primera flag.
+			<input id="secret" name="secret" type="password" value="flag{St+**************}" autocomplete="off">
+
+Ahora veo la pista de la segunda. Get a shell.
