@@ -1,2 +1,329 @@
 #Hamlet walkthrough
 #Los cambios de ip en la máquina se deben a que a la he completado en varios días, o al reinicio de la misma.
+
+Comienzo la enumeración con un escaneo de todos los puertos.
+
+sudo nmap -p- 10.128.154.239
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-07-25 12:23 CEST
+Stats: 0:01:54 elapsed; 0 hosts completed (1 up), 1 undergoing SYN Stealth Scan
+SYN Stealth Scan Timing: About 79.89% done; ETC: 12:26 (0:00:29 remaining)
+Nmap scan report for 10.128.154.239
+Host is up (0.033s latency).
+Not shown: 64526 filtered tcp ports (no-response), 1003 closed tcp ports (reset)
+PORT     STATE SERVICE
+21/tcp   open  ftp
+22/tcp   open  ssh
+80/tcp   open  http
+501/tcp  open  stmf
+8000/tcp open  http-alt
+8080/tcp open  http-proxy
+
+Nmap done: 1 IP address (1 host up) scanned in 161.98 seconds
+
+Y continúo con un -sVC
+
+sudo nmap -sVC -p 21,22,80,501,8000,8080 10.128.154.239
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-07-25 12:27 CEST
+Nmap scan report for 10.128.154.239
+Host is up (0.032s latency).
+
+PORT     STATE SERVICE     VERSION
+21/tcp   open  ftp         vsftpd 3.0.3
+| ftp-anon: Anonymous FTP login allowed (FTP code 230)
+| -rwxr-xr-x    1 0        0             113 Sep 15  2021 password-policy.md
+|_-rw-r--r--    1 0        0            1425 Sep 15  2021 ufw.status
+| ftp-syst: 
+|   STAT: 
+| FTP server status:
+|      Connected to ::ffff:192.168.131.65
+|      Logged in as ftp
+|      TYPE: ASCII
+|      No session bandwidth limit
+|      Session timeout in seconds is 300
+|      Control connection is plain text
+|      Data connections will be plain text
+|      At session startup, client count was 1
+|      vsFTPd 3.0.3 - secure, fast, stable
+|_End of status
+22/tcp   open  ssh         OpenSSH 7.6p1 Ubuntu 4ubuntu0.5 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 a0:ef:4c:32:28:a6:4c:7f:60:d6:a6:63:32:ac:ab:27 (RSA)
+|   256 5a:6d:1a:39:97:00:be:c7:10:6e:36:5c:7f:ca:dc:b2 (ECDSA)
+|_  256 0b:77:40:b2:cc:30:8d:8e:45:51:fa:12:7c:e2:95:c7 (ED25519)
+80/tcp   open  http        lighttpd 1.4.45
+|_http-server-header: lighttpd/1.4.45
+|_http-title: Hamlet Annotation Project
+501/tcp  open  nagios-nsca Nagios NSCA
+8000/tcp open  http        Apache httpd 2.4.48 ((Debian))
+|_http-title: Site doesn't have a title (text/html).
+|_http-open-proxy: Proxy might be redirecting requests
+|_http-server-header: Apache/2.4.48 (Debian)
+8080/tcp open  http-proxy
+|_http-open-proxy: Proxy might be redirecting requests
+| http-title: WebAnno - Log in 
+|_Requested resource was http://10.128.154.239:8080/login.html
+|_http-trane-info: Problem with XML parsing of /evox/about
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.1 500 
+|     Content-Type: application/json;charset=UTF-8
+|     Date: Sat, 25 Jul 2026 10:27:53 GMT
+|     Connection: close
+|     {"timestamp":1784975273698,"status":500,"error":"Internal Server Error","exception":"org.springframework.security.web.firewall.RequestRejectedException","message":"The request was rejected because the URL contained a potentially malicious String "%2e"","path":"/nice%20ports%2C/Tri%6Eity.txt%2ebak"}
+|   GetRequest: 
+|     HTTP/1.1 302 
+|     Set-Cookie: JSESSIONID=E9BF64FAB2FEEEF82ED17602D86D8685; Path=/; HttpOnly
+|     X-Content-Type-Options: nosniff
+|     X-XSS-Protection: 1; mode=block
+|     Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+|     Pragma: no-cache
+|     Expires: 0
+|     X-Frame-Options: SAMEORIGIN
+|     Location: http://localhost:8080/login.html
+|     Content-Length: 0
+|     Date: Sat, 25 Jul 2026 10:27:53 GMT
+|     Connection: close
+|   HTTPOptions: 
+|     HTTP/1.1 302 
+|     Set-Cookie: JSESSIONID=B2B009EA2AE190130207CB9CAD6D163B; Path=/; HttpOnly
+|     X-Content-Type-Options: nosniff
+|     X-XSS-Protection: 1; mode=block
+|     Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+|     Pragma: no-cache
+|     Expires: 0
+|     X-Frame-Options: SAMEORIGIN
+|     Location: http://localhost:8080/login.html
+|     Content-Length: 0
+|     Date: Sat, 25 Jul 2026 10:27:53 GMT
+|     Connection: close
+|   RTSPRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sat, 25 Jul 2026 10:27:53 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|_    Request</h1></body></html>
+|_http-favicon: Spring Java Framework
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port8080-TCP:V=7.94SVN%I=7%D=7/25%Time=6A648FA8%P=x86_64-pc-linux-gnu%r
+SF:(GetRequest,18F,"HTTP/1\.1\x20302\x20\r\nSet-Cookie:\x20JSESSIONID=E9BF
+SF:64FAB2FEEEF82ED17602D86D8685;\x20Path=/;\x20HttpOnly\r\nX-Content-Type-
+SF:Options:\x20nosniff\r\nX-XSS-Protection:\x201;\x20mode=block\r\nCache-C
+SF:ontrol:\x20no-cache,\x20no-store,\x20max-age=0,\x20must-revalidate\r\nP
+SF:ragma:\x20no-cache\r\nExpires:\x200\r\nX-Frame-Options:\x20SAMEORIGIN\r
+SF:\nLocation:\x20http://localhost:8080/login\.html\r\nContent-Length:\x20
+SF:0\r\nDate:\x20Sat,\x2025\x20Jul\x202026\x2010:27:53\x20GMT\r\nConnectio
+SF:n:\x20close\r\n\r\n")%r(HTTPOptions,18F,"HTTP/1\.1\x20302\x20\r\nSet-Co
+SF:okie:\x20JSESSIONID=B2B009EA2AE190130207CB9CAD6D163B;\x20Path=/;\x20Htt
+SF:pOnly\r\nX-Content-Type-Options:\x20nosniff\r\nX-XSS-Protection:\x201;\
+SF:x20mode=block\r\nCache-Control:\x20no-cache,\x20no-store,\x20max-age=0,
+SF:\x20must-revalidate\r\nPragma:\x20no-cache\r\nExpires:\x200\r\nX-Frame-
+SF:Options:\x20SAMEORIGIN\r\nLocation:\x20http://localhost:8080/login\.htm
+SF:l\r\nContent-Length:\x200\r\nDate:\x20Sat,\x2025\x20Jul\x202026\x2010:2
+SF:7:53\x20GMT\r\nConnection:\x20close\r\n\r\n")%r(RTSPRequest,24E,"HTTP/1
+SF:\.1\x20400\x20\r\nContent-Type:\x20text/html;charset=utf-8\r\nContent-L
+SF:anguage:\x20en\r\nContent-Length:\x20435\r\nDate:\x20Sat,\x2025\x20Jul\
+SF:x202026\x2010:27:53\x20GMT\r\nConnection:\x20close\r\n\r\n<!doctype\x20
+SF:html><html\x20lang=\"en\"><head><title>HTTP\x20Status\x20400\x20\xe2\x8
+SF:0\x93\x20Bad\x20Request</title><style\x20type=\"text/css\">body\x20{fon
+SF:t-family:Tahoma,Arial,sans-serif;}\x20h1,\x20h2,\x20h3,\x20b\x20{color:
+SF:white;background-color:#525D76;}\x20h1\x20{font-size:22px;}\x20h2\x20{f
+SF:ont-size:16px;}\x20h3\x20{font-size:14px;}\x20p\x20{font-size:12px;}\x2
+SF:0a\x20{color:black;}\x20\.line\x20{height:1px;background-color:#525D76;
+SF:border:none;}</style></head><body><h1>HTTP\x20Status\x20400\x20\xe2\x80
+SF:\x93\x20Bad\x20Request</h1></body></html>")%r(FourOhFourRequest,1A4,"HT
+SF:TP/1\.1\x20500\x20\r\nContent-Type:\x20application/json;charset=UTF-8\r
+SF:\nDate:\x20Sat,\x2025\x20Jul\x202026\x2010:27:53\x20GMT\r\nConnection:\
+SF:x20close\r\n\r\n{\"timestamp\":1784975273698,\"status\":500,\"error\":\
+SF:"Internal\x20Server\x20Error\",\"exception\":\"org\.springframework\.se
+SF:curity\.web\.firewall\.RequestRejectedException\",\"message\":\"The\x20
+SF:request\x20was\x20rejected\x20because\x20the\x20URL\x20contained\x20a\x
+SF:20potentially\x20malicious\x20String\x20\\\"%2e\\\"\",\"path\":\"/nice%
+SF:20ports%2C/Tri%6Eity\.txt%2ebak\"}");
+Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 23.44 seconds
+
+
+Veo que en el puerto 21 se permite login anónimo y hay dos archivos.
+Me logueo y los descargo.
+
+ftp 10.128.154.239
+Connected to 10.128.154.239.
+220 (vsFTPd 3.0.3)
+Name (10.128.154.239:mksk): anonymous
+331 Please specify the password.
+Password: 
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> ls
+229 Entering Extended Passive Mode (|||50532|)
+150 Here comes the directory listing.
+-rwxr-xr-x    1 0        0             113 Sep 15  2021 password-policy.md
+-rw-r--r--    1 0        0            1425 Sep 15  2021 ufw.status
+226 Directory send OK.
+ftp> get ufw.status
+local: ufw.status remote: ufw.status
+229 Entering Extended Passive Mode (|||50445|)
+150 Opening BINARY mode data connection for ufw.status (1425 bytes).
+100% |***************************************************************************|  1425      428.31 KiB/s    00:00 ETA
+226 Transfer complete.
+1425 bytes received in 00:00 (39.16 KiB/s)
+ftp> get password-policy.md
+local: password-policy.md remote: password-policy.md
+229 Entering Extended Passive Mode (|||50794|)
+150 Opening BINARY mode data connection for password-policy.md (113 bytes).
+100% |***************************************************************************|   113        3.99 MiB/s    00:00 ETA
+226 Transfer complete.
+113 bytes received in 00:00 (3.48 KiB/s)
+ftp> 
+
+cat ufw.status 
+Status: active
+
+To                         Action      From
+--                         ------      ----
+20/tcp                     ALLOW       Anywhere                  
+21/tcp                     ALLOW       Anywhere                  
+22/tcp                     ALLOW       Anywhere                  
+80/tcp                     ALLOW       Anywhere                  
+501/tcp                    ALLOW       Anywhere                  
+8080/tcp                   ALLOW       Anywhere                  
+8000/tcp                   ALLOW       Anywhere                  
+1603/tcp                   ALLOW       Anywhere                  
+1564/tcp                   ALLOW       Anywhere                  
+50000:50999/tcp            ALLOW       Anywhere                  
+20/tcp (v6)                ALLOW       Anywhere (v6)             
+21/tcp (v6)                ALLOW       Anywhere (v6)             
+22/tcp (v6)                ALLOW       Anywhere (v6)             
+80/tcp (v6)                ALLOW       Anywhere (v6)             
+501/tcp (v6)               ALLOW       Anywhere (v6)                  
+8080/tcp (v6)              ALLOW       Anywhere (v6)             
+8000/tcp (v6)              ALLOW       Anywhere (v6)             
+1603/tcp (v6)              ALLOW       Anywhere (v6)     *nuevo              
+1564/tcp (v6)              ALLOW       Anywhere (v6)     *nuevo         
+50000:50999/tcp (v6)       ALLOW       Anywhere (v6)     *nuevo             
+
+En el status del firewall veo un par de puertos más, puede que sean accesibles internamente.
+
+cat password-policy.md 
+# Password Policy
+
+## WebAnno
+
+New passwords should be:
+
+- lowercase
+- between 12 and 14 characters long
+
+Y también encuentro la política de contraseñas de la web.
+
+Voy a ver si encuentro un portal de login o algún usuario.
+
+Al acceder a la web encuentro un posible usuario, Michael/ghost ghost@webanno.hamlet.thm.
+
+If you want to help out, send an email to Michael 'ghost' Canterbury (ghost@webanno.hamlet.thm). He's obsessed with Hamlet and the vocabulary used by Shakespeare. 
+
+Enumero subdirectorios en la web.
+
+sudo dirsearch -u http://10.128.154.239/
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/cosasctf/hamlet/reports/http_10.128.154.239/__26-07-25_12-35-19.txt
+
+Target: http://10.128.154.239/
+
+[12:35:19] Starting: 
+[12:35:20] 403 -  345B  - /.dep.inc
+[12:35:20] 403 -  345B  - /.env~
+[12:35:20] 403 -  345B  - /.gitignore~
+[12:35:21] 403 -  345B  - /.inc
+[12:35:21] 403 -  345B  - /.ssh/id_rsa.key~
+[12:35:21] 403 -  345B  - /.ssh/id_rsa.pub~
+[12:35:33] 403 -  345B  - /index.inc
+[12:35:33] 403 -  345B  - /index.php~
+[12:35:33] 403 -  345B  - /index~
+[12:35:33] 403 -  345B  - /install.inc
+[12:35:34] 403 -  345B  - /localsettings.php~
+[12:35:38] 403 -  345B  - /php.ini~
+[12:35:40] 403 -  345B  - /revision.inc
+[12:35:40] 200 -   64B  - /robots.txt //interesante
+[12:35:40] 403 -  345B  - /sample.txt~
+[12:35:41] 403 -  345B  - /settings.php~
+
+
+Task Completed
+
+Veo robots.txt y encuentro la primera flag.
+
+User-agent: *
+Allow: /
+
+THM{1_*************************nd}
+
+Por aquí no encuentro nada más, asiqué voy al puerto 8080.
+Es un portal de login.
+
+Con el usuario descubierto anteriormente podría generar un diccionario custom para hacer un ataque de fuerza bruta.
+Pero dado que tengo bastantes puertos aun abiertos, voy a seguir explorando un poco.
+
+Me conecto con netcat al primer puerto extraño, el 501.
+
+nc -nv 10.128.154.239 501
+Connection to 10.128.154.239 501 port [tcp/*] succeeded!
+GRAVEDIGGER
+What do you call a person who builds stronger things than a stonemason, a shipbuilder, or a carpenter does?
+PENTESTER
+
+Cada vez que doy una respuesta responde algo.
+
+Hay una respuesta que me llama la atencion.
+
+rces get new LETTER, 0ws2610a.txt
+
+No consigo nada relevante en este puerto. Y tampoco en los demás puertos.
+
+Vuelvo al puerto del login. Tengo que generar una wordlist custom, de 12 a 14 letras de longitud, y en minúscula.
+No tengo una wordlist de la que partir, y solo he encontrado un archivo .txt, asique voy a generarla a partir de ahí.
+
+Creo un script para generar la wordlist.
+
+cat scriptwordlist.sh 
+#!/bin/bash
+# Script para extraer palabras de 12-14 caracteres de hamlet.txt
+
+echo "[+] Extrayendo palabras de 12-14 caracteres de hamlet.txt..."
+
+cat hamlet.txt | \
+tr -cs 'a-zA-Z' '\n' | \
+tr '[:upper:]' '[:lower:]' | \
+grep -E '^[a-z]{12,14}$' | \
+sort -u > wordlist.txt
+
+echo "[+] Palabras extraídas: $(wc -l < wordlist.txt)"
+echo "[+] Guardado en wordlist.txt"
+
+Le doy permisos y lo ejecuto.
+
+chmod +x scriptwordlist.sh 
+
+./scriptwordlist.sh 
+
+Y cuando tengo la wordlist uso hydra para probar credenciales.
+He probado, y al no conseguir nada he generado otra wordlist con cewl, la he comparado con la anterior y son diferentes, asique las he combinado y he seguido probando.
+
+cewl --lowercase -m 12 -d 1 http://10.128.154.239 | grep -E '^.{12,14}$' > password.txt
+cat wordlist.txt password.txt | sort -u > combined.txt
+
+
