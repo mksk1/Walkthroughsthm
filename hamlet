@@ -321,9 +321,21 @@ chmod +x scriptwordlist.sh
 ./scriptwordlist.sh 
 
 Y cuando tengo la wordlist uso hydra para probar credenciales.
-He probado, y al no conseguir nada he generado otra wordlist con cewl, la he comparado con la anterior y son diferentes, asique las he combinado y he seguido probando.
+He probado con hydra, y al no conseguir nada he generado otra wordlist con cewl, la he comparado con la anterior y son diferentes, asique las he combinado y he seguido probando.
 
 cewl --lowercase -m 12 -d 1 http://10.128.154.239 | grep -E '^.{12,14}$' > password.txt
 cat wordlist.txt password.txt | sort -u > combined.txt
 
+Voy a realizar el ataqué con burp suite, ya que hydra me ha dado algunos problemas.
 
+Intercepto el POST del login, lo envío al intruder y selecciono cluster bomb attack.
+
+En el user añado una posición para payload con ghost y Michael, y en la contraseña la lista generada anteriormente.
+Lanzo el ataque.
+
+Espero a que acabe.
+
+Al ver los resultados, filtro por código y encuentro unas credenciales válidas con 302.
+ghost:vnsanctified.
+
+Hago login en la web.
