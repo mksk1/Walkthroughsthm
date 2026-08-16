@@ -162,5 +162,242 @@ archivo_extraido.txt: data
 
 Tras un rato de ver que hacer con el archivo, no llego a ninguna parte. Asique de momento lo dejo y sigo enumerando.
 
-Vuelvo a probar con dirsearch pero con otra wordlist, ya que la que coje por defecto es una "pequeña".
+Vuelvo a probar con dirsearch pero con otra wordlist, ya que la que coje por defecto es una "pequeña" (11k entradas).
 
+sudo dirsearch -u http://10.129.182.21/ -w /home/mksk/wordlists/DirBuster-2007_directory-list-2.3-medium.txt
+[sudo] contraseña para mksk:     
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 220544
+
+Output File: /home/mksk/reports/http_10.129.182.21/__26-08-16_13-57-29.txt
+
+Target: http://10.129.182.21/
+
+[13:57:29] Starting: 
+[13:57:31] 301 -    0B  - /img  ->  img/
+[13:57:31] 301 -    0B  - /r  ->  r/
+[13:58:06] 301 -    0B  - /poem  ->  poem/
+[13:58:11] 301 -    0B  - /http%3A%2F%2Fwww  ->  /http:/www
+[13:59:14] 301 -    0B  - /http%3A%2F%2Fyoutube  ->  /http:/youtube
+[13:59:43] 301 -    0B  - /http%3A%2F%2Fblogs  ->  /http:/blogs
+[13:59:48] 301 -    0B  - /http%3A%2F%2Fblog  ->  /http:/blog
+[14:00:12] 301 -    0B  - /**http%3A%2F%2Fwww  ->  /%2A%2Ahttp:/www
+[##############      ] 71% 157809/220544       311/s       job:1/1  errors:0Exception in thread Thread-30 (thread_proc):
+
+Llegados a este punto, le he puesto encima tanto tráfico a la máquina víctima que ha dejado de responder, me ha tocado reiniciarla.
+
+Bueno, me siguen llegando respuestas vacias, pero veo /img /r y /poem.
+
+/img y /r las tenía de antes pero he pasado una /r por alto, y tengo una página nueva.
+
+Veo /r.
+
+<!DOCTYPE html>
+<head>
+    <title>Follow the white rabbit.</title>
+    <link rel="stylesheet" type="text/css" href="/main.css">
+</head>
+<body>
+    <h1>Keep Going.</h1>
+    <p>"Would you tell me, please, which way I ought to go from here?"</p>
+</body>
+
+Nada relevante. Aunque podria seguir enumerando a partir de aqui.
+
+Y /poem.
+
+<!DOCTYPE html>
+<head>
+    <title>The Jabberwocky</title>
+    <link rel="stylesheet" type="text/css" href="/main.css">
+</head>
+<body>
+    <h1>The Jabberwocky</h1>
+    <p>'Twas brillig, and the slithy toves<br>
+        Did gyre and gimble in the wabe;<br>
+        All mimsy were the borogoves,<br>
+        And the mome raths outgrabe.<br>
+        <br>
+        “Beware the Jabberwock, my son!<br>
+        The jaws that bite, the claws that catch!<br>
+        Beware the Jubjub bird, and shun<br>
+        The frumious Bandersnatch!”<br>
+        <br>
+        He took his vorpal sword in hand:<br>
+        Long time the manxome foe he sought —<br>
+        So rested he by the Tumtum tree,<br>
+        And stood awhile in thought.<br>
+        <br>
+        And as in uffish thought he stood,<br>
+        The Jabberwock, with eyes of flame,<br>
+        Came whiffling through the tulgey wood,<br>
+        And burbled as it came!<br>
+        <br>
+        One, two! One, two! And through and through<br>
+        The vorpal blade went snicker-snack!<br>
+        He left it dead, and with its head<br>
+        He went galumphing back.<br>
+        <br>
+        “And hast thou slain the Jabberwock?<br>
+        Come to my arms, my beamish boy!<br>
+        O frabjous day! Callooh! Callay!”<br>
+        He chortled in his joy.<br>
+        <br>
+        ‘Twas brillig, and the slithy toves<br>
+        Did gyre and gimble in the wabe;<br>
+        All mimsy were the borogoves,<br>
+        And the mome raths outgrabe.</p>
+</body>
+
+No veo nada en ninguna, sigo enumerando, primero /r.
+
+sudo dirsearch -u http://10.130.171.29/r/
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.130.171.29/_r__26-08-16_14-11-28.txt
+
+Target: http://10.130.171.29/
+
+[14:11:28] Starting: r/
+[14:11:28] 301 -    0B  - /r/%2e%2e//google.com  ->  /google.com
+[14:11:28] 301 -    0B  - /r/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd  ->  /etc/passwd
+[14:11:32] 301 -    0B  - /r/a  ->  a/
+[14:11:32] 301 -    0B  - /r/adm/index.html  ->  ./
+[14:11:33] 301 -    0B  - /r/admin/index.html  ->  ./
+[14:11:33] 301 -    0B  - /r/admin2/index.html  ->  ./
+[14:11:33] 301 -    0B  - /r/admin_area/index.html  ->  ./
+[14:11:34] 301 -    0B  - /r/adminarea/index.html  ->  ./
+[14:11:35] 301 -    0B  - /r/admincp/index.html  ->  ./
+[14:11:35] 301 -    0B  - /r/administrator/index.html  ->  ./
+[14:11:36] 301 -    0B  - /r/api/index.html  ->  ./
+[14:11:36] 301 -    0B  - /r/api/swagger/static/index.html  ->  ./
+[14:11:36] 301 -    0B  - /r/api/swagger/index.html  ->  ./
+[14:11:36] 301 -    0B  - /r/axis//happyaxis.jsp  ->  /r/axis/happyaxis.jsp
+[14:11:36] 301 -    0B  - /r/axis2-web//HappyAxis.jsp  ->  /r/axis2-web/HappyAxis.jsp
+[14:11:36] 301 -    0B  - /r/axis2//axis2-web/HappyAxis.jsp  ->  /r/axis2/axis2-web/HappyAxis.jsp
+[14:11:37] 301 -    0B  - /r/bb-admin/index.html  ->  ./
+[14:11:37] 301 -    0B  - /r/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd  ->  /etc/passwd
+[14:11:37] 301 -    0B  - /r/cgi-bin/index.html  ->  ./
+[14:11:38] 301 -    0B  - /r/Citrix//AccessPlatform/auth/clientscripts/cookies.js  ->  /r/Citrix/AccessPlatform/auth/clientscripts/cookies.js
+[14:11:39] 301 -    0B  - /r/core/latest/swagger-ui/index.html  ->  ./
+[14:11:40] 301 -    0B  - /r/demo/ejb/index.html  ->  ./
+[14:11:40] 301 -    0B  - /r/doc/html/index.html  ->  ./
+[14:11:40] 301 -    0B  - /r/docs/html/admin/index.html  ->  ./
+[14:11:40] 301 -    0B  - /r/docs/html/index.html  ->  ./
+[14:11:40] 301 -    0B  - /r/druid/index.html  ->  ./
+[14:11:40] 301 -    0B  - /r/engine/classes/swfupload//swfupload.swf  ->  /r/engine/classes/swfupload/swfupload.swf
+[14:11:40] 301 -    0B  - /r/engine/classes/swfupload//swfupload_f9.swf  ->  /r/engine/classes/swfupload/swfupload_f9.swf
+[14:11:41] 301 -    0B  - /r/estore/index.html  ->  ./
+[14:11:41] 301 -    0B  - /r/examples/jsp/index.html  ->  ./
+[14:11:41] 301 -    0B  - /r/examples/servlets/index.html  ->  ./
+[14:11:41] 301 -    0B  - /r/extjs/resources//charts.swf  ->  /r/extjs/resources/charts.swf
+[14:11:43] 301 -    0B  - /r/html/js/misc/swfupload//swfupload.swf  ->  /r/html/js/misc/swfupload/swfupload.swf
+[14:11:44] 301 -    0B  - /r/index.html  ->  ./
+[14:11:46] 301 -    0B  - /r/logon/LogonPoint/index.html  ->  ./
+[14:11:46] 301 -    0B  - /r/manual/index.html  ->  ./
+[14:11:47] 301 -    0B  - /r/mifs/user/index.html  ->  ./
+[14:11:47] 301 -    0B  - /r/modelsearch/index.html  ->  ./
+[14:11:48] 301 -    0B  - /r/panel-administracion/index.html  ->  ./
+[14:11:50] 301 -    0B  - /r/phpmyadmin/docs/html/index.html  ->  ./
+[14:11:50] 301 -    0B  - /r/phpmyadmin/doc/html/index.html  ->  ./
+[14:11:50] 301 -    0B  - /r/prod-api/druid/index.html  ->  ./
+[14:11:53] 301 -    0B  - /r/siteadmin/index.html  ->  ./
+[14:11:54] 301 -    0B  - /r/stzx_admin/index.html  ->  ./
+[14:11:54] 301 -    0B  - /r/swagger/index.html  ->  ./
+[14:11:55] 301 -    0B  - /r/templates/index.html  ->  ./
+[14:11:55] 301 -    0B  - /r/tiny_mce/plugins/imagemanager/pages/im/index.html  ->  ./
+[14:11:57] 301 -    0B  - /r/vpn/index.html  ->  ./
+[14:11:57] 301 -    0B  - /r/webadmin/index.html  ->  ./
+[14:11:57] 301 -    0B  - /r/webdav/index.html  ->  ./
+
+Task Completed
+
+Mucho ruido en las respuestas, pero /a me llama la atención. Veo que hay.
+
+<!DOCTYPE html>
+<head>
+    <title>Follow the white rabbit.</title>
+    <link rel="stylesheet" type="text/css" href="/main.css">
+</head>
+<body>
+    <h1>Keep Going.</h1>
+    <p>"That depends a good deal on where you want to get to," said the Cat.</p>
+</body>
+
+Bueno, ya tengo dos /r y /a. Y hint.txt me ha tenia el texto follow the r a b b i t.
+
+lo meto en la url.
+
+http://10.130.171.29/r/a/b/b/i/t/
+
+<!DOCTYPE html>
+
+<head>
+    <title>Enter wonderland</title>
+    <link rel="stylesheet" type="text/css" href="/main.css">
+</head>
+
+<body>
+    <h1>Open the door and enter wonderland</h1>
+    <p>"Oh, you’re sure to do that," said the Cat, "if you only walk long enough."</p>
+    <p>Alice felt that this could not be denied, so she tried another question. "What sort of people live about here?"
+    </p>
+    <p>"In that direction,"" the Cat said, waving its right paw round, "lives a Hatter: and in that direction," waving
+        the other paw, "lives a March Hare. Visit either you like: they’re both mad."</p>
+    <p style="display: none;">alice:HowDothTheLittleCrocodileImproveHisShiningTail</p>
+    <img src="/img/alice_door.png" style="height: 50rem;">
+</body>
+
+En el código de la página final. Veo alice:HowDothTheLittleCrocodileImproveHisShiningTail.
+
+Parecen credenciales, y el puerto 22 está abierto.
+
+ssh alice@10.130.171.29
+The authenticity of host '10.130.171.29 (10.130.171.29)' can't be established.
+ED25519 key fingerprint is SHA256:Q8PPqQyrfXMAZkq45693yD4CmWAYp5GOINbxYqTRedo.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.130.171.29' (ED25519) to the list of known hosts.
+alice@10.130.171.29's password: 
+Welcome to Ubuntu 18.04.4 LTS (GNU/Linux 4.15.0-101-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sun Aug 16 12:16:32 UTC 2026
+
+  System load:  0.08               Processes:           88
+  Usage of /:   18.9% of 19.56GB   Users logged in:     0
+  Memory usage: 29%                IP address for ens5: 10.130.171.29
+  Swap usage:   0%
+
+
+0 packages can be updated.
+0 updates are security updates.
+
+
+Last login: Mon May 25 16:37:21 2020 from 192.168.170.1
+alice@wonderland:~$ ls
+root.txt  walrus_and_the_carpenter.py
+
+Consigo acceso a la máquina y encuentro root.txt y un script.
+
+Deberia encontrar la flag de user.
+
+find / -name "user.txt" 2>/dev/null
+
+No me da resultados.
+
+La pista tampoco me ayuda mucho.
