@@ -1,1 +1,166 @@
 #Wonderland Walkthrough.
+#Los cambios de ip en la máquina se deben a que la he completado en varios días, o al reinicio de la misma.
+
+Comienzo con un escaneo de puertos.
+
+sudo nmap -p- 10.129.182.21
+[sudo] contraseña para mksk:     
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-08-16 13:36 CEST
+Nmap scan report for 10.129.182.21
+Host is up (0.034s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 17.56 seconds
+
+Tan solo hay 2 puertos.
+
+No veo la necesidad de seguir la enumeración por puertos, voy a ver que hay en la web.
+
+Enumero subdirectorios, o carpetas, sin éxito.
+
+sudo dirsearch -u http://10.129.182.21/
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.129.182.21/__26-08-16_13-38-17.txt
+
+Target: http://10.129.182.21/
+
+[13:38:17] Starting: 
+[13:38:18] 301 -    0B  - /%2e%2e//google.com  ->  /google.com
+[13:38:18] 301 -    0B  - /.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd  ->  /etc/passwd
+[13:38:22] 301 -    0B  - /adm/index.html  ->  ./
+[13:38:22] 301 -    0B  - /admin/index.html  ->  ./
+[13:38:22] 301 -    0B  - /admin2/index.html  ->  ./
+[13:38:22] 301 -    0B  - /admin_area/index.html  ->  ./
+[13:38:24] 301 -    0B  - /adminarea/index.html  ->  ./
+[13:38:24] 301 -    0B  - /admincp/index.html  ->  ./
+[13:38:24] 301 -    0B  - /administrator/index.html  ->  ./
+[13:38:25] 301 -    0B  - /api/index.html  ->  ./
+[13:38:25] 301 -    0B  - /api/swagger/index.html  ->  ./
+[13:38:25] 301 -    0B  - /api/swagger/static/index.html  ->  ./
+[13:38:26] 301 -    0B  - /axis2//axis2-web/HappyAxis.jsp  ->  /axis2/axis2-web/HappyAxis.jsp
+[13:38:26] 301 -    0B  - /axis//happyaxis.jsp  ->  /axis/happyaxis.jsp
+[13:38:26] 301 -    0B  - /axis2-web//HappyAxis.jsp  ->  /axis2-web/HappyAxis.jsp
+[13:38:26] 301 -    0B  - /bb-admin/index.html  ->  ./
+[13:38:27] 301 -    0B  - /cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd  ->  /etc/passwd
+[13:38:27] 301 -    0B  - /cgi-bin/index.html  ->  ./
+[13:38:27] 301 -    0B  - /Citrix//AccessPlatform/auth/clientscripts/cookies.js  ->  /Citrix/AccessPlatform/auth/clientscripts/cookies.js
+[13:38:28] 301 -    0B  - /core/latest/swagger-ui/index.html  ->  ./
+[13:38:29] 301 -    0B  - /demo/ejb/index.html  ->  ./
+[13:38:29] 301 -    0B  - /doc/html/index.html  ->  ./
+[13:38:29] 301 -    0B  - /docs/html/admin/index.html  ->  ./
+[13:38:29] 301 -    0B  - /docs/html/index.html  ->  ./
+[13:38:29] 301 -    0B  - /druid/index.html  ->  ./
+[13:38:29] 301 -    0B  - /engine/classes/swfupload//swfupload_f9.swf  ->  /engine/classes/swfupload/swfupload_f9.swf
+[13:38:29] 301 -    0B  - /engine/classes/swfupload//swfupload.swf  ->  /engine/classes/swfupload/swfupload.swf
+[13:38:30] 301 -    0B  - /estore/index.html  ->  ./
+[13:38:30] 301 -    0B  - /examples/jsp/index.html  ->  ./
+[13:38:30] 301 -    0B  - /examples/servlets/index.html  ->  ./
+[13:38:30] 301 -    0B  - /extjs/resources//charts.swf  ->  /extjs/resources/charts.swf
+[13:38:31] 301 -    0B  - /html/js/misc/swfupload//swfupload.swf  ->  /html/js/misc/swfupload/swfupload.swf
+[13:38:32] 301 -    0B  - /img  ->  img/
+[13:38:32] 301 -    0B  - /index.html  ->  ./
+[13:38:34] 301 -    0B  - /logon/LogonPoint/index.html  ->  ./
+[13:38:34] 301 -    0B  - /manual/index.html  ->  ./
+[13:38:35] 301 -    0B  - /mifs/user/index.html  ->  ./
+[13:38:35] 301 -    0B  - /modelsearch/index.html  ->  ./
+[13:38:36] 301 -    0B  - /panel-administracion/index.html  ->  ./
+[13:38:37] 301 -    0B  - /phpmyadmin/doc/html/index.html  ->  ./
+[13:38:37] 301 -    0B  - /phpmyadmin/docs/html/index.html  ->  ./
+[13:38:38] 301 -    0B  - /prod-api/druid/index.html  ->  ./
+[13:38:38] 301 -    0B  - /r  ->  r/
+[13:38:40] 301 -    0B  - /siteadmin/index.html  ->  ./
+[13:38:42] 301 -    0B  - /stzx_admin/index.html  ->  ./
+[13:38:42] 301 -    0B  - /swagger/index.html  ->  ./
+[13:38:42] 301 -    0B  - /templates/index.html  ->  ./
+[13:38:43] 301 -    0B  - /tiny_mce/plugins/imagemanager/pages/im/index.html  ->  ./
+[13:38:44] 301 -    0B  - /vpn/index.html  ->  ./
+[13:38:45] 301 -    0B  - /webadmin/index.html  ->  ./
+[13:38:45] 301 -    0B  - /webdav/index.html  ->  ./
+
+Task Completed
+
+Todas me devuelven respuestas vacias.
+
+Leyendo el código de la web, encuentro algo interesante.
+
+<!DOCTYPE html>
+<head>
+    <title>Follow the white rabbit.</title>
+    <link rel="stylesheet" type="text/css" href="/main.css">
+</head>
+<body>
+    <h1>Follow the White Rabbit.</h1>
+    <p>"Curiouser and curiouser!" cried Alice (she was so much surprised, that for the moment she quite forgot how to speak good English)</p>
+    <img src="/img/white_rabbit_1.jpg" style="height: 50rem;">
+</body>
+
+Follow the white rabbit, y justo hay una imagen en /img/white_rabbit_1.jpg.
+
+Voy a /img, y encuentro 3 fotos.
+
+alice_door.jpg
+alice_door.png
+white_rabbit_1.jpg
+
+Me descargo las 3 imágenes, y pruebo enumerando en /img, sin éxito otra vez.
+
+Por la naturaleza del CTF, creo que podría haber algo incrustado con esteganografía en alguna imagen.
+
+En alice_door.jpg nada.
+ steghide extract -sf alice_door.jpg
+Anotar salvoconducto: 
+steghide: �no pude extraer ning�n dato con ese salvoconducto!
+
+alice_door.png me da error de formato.
+steghide extract -sf alice_door.png 
+Anotar salvoconducto: 
+steghide: el formato del archivo "alice_door.png" no es reconocido.
+
+Y white_rabbit_1.jpg me saca hint.txt, una pista.
+steghide extract -sf white_rabbit_1.jpg 
+Anotar salvoconducto: 
+anot� los datos extra�dos e/"hint.txt".
+
+Antes de ver nada, pruebo a extraer datos de otra manera del archivo alice_door.png, esta vez con binwalk -e.
+
+binwalk -e alice_door.png
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             PNG image, 1962 x 1942, 8-bit/color RGBA, non-interlaced
+91            0x5B            Zlib compressed data, compressed
+
+También había un archivo dentro de este archivo.
+
+Bueno, ahora veo que es hint.txt.
+
+cat hint.txt 
+follow the r a b b i t
+
+Tampoco me esclarece mucho esta pista.
+
+Voy ahora con la carpeta comprimida.
+
+Lo descomprimo.
+
+zlib-flate -uncompress < 5B.zlib > archivo_extraido.txt
+
+Al hacerle un cat, es completamente ilegible. No es un txt.
+
+file archivo_extraido.txt 
+archivo_extraido.txt: data
+
+Tras un rato de ver que hacer con el archivo, no llego a ninguna parte. Asique de momento lo dejo y sigo enumerando.
+
+Vuelvo a probar con dirsearch pero con otra wordlist, ya que la que coje por defecto es una "pequeña".
+
