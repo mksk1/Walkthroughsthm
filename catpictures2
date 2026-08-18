@@ -371,4 +371,4 @@ Consigo la primera flag.
 En el puerto 1337 tengo ansible runner, entiendo que para ejecutar comandos o playbooks en gitea.
 
 Cuando ejecuto algo en olivetin, los logs me dan a entender que se esta ejecutando, y el codigo del playbook de gitea puedo modificarlo para introducir una revshell.
-
+Además, la pista de la segunda flag es ansible.
