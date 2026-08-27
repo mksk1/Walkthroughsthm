@@ -1,0 +1,62 @@
+#CMSpit walkthrough
+#Los cambios de ip en la máquina víctima se deben a reinicios.
+
+Comienzo con un escaneo de puertos -p-.
+
+sudo nmap -p- 10.128.189.88
+[sudo] contraseña para mksk:     
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-08-27 11:01 CEST
+Nmap scan report for 10.128.189.88
+Host is up (0.032s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 17.63 seconds
+
+No hay mucho que ver.
+
+Hago un -sVC del puerto 80.
+
+sudo nmap -sVC -p 80 10.128.189.88
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-08-27 11:02 CEST
+Nmap scan report for 10.128.189.88
+Host is up (0.032s latency).
+
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+|_http-trane-info: Problem with XML parsing of /evox/about
+| http-title: Authenticate Please!
+|_Requested resource was /auth/login?to=/
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 9.97 seconds
+
+Nada, en principio. Al navegar al puerto 80 veo la respuesta a la primera pregunta.
+
+What is the name of the Content Management System (CMS) installed on the server?
+Cockpit.
+
+Mirando el código del portal de login también encuentro la respuesta a la segunda pregunta.
+
+<script src="/storage/tmp/7a812eebe1eda3162d79b4109b4787d4.js?ver=0.11.1" type="text/javascript"></script>    <script src="/storage/tmp/4cc5a0d2487ec7f4c75b0cc9115bf601.js?ver=0.11.1" type="text/javascript"></script>
+
+What is the version of the Content Management System (CMS) installed on the server?
+0.11.1
+
+Busco en searchsploit.
+
+searchsploit cockpit 0.11.1
+-------------------------------------------------------------------------------------- ---------------------------------
+ Exploit Title                                                                        |  Path
+-------------------------------------------------------------------------------------- ---------------------------------
+Cockpit CMS 0.11.1 - 'Username Enumeration & Password Reset' NoSQL Injection          | multiple/webapps/50185.py
+-------------------------------------------------------------------------------------- ---------------------------------
+Shellcodes: No Results
+
+Viendo el código del exploit puedo responder a la quinta pregunta.
+
+What is the path that allows you to change user account passwords?
+/auth/resetpassword
