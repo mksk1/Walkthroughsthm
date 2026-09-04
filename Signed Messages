@@ -65,3 +65,130 @@ This debug endpoint shows internal system logs from the key generation service. 
 
 Utiliza una generación determinista, es vulnerable.
 
+Con esta información, admin y su mensaje, he creado un script con la ayuda de deepseek.
+
+cat exploit.py 
+import hashlib
+from sympy import nextprime
+from Crypto.PublicKey import RSA
+from Crypto.Signature import pss
+from Crypto.Hash import SHA256
+
+def generar_clave_admin():
+    """Genera la clave de admin usando el seed pattern exacto"""
+    username = "admin"
+    user_bytes = username.encode()
+    
+    # Seed pattern del sistema (EXACTO)
+    base_seed = user_bytes + b"_lovenote_2026_valentine"
+    
+    print("[*] Generando p...")
+    hash_p = hashlib.sha256(base_seed).hexdigest()
+    p = nextprime(int(hash_p, 16))
+    print(f"[+] p = {p}")
+    
+    print("[*] Generando q...")
+    hash_q = hashlib.sha256(base_seed + b"pki").hexdigest()
+    q = nextprime(int(hash_q, 16))
+    print(f"[+] q = {q}")
+    
+    # Construir clave RSA
+    n = p * q
+    e = 65537
+    phi = (p - 1) * (q - 1)
+    d = pow(e, -1, phi)
+    
+    key = RSA.construct((n, e, d, p, q))
+    
+    print(f"\n[+] n = {n}")
+    print(f"[+] e = {e}")
+    print(f"[+] d = {d}")
+    
+    return key
+
+# Generar la clave CORRECTA de admin
+print("="*60)
+print("GENERANDO CLAVE DE ADMIN (CORRECTA)")
+print("="*60)
+
+admin_key = generar_clave_admin()
+
+print("\n" + "="*60)
+print("CLAVE PRIVADA DE ADMIN (PEM)")
+print("="*60)
+print(admin_key.export_key().decode())
+
+print("\n" + "="*60)
+print("CLAVE PÚBLICA DE ADMIN (PEM)")
+print("="*60)
+print(admin_key.publickey().export_key().decode())
+
+# Ahora firmar el mensaje de admin
+print("\n" + "="*60)
+print("FIRMANDO MENSAJE DE ADMIN")
+print("="*60)
+
+mensaje = "Welcome to LoveNote! Send encrypted love messages this Valentine's Day. Your communications are secured with industry-standard RSA-2048 digital signatures."
+
+hash_obj = SHA256.new(mensaje.encode())
+modulus_bits = admin_key.size_in_bits()
+encoded_len = (modulus_bits - 1 + 7) // 8
+salt_bytes = encoded_len - hash_obj.digest_size - 2
+
+signer = pss.new(admin_key, salt_bytes=salt_bytes)
+firma = signer.sign(hash_obj)
+firma_hex = firma.hex()
+
+print(f"\nMensaje: {mensaje[:80]}...")
+print(f"\nFIRMA HEX:")
+print(firma_hex)
+
+(venv) mksk@mksk-Nitro-AN515-57:~$ python3 exploit.py 
+============================================================
+GENERANDO CLAVE DE ADMIN (CORRECTA)
+============================================================
+[*] Generando p...
+[+] p = 4791618204188744540991837585123847317681060752926508821153931923856376697043
+[*] Generando q...
+[+] q = 17765675040165337710763422425872010801055738292884264426719252999172010591049
+
+[+] n = 85126331932157837525567854053245460499291064536555820275957255468949993697387108905637573364855242718285589546535798832668842941372737201002956840568107
+[+] e = 65537
+[+] d = 41298682023634869525999510499762567962753244685289108529137142951848040795393532180539884448332665269021174394971092472329284339922945075167635460458033
+
+============================================================
+CLAVE PRIVADA DE ADMIN (PEM)
+============================================================
+-----BEGIN RSA PRIVATE KEY-----
+MIIBNgIBAAJAAaAWvmsqFsYJ5w1P4MD7NKiuZxsKi2zoHUjT4uFoKxaN2FV4y+rO
+MrY07Ab75kNiRoOPxSXMH2diq1jHFa0FKwIDAQABAkAAyd0e5rjVsaCOQuwU2ytE
+Ye2ywfC8scpuoq2Bbd/uv3tBn9rh3ZlOpbUV/lemOezavXw/I7Aq0puhfFt5ngYx
+AiAKl/W1JbCsfrrP1jLlVAK+LvpGNpX5eFAUZI0f/u+Q0wIgJ0cEB00LPOQpnPMV
+G4jX+EQPDGA92OWIaSTXk9BEw0kCIAL8gaS2Yk7OTwWGIcTqYPeSMLWYb8Dq/NAy
+5GHPsWNHAiAht4nSxqWGAQtj6xxMhb14JtyQMDIHdosST4ksH5ZX2QIgAfoag6un
+sSO+nSMlZhnsKG7Xh3FmWLsSjwU6jcdt1fI=
+-----END RSA PRIVATE KEY-----
+
+============================================================
+CLAVE PÚBLICA DE ADMIN (PEM)
+============================================================
+-----BEGIN PUBLIC KEY-----
+MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAAaAWvmsqFsYJ5w1P4MD7NKiuZxsKi2zo
+HUjT4uFoKxaN2FV4y+rOMrY07Ab75kNiRoOPxSXMH2diq1jHFa0FKwIDAQAB
+-----END PUBLIC KEY-----
+
+============================================================
+FIRMANDO MENSAJE DE ADMIN
+============================================================
+
+Mensaje: Welcome to LoveNote! Send encrypted love messages this Valentine's Day. Your com...
+
+FIRMA HEX:
+005985dacc51e38edb444b2a8241be0cd9837d9c5fe8de0c147f4e1ed84f8b97df32c7a4642786db4ee7bd38aee99a7a05e6cd6949bf9ff526ed475834aaaa38
+
+Y luego uso el hex para verificar el mensaje de admin.
+
+Al verificarlo sale la flag.
+
+You successfully forged an admin signature!
+THM{PR3D1C*********************}
