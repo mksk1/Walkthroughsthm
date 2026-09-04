@@ -1,2 +1,67 @@
 #Signed Messages Walkthrough
 #Los cambios de ip en la máquina se deben a que a la he completado en varios días, o al reinicio de la misma.
+
+Dado que la máquina me indica el puerto objetivo, me salto el escaneo.
+
+Enumero subdirectorios.
+
+sudo dirsearch -u http://10.130.155.24:5000/
+[sudo] contraseña para mksk:     
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/mksk/reports/http_10.130.155.24_5000/__26-09-04_15-22-29.txt
+
+Target: http://10.130.155.24:5000/
+
+[15:22:29] Starting: 
+[15:22:35] 200 -   15KB - /about
+[15:22:46] 302 -  218B  - /dashboard  ->  http://10.130.155.24:5000/login
+[15:22:47] 200 -   11KB - /debug
+[15:22:53] 200 -   11KB - /login
+[15:22:53] 302 -  208B  - /logout  ->  http://10.130.155.24:5000/
+[15:22:54] 200 -   13KB - /messages
+[15:22:59] 200 -   12KB - /register
+
+Al crear una cuenta, veo la cuenta admin.
+
+En debug encuentro el siguiente código.
+
+
+System Debug Logs
+
+[2026-02-06 14:23:15] Development mode: ENABLED
+
+[2026-02-06 14:23:15] Using deterministic key generation
+[2026-02-06 14:23:15] Seed pattern: {username}_lovenote_2026_valentine
+
+[DEBUG] Seed converted to bytes for cryptographic processing
+[DEBUG] Seed hashed using SHA256 to produce large numeric material
+
+[DEBUG] Prime derivation step 1:
+[DEBUG] Converting SHA256(seed) into a large integer
+[DEBUG] Checking consecutive integers until a valid prime is reached
+[DEBUG] Prime p selected
+
+[DEBUG] Prime derivation step 2:
+[DEBUG] Modifying seed with PKI-related constant (SHA256(seed + b"pki"))
+[DEBUG] Hashing modified seed with SHA256
+[DEBUG] Converting hash into a large integer
+[DEBUG] Checking consecutive integers until a valid prime is reached
+[DEBUG] Prime q selected
+
+[2026-02-06 14:23:16] RSA modulus generated from p × q
+[2026-02-06 14:23:16] RSA-2048 key pair successfully constructed
+[2026-02-06 14:23:17] Public and private keys saved to disk
+
+Development Notice
+
+This debug endpoint shows internal system logs from the key generation service. The logs reveal implementation details that should not be exposed in production.
+
+Utiliza una generación determinista, es vulnerable.
+
