@@ -1,2 +1,83 @@
 #DifferentCTF Walkthrough
 #Los cambios de ip en la máquina se deben a que a la he completado en varios días, o al reinicio de la misma.
+
+sudo nmap -p- 10.129.142.59
+[sudo] contraseña para mksk:     
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-09-04 17:13 CEST
+Nmap scan report for 10.129.142.59
+Host is up (0.034s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE
+21/tcp open  ftp
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 19.02 seconds
+
+Con esto ya puedo responder la primera pregunta.
+How many ports are open ?
+2
+
+Continúo con un -sVC para ver si acabar una enumeración básica.
+
+sudo nmap -sVC -p 21,80 10.129.142.59
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-09-04 17:15 CEST
+Nmap scan report for 10.129.142.59
+Host is up (0.049s latency).
+
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-title: Hello World &#8211; Just another WordPress site
+|_http-generator: WordPress 5.6
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+Service Info: OS: Unix
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 10.97 seconds
+
+No tengo login anónimo en ftp, asique voy al puerto 80.
+
+Viendo el código de la web saco varias cosas.
+
+1. Dominio. adana.thm
+2. Version de wordpress. content="WordPress 5.6" Versión con vulnerabilidades.
+3. Un posible usuario. hakanbey01
+
+Bueno, ahora continúo, enumero subdirectorios.
+
+Normalmente en CTFs más complejos, la wordlist por defecto de dirsearch no suele sacar mucho, asique uso una un poco más grande.
+
+sudo dirsearch -u 10.129.142.59 -w /home/mksk/wordlists/directory-list-2.3-small.txt 
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 87649
+
+Output File: /home/mksk/reports/_10.129.142.59/_26-09-04_17-22-14.txt
+
+Target: http://10.129.142.59/
+
+[17:22:14] Starting: 
+[17:22:15] 301 -  319B  - /wp-content  ->  http://10.129.142.59/wp-content/
+[17:22:17] 301 -  322B  - /announcements  ->  http://10.129.142.59/announcements/
+[17:22:17] 301 -  320B  - /wp-includes  ->  http://10.129.142.59/wp-includes/
+[17:22:17] 301 -  319B  - /javascript  ->  http://10.129.142.59/javascript/
+[17:22:29] 301 -  317B  - /wp-admin  ->  http://10.129.142.59/wp-admin/
+[17:22:36] 301 -  319B  - /phpmyadmin  ->  http://10.129.142.59/phpmyadmin/
+CTRL+C detected: Pausing threads, please wait...
+[q]uit / [c]ontinue: q
+[s]ave / [q]uit without saving: q
+
+Canceled by the user
+
+Bueno, el segundo directorio que saca es la respuesta a la segunda pregunta.
+
+What is the name of the secret directory ?
+/announcements/
+
+En ese directorio encuentro un .jpg y una wordlist. 
+Apunta a esteganografía.
+
