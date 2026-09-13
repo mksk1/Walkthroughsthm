@@ -1,2 +1,153 @@
 #phantom fob walkthrough
 #Los cambios de ip en la máquina se deben a que la he completado en varios días, o al reinicio de la misma.
+
+Comienzo con un escaneo general de puertos con -p-.
+
+sudo nmap -p- 10.129.178.170
+[sudo] contraseña para mksk:     
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-09-13 13:47 CEST
+Nmap scan report for 10.129.178.170
+Host is up (0.032s latency).
+Not shown: 65532 closed tcp ports (reset)
+PORT      STATE SERVICE
+22/tcp    open  ssh
+8080/tcp  open  http-proxy
+29536/tcp open  unknown
+
+Nmap done: 1 IP address (1 host up) scanned in 13.62 seconds
+
+Veo un puerto extraño, 29536. Continuo con un -sVC.
+
+ sudo nmap -sVC -p 22,8080,29536 10.129.178.170
+
+Stats: 0:01:57 elapsed; 0 hosts completed (1 up), 1 undergoing Service Scan
+Service scan Timing: About 66.67% done; ETC: 13:52 (0:00:59 remaining)
+Nmap scan report for 10.129.178.170
+Host is up (0.034s latency).
+
+PORT      STATE SERVICE    VERSION
+22/tcp    open  ssh        OpenSSH 9.6p1 Ubuntu 3ubuntu13.5 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 d1:d6:0b:2f:7c:22:de:59:a4:b0:3d:cb:4f:2b:ee:72 (ECDSA)
+|_  256 7a:5e:c8:59:17:14:db:e3:be:c9:7b:d2:3f:3e:a2:a2 (ED25519)
+8080/tcp  open  http-proxy Werkzeug/3.1.8 Python/3.12.3
+|_http-server-header: Werkzeug/3.1.8 Python/3.12.3
+|_http-title: Instrument Cluster
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.1 404 NOT FOUND
+|     Server: Werkzeug/3.1.8 Python/3.12.3
+|     Date: Sun, 13 Sep 2026 11:49:39 GMT
+|     Content-Type: text/html; charset=utf-8
+|     Content-Length: 207
+|     Connection: close
+|     <!doctype html>
+|     <html lang=en>
+|     <title>404 Not Found</title>
+|     <h1>Not Found</h1>
+|     <p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
+|   GetRequest: 
+|     HTTP/1.1 200 OK
+|     Server: Werkzeug/3.1.8 Python/3.12.3
+|     Date: Sun, 13 Sep 2026 11:49:39 GMT
+|     Content-Type: text/html; charset=utf-8
+|     Content-Length: 8678
+|     Connection: close
+|     <!doctype html><html><head><meta charset=utf-8>
+|     <title>Instrument Cluster</title><style>
+|     :root{--bg:#0a0d11;--panel:#121820;--edge:#1f2b38;--mut:#6f8296;--ok:#3fb950;--bad:#f85149;--warn:#f0883e;--txt:#e6edf3}
+|     *{box-sizing:border-box}
+|     body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#132030,#0a0d11);color:var(--txt);
+|     font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,sans-serif}
+|     .wrap{max-width:960px;margin:0 auto;padding:22px}
+|     h1{font-size:13px;font-weight:600;letter-spacing:.18em;color:var(--mut);text-transform:uppercase;margin:0 0 16px}
+|     .cluster{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:stretch}
+|     .card{background:linear-gradient(180deg,#141c26,#0f151d);border:1px solid var
+|   HTTPOptions: 
+|     HTTP/1.1 200 OK
+|     Server: Werkzeug/3.1.8 Python/3.12.3
+|     Date: Sun, 13 Sep 2026 11:49:39 GMT
+|     Content-Type: text/html; charset=utf-8
+|     Allow: HEAD, GET, OPTIONS
+|     Content-Length: 0
+|     Connection: close
+|   RTSPRequest: 
+|     <!DOCTYPE HTML>
+|     <html lang="en">
+|     <head>
+|     <meta charset="utf-8">
+|     <title>Error response</title>
+|     </head>
+|     <body>
+|     <h1>Error response</h1>
+|     <p>Error code: 400</p>
+|     <p>Message: Bad request version ('RTSP/1.0').</p>
+|     <p>Error code explanation: 400 - Bad request syntax or unsupported method.</p>
+|     </body>
+|_    </html>
+29536/tcp open  unknown
+| fingerprint-strings: 
+|   DNSStatusRequestTCP, DNSVersionBindReqTCP, FourOhFourRequest, GenericLines, GetRequest, HTTPOptions, Help, JavaRMI, Kerberos, LANDesk-RC, LDAPBindReq, LDAPSearchReq, LPDString, NCP, NULL, NotesRPC, RPCCheck, RTSPRequest, SIPOptions, SMBProgNeg, SSLSessionReq, TLSSessionReq, TerminalServer, TerminalServerCookie, WMSRequest, X11Probe, afp, giop, ms-sql-s, oracle-tns: 
+|_    < hi >
+2 services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port8080-TCP:V=7.94SVN%I=7%D=9/13%Time=6AA68DD3%P=x86_64-pc-linux-gnu%r
+SF:(GetRequest,1DD7,"HTTP/1\.1\x20200\x20OK\r\nServer:\x20Werkzeug/3\.1\.8
+SF:\x20Python/3\.12\.3\r\nDate:\x20Sun,\x2013\x20Sep\x202026\x2011:49:39\x
+SF:20GMT\r\nContent-Type:\x20text/html;\x20charset=utf-8\r\nContent-Length
+SF::\x208678\r\nConnection:\x20close\r\n\r\n<!doctype\x20html><html><head>
+SF:<meta\x20charset=utf-8>\n<title>Instrument\x20Cluster</title><style>\n:
+SF:root{--bg:#0a0d11;--panel:#121820;--edge:#1f2b38;--mut:#6f8296;--ok:#3f
+SF:b950;--bad:#f85149;--warn:#f0883e;--txt:#e6edf3}\n\*{box-sizing:border-
+SF:box}\nbody{margin:0;background:radial-gradient\(1200px\x20600px\x20at\x
+SF:2050%\x20-10%,#132030,#0a0d11\);color:var\(--txt\);\nfont-family:ui-san
+SF:s-serif,system-ui,Segoe\x20UI,Roboto,sans-serif}\n\.wrap{max-width:960p
+SF:x;margin:0\x20auto;padding:22px}\nh1{font-size:13px;font-weight:600;let
+SF:ter-spacing:\.18em;color:var\(--mut\);text-transform:uppercase;margin:0
+SF:\x200\x2016px}\n\.cluster{display:grid;grid-template-columns:340px\x201
+SF:fr;gap:18px;align-items:stretch}\n\.card{background:linear-gradient\(18
+SF:0deg,#141c26,#0f151d\);border:1px\x20solid\x20var")%r(HTTPOptions,C7,"H
+SF:TTP/1\.1\x20200\x20OK\r\nServer:\x20Werkzeug/3\.1\.8\x20Python/3\.12\.3
+SF:\r\nDate:\x20Sun,\x2013\x20Sep\x202026\x2011:49:39\x20GMT\r\nContent-Ty
+SF:pe:\x20text/html;\x20charset=utf-8\r\nAllow:\x20HEAD,\x20GET,\x20OPTION
+SF:S\r\nContent-Length:\x200\r\nConnection:\x20close\r\n\r\n")%r(RTSPReque
+SF:st,16C,"<!DOCTYPE\x20HTML>\n<html\x20lang=\"en\">\n\x20\x20\x20\x20<hea
+SF:d>\n\x20\x20\x20\x20\x20\x20\x20\x20<meta\x20charset=\"utf-8\">\n\x20\x
+SF:20\x20\x20\x20\x20\x20\x20<title>Error\x20response</title>\n\x20\x20\x2
+SF:0\x20</head>\n\x20\x20\x20\x20<body>\n\x20\x20\x20\x20\x20\x20\x20\x20<
+SF:h1>Error\x20response</h1>\n\x20\x20\x20\x20\x20\x20\x20\x20<p>Error\x20
+SF:code:\x20400</p>\n\x20\x20\x20\x20\x20\x20\x20\x20<p>Message:\x20Bad\x2
+SF:0request\x20version\x20\('RTSP/1\.0'\)\.</p>\n\x20\x20\x20\x20\x20\x20\
+SF:x20\x20<p>Error\x20code\x20explanation:\x20400\x20-\x20Bad\x20request\x
+SF:20syntax\x20or\x20unsupported\x20method\.</p>\n\x20\x20\x20\x20</body>\
+SF:n</html>\n")%r(FourOhFourRequest,184,"HTTP/1\.1\x20404\x20NOT\x20FOUND\
+SF:r\nServer:\x20Werkzeug/3\.1\.8\x20Python/3\.12\.3\r\nDate:\x20Sun,\x201
+SF:3\x20Sep\x202026\x2011:49:39\x20GMT\r\nContent-Type:\x20text/html;\x20c
+SF:harset=utf-8\r\nContent-Length:\x20207\r\nConnection:\x20close\r\n\r\n<
+SF:!doctype\x20html>\n<html\x20lang=en>\n<title>404\x20Not\x20Found</title
+SF:>\n<h1>Not\x20Found</h1>\n<p>The\x20requested\x20URL\x20was\x20not\x20f
+SF:ound\x20on\x20the\x20server\.\x20If\x20you\x20entered\x20the\x20URL\x20
+SF:manually\x20please\x20check\x20your\x20spelling\x20and\x20try\x20again\
+SF:.</p>\n");
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port29536-TCP:V=7.94SVN%I=7%D=9/13%Time=6AA68DD3%P=x86_64-pc-linux-gnu%
+SF:r(NULL,6,"<\x20hi\x20>")%r(GenericLines,6,"<\x20hi\x20>")%r(GetRequest,
+SF:6,"<\x20hi\x20>")%r(HTTPOptions,6,"<\x20hi\x20>")%r(RTSPRequest,6,"<\x2
+SF:0hi\x20>")%r(RPCCheck,6,"<\x20hi\x20>")%r(DNSVersionBindReqTCP,6,"<\x20
+SF:hi\x20>")%r(DNSStatusRequestTCP,6,"<\x20hi\x20>")%r(Help,6,"<\x20hi\x20
+SF:>")%r(SSLSessionReq,6,"<\x20hi\x20>")%r(TerminalServerCookie,6,"<\x20hi
+SF:\x20>")%r(TLSSessionReq,6,"<\x20hi\x20>")%r(Kerberos,6,"<\x20hi\x20>")%
+SF:r(SMBProgNeg,6,"<\x20hi\x20>")%r(X11Probe,6,"<\x20hi\x20>")%r(FourOhFou
+SF:rRequest,6,"<\x20hi\x20>")%r(LPDString,6,"<\x20hi\x20>")%r(LDAPSearchRe
+SF:q,6,"<\x20hi\x20>")%r(LDAPBindReq,6,"<\x20hi\x20>")%r(SIPOptions,6,"<\x
+SF:20hi\x20>")%r(LANDesk-RC,6,"<\x20hi\x20>")%r(TerminalServer,6,"<\x20hi\
+SF:x20>")%r(NCP,6,"<\x20hi\x20>")%r(NotesRPC,6,"<\x20hi\x20>")%r(JavaRMI,6
+SF:,"<\x20hi\x20>")%r(WMSRequest,6,"<\x20hi\x20>")%r(oracle-tns,6,"<\x20hi
+SF:\x20>")%r(ms-sql-s,6,"<\x20hi\x20>")%r(afp,6,"<\x20hi\x20>")%r(giop,6,"
+SF:<\x20hi\x20>");
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 159.69 seconds
+
+Flask en el puerto 8080, y una aplicacion que devuelve hi a los inputs en el puerto 29536.
