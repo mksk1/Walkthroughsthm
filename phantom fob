@@ -151,3 +151,55 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 159.69 seconds
 
 Flask en el puerto 8080, y una aplicacion que devuelve hi a los inputs en el puerto 29536.
+
+Enumero directorios pero no encuentro nada, tan solo /press, y no puedo acceder.
+
+Mirando el código de la página puedo ver mas o menos como funciona.
+
+const r = await fetch('/press', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({button: b})   // b = "LOCK" | "HORN" | "IMMOB_ARM" | "IMMOB_DISARM"
+});
+
+Los botones envían comandos a traves de /press.
+
+En events puedo ver los eventos que van ocurriendo en la web.
+
+curl -N http://10.130.154.183:8080/events
+data: {"locked": true, "immob": true, "horn": false, "speed": 10.55, "turn": 0, "fps": 367, "seen_ids": 13, "flag": null}
+
+data: {"locked": true, "immob": true, "horn": false, "speed": 9.6, "turn": 0, "fps": 369, "seen_ids": 13, "flag": null}
+
+data: {"locked": true, "immob": true, "horn": false, "speed": 9.6, "turn": 0, "fps": 367, "seen_ids": 13, "flag": null}
+
+data: {"locked": true, "immob": true, "horn": false, "speed": 9.85, "turn": 0, "fps": 370, "seen_ids": 13, "flag": null}
+
+data: {"locked": true, "immob": true, "horn": false, "speed": 9.98, "turn": 0, "fps": 366, "seen_ids": 13, "flag": null}
+
+data: {"locked": true, "immob": true, "horn": false, "speed": 10.04, "turn": 0, "fps": 367, "seen_ids": 13, "flag": null}
+.
+
+Y al final del código veo como solucionar el CTF. 
+
+// ---- live updates ----
+const es=new EventSource('/events');
+es.onmessage=e=>{const s=JSON.parse(e.data);
+ setNeedle(s.speed||0);document.getElementById('kph').textContent=Math.round(s.speed||0);
+ turn=s.turn||0;setDoors(s.locked);
+ const d=document.getElementById('doors');
+ d.textContent=s.locked===null?'…':(s.locked?'LOCKED':'UNLOCKED');
+ d.className='val '+(s.locked===null?'mut':(s.locked?'bad':'ok'));
+ const im=document.getElementById('immob');
+ im.textContent=s.immob===null?'…':(s.immob?'ARMED':'DISARMED');
+ im.className='val '+(s.immob===null?'mut':(s.immob?'ok':'warn'));
+ const h=document.getElementById('horn');h.textContent=s.horn?'📢':'—';
+ h.className='val '+(s.horn?'warn pulse':'mut');
+ document.getElementById('fps').innerHTML=s.fps+'<span class=mut style="font-size:12px"> fps</span>';
+ document.getElementById('ids').textContent=s.seen_ids;
+ if(s.flag){document.getElementById('flagcard').style.display='block';
+  document.getElementById('flag').textContent=s.flag;}
+};
+
+Tengo que cambiar el atributo de flag.
+
